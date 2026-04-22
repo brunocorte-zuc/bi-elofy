@@ -4407,71 +4407,69 @@ function fecharAdmin() {
 }
 
 async function renderAdminUsers() {
-  const tbody = document.getElementById('admin-tbody');
+  var tbody = document.getElementById('admin-tbody');
   tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--txt-3)">Carregando...</td></tr>';
   try {
-    const r = await fetch(SB_URL + '/rest/v1/bi_usuarios?select=login,nome,role,closer_id,tabs,ativo&order=login', {
+    var r = await fetch(SB_URL + '/rest/v1/bi_usuarios?select=login,nome,role,closer_id,tabs,ativo&order=login', {
       headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
     });
-    const rows = await r.json();
-    tbody.innerHTML = rows.map(function(u) {
-      const tabsHtml = TODAS_ABAS.map(function(t) {
-        const checked = (u.tabs || []).includes(t) ? 'checked' : '';
-        const label = ABAS_LABELS[t] || t;
+    var rows = await r.json();
+    var html = '';
+    rows.forEach(function(u) {
+      var tabsHtml = TODAS_ABAS.map(function(t) {
+        var checked = (u.tabs || []).includes(t) ? 'checked' : '';
+        var label = ABAS_LABELS[t] || t;
         return '<label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--txt-2);cursor:pointer;white-space:nowrap">'
-          + '<input type="checkbox" data-login="' + u.login + '" data-tab="' + t + '" ' + checked
-          + ' onchange="toggleTab(this)" style="cursor:pointer"> ' + label + '</label>';
+          + '<input type="checkbox" class="tab-cb" data-login="' + u.login + '" data-tab="' + t + '" ' + checked
+          + ' style="cursor:pointer"> ' + label + '</label>';
       }).join('');
-      const ativo = u.ativo !== false;
-      return '<tr style="border-bottom:1px solid var(--border)">'
+      var ativo = u.ativo !== false;
+      var roleOpts = ['admin','closer','cx','financeiro','custom'].map(function(rv) {
+        return '<option value="' + rv + '"' + (u.role===rv?' selected':'') + '>' + rv + '</option>';
+      }).join('');
+      html += '<tr style="border-bottom:1px solid var(--border)" data-login="' + u.login + '">'
         + '<td style="padding:10px 12px;font-size:13px;font-weight:500;color:var(--txt)">' + u.login + '</td>'
-        + '<td style="padding:10px 12px"><input id="nome_' + u.login + '" value="' + (u.nome||'') + '" style="background:var(--bg-surf);border:1px solid var(--border);border-radius:5px;padding:4px 8px;color:var(--txt);font-size:12px;width:140px"></td>'
-        + '<td style="padding:10px 12px"><select id="role_' + u.login + '" style="background:var(--bg-surf);border:1px solid var(--border);border-radius:5px;padding:4px 8px;color:var(--txt);font-size:12px">'
-        + ['admin','closer','cx','financeiro','custom'].map(function(r2) { return '<option value="' + r2 + '"' + (u.role===r2?' selected':'') + '>' + r2 + '</option>'; }).join('')
-        + '</select></td>'
+        + '<td style="padding:10px 12px"><input class="u-nome" value="' + (u.nome||'') + '" style="background:var(--bg-surf);border:1px solid var(--border);border-radius:5px;padding:4px 8px;color:var(--txt);font-size:12px;width:140px"></td>'
+        + '<td style="padding:10px 12px"><select class="u-role" style="background:var(--bg-surf);border:1px solid var(--border);border-radius:5px;padding:4px 8px;color:var(--txt);font-size:12px">' + roleOpts + '</select></td>'
         + '<td style="padding:10px 12px"><div style="display:flex;flex-wrap:wrap;gap:4px;max-width:300px">' + tabsHtml + '</div></td>'
         + '<td style="padding:10px 12px">'
         + '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:' + (ativo?'#4ADE80':'#FC8181') + '">'
-        + '<input type="checkbox" ' + (ativo?'checked':'') + ' onchange=\"toggleAtivo(this,\" + JSON.stringify(u.login) + \")\" style="cursor:pointer"> '
+        + '<input type="checkbox" class="u-ativo" ' + (ativo?'checked':'') + ' style="cursor:pointer"> '
         + (ativo?'Ativo':'Inativo') + '</label></td>'
         + '<td style="padding:10px 12px;display:flex;gap:6px">'
-        + '<button onclick="salvarUsuario(\" + JSON.stringify(u.login) + \")" style="font-size:11px;padding:4px 10px;border-radius:5px;background:#534AB7;color:white;border:none;cursor:pointer">Salvar</button>'
-        + '<button onclick="excluirUsuario(\" + JSON.stringify(u.login) + \")" style="font-size:11px;padding:4px 10px;border-radius:5px;background:rgba(252,129,129,0.15);color:#FC8181;border:1px solid rgba(252,129,129,0.3);cursor:pointer">Excluir</button>'
+        + '<button class="btn-salvar" style="font-size:11px;padding:4px 10px;border-radius:5px;background:#534AB7;color:white;border:none;cursor:pointer">Salvar</button>'
+        + '<button class="btn-excluir" style="font-size:11px;padding:4px 10px;border-radius:5px;background:rgba(252,129,129,0.15);color:#FC8181;border:1px solid rgba(252,129,129,0.3);cursor:pointer">Excluir</button>'
         + '</td></tr>';
-    }).join('');
+    });
+    tbody.innerHTML = html || '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--txt-3)">Nenhum usuário.</td></tr>';
+
+    // Event delegation — sem onclicks inline
+    tbody.addEventListener('click', function(e) {
+      var tr = e.target.closest('tr[data-login]');
+      if (!tr) return;
+      var login = tr.dataset.login;
+      if (e.target.classList.contains('btn-salvar')) salvarUsuario(login, tr);
+      if (e.target.classList.contains('btn-excluir')) excluirUsuario(login);
+      if (e.target.classList.contains('u-ativo')) {
+        var label = e.target.parentElement;
+        label.style.color = e.target.checked ? '#4ADE80' : '#FC8181';
+        label.childNodes[1].textContent = e.target.checked ? ' Ativo' : ' Inativo';
+        toggleAtivo(e.target, login);
+      }
+    });
   } catch(e) {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#FC8181">Erro ao carregar usuários.</td></tr>';
   }
 }
 
-var _tabsTemp = {}; // cache temporário de tabs editadas
 
-function toggleTab(cb) {
-  var login = cb.dataset.login;
-  var tab   = cb.dataset.tab;
-  if (!_tabsTemp[login]) {
-    // inicializar com o que está marcado na linha
-    _tabsTemp[login] = TODAS_ABAS.filter(function(t) {
-      var el = document.querySelector('input[data-login="' + login + '"][data-tab="' + t + '"]');
-      return el && el.checked;
-    });
-  }
-  if (cb.checked) {
-    if (!_tabsTemp[login].includes(tab)) _tabsTemp[login].push(tab);
-  } else {
-    _tabsTemp[login] = _tabsTemp[login].filter(function(t) { return t !== tab; });
-  }
-}
-
-async function salvarUsuario(login) {
-  var nome  = document.getElementById('nome_' + login).value.trim();
-  var role  = document.getElementById('role_' + login).value;
-  var tabs  = _tabsTemp[login] !== undefined ? _tabsTemp[login] : TODAS_ABAS.filter(function(t) {
-    var el = document.querySelector('input[data-login="' + login + '"][data-tab="' + t + '"]');
-    return el && el.checked;
-  });
+async function salvarUsuario(login, tr) {
+  if (!tr) tr = document.querySelector('tr[data-login="' + login + '"]');
+  var nome  = tr ? tr.querySelector('.u-nome').value.trim() : '';
+  var role  = tr ? tr.querySelector('.u-role').value : 'custom';
+  var tabs  = tr ? TODAS_ABAS.filter(function(t) { var el = tr.querySelector('[data-tab="' + t + '"]'); return el && el.checked; }) : [];
   try {
-    await fetch(SB_URL + '/rest/v1/bi_usuarios?login=eq.' + encodeURIComponent(login), {
+    var r = await fetch(SB_URL + '/rest/v1/bi_usuarios?login=eq.' + encodeURIComponent(login), {
       method: 'PATCH',
       headers: {
         'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY,
@@ -4479,29 +4477,38 @@ async function salvarUsuario(login) {
       },
       body: JSON.stringify({ nome: nome, role: role, tabs: tabs, atualizado_em: new Date().toISOString() })
     });
+    if (!r.ok) {
+      var errText = await r.text();
+      mostrarToast('Erro ' + r.status + ': ' + errText, true);
+      return;
+    }
     delete _tabsTemp[login];
-    // Atualizar cache local
     if (_biUsuarios[login]) {
       _biUsuarios[login].nome = nome;
       _biUsuarios[login].role = role;
       _biUsuarios[login].tabs = tabs;
     }
     mostrarToast('Usuário ' + login + ' salvo.');
-  } catch(e) { mostrarToast('Erro ao salvar.', true); }
+  } catch(e) { mostrarToast('Erro: ' + e.message, true); }
 }
 
 async function excluirUsuario(login) {
   if (login === AUTH_USER.login) { mostrarToast('Não é possível excluir o próprio usuário.', true); return; }
   if (!confirm('Excluir usuário "' + login + '"?')) return;
   try {
-    await fetch(SB_URL + '/rest/v1/bi_usuarios?login=eq.' + encodeURIComponent(login), {
+    var r = await fetch(SB_URL + '/rest/v1/bi_usuarios?login=eq.' + encodeURIComponent(login), {
       method: 'DELETE',
-      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Prefer': 'return=minimal' }
     });
+    if (!r.ok) {
+      var errText = await r.text();
+      mostrarToast('Erro ' + r.status + ': ' + errText, true);
+      return;
+    }
     delete _biUsuarios[login];
     renderAdminUsers();
     mostrarToast('Usuário excluído.');
-  } catch(e) { mostrarToast('Erro ao excluir.', true); }
+  } catch(e) { mostrarToast('Erro: ' + e.message, true); }
 }
 
 async function toggleAtivo(cb, login) {
@@ -4546,7 +4553,11 @@ async function criarUsuario() {
       },
       body: JSON.stringify({ login: login, nome: nome, hash: hash, role: role, tabs: tabs, ativo: true })
     });
-    if (!r.ok) { var err = await r.text(); mostrarToast('Erro: ' + err, true); return; }
+    if (!r.ok) {
+      var errBody = await r.text();
+      mostrarToast('Erro ' + r.status + ': ' + errBody, true);
+      return;
+    }
     _biUsuarios[login] = { nome: nome, hash: hash, role: role, tabs: tabs };
     document.getElementById('new-login').value = '';
     document.getElementById('new-nome').value = '';
