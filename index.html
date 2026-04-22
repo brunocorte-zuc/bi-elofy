@@ -4227,12 +4227,24 @@ function getFunilDateRange() {
 // Mapeamento por substring: qual grupo cada fase pertence
 function mapearGrupo(fase) {
   var f = fase.toLowerCase();
-  if (f.includes('novo lead') || f.includes('prospec') || f.includes('prioridade') || f.includes('conex')) return 0;
-  if (f.includes('entrada') || f.includes('apresenta') || f.includes('considera')) return 1;
-  if (f.includes('proposta') || f.includes('poc')) return 2;
-  if (f.includes('negocia') || f.includes('contrato') || f.includes('aditivo') || f.includes('retomada')) return 3;
-  if (f.includes('renova')) return 4;
-  return -1; // não mapeado
+  // Grupo 0: Prospecção
+  if (f.includes('novo lead') || f.includes('prospec') || f.includes('prioridade') ||
+      f.includes('conex') || f.includes('entrada') || f.includes('demonstra') ||
+      f.includes('no-show') || f.includes('desqualif') || f.includes('discovery') ||
+      f.includes('reabertura') || f.includes('reuniao') || f.includes('estacionamento') ||
+      f.includes('oportunidade') || f.includes('diagnostico')) return 0;
+  // Grupo 1: Qualificação
+  if (f.includes('apresenta') || f.includes('considera') || f.includes('em desenvolv') ||
+      f.includes('qualif') || f.includes('tecnica')) return 1;
+  // Grupo 2: Proposta
+  if (f.includes('proposta') || f.includes('poc') || f.includes('fatura')) return 2;
+  // Grupo 3: Fechamento
+  if (f.includes('negocia') || f.includes('contrato') || f.includes('aditivo') ||
+      f.includes('retomada') || f.includes('pre-pagamento') || f.includes('preparacao')) return 3;
+  // Grupo 4: Resultado
+  if (f.includes('ganho') || f.includes('ganho') || f.includes('concluida') ||
+      f.includes('perdid') || f.includes('renova') || f.includes('parceria')) return 4;
+  return -1;
 }
 
 const GRUPO_DEFS = [
