@@ -402,6 +402,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt)}
   <div class="mtab" onclick="mt('cx',this)">CX</div>
   <div class="mtab" onclick="mt('tecnologia',this)">Tecnologia</div>
   <div class="mtab" onclick="mt('vertical',this)">Vertical HR Tech</div>
+  <div class="mtab" onclick="mt('rastreabilidade',this)">Rastreabilidade</div>
 </div>
 
 <div id="receita-subnav" style="display:none;background:#0D1525;border-bottom:1px solid var(--border);padding:0 16px;overflow-x:auto">
@@ -1171,6 +1172,279 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt)}
   </div>
 </div>
 
+<!-- RASTREABILIDADE -->
+<div id="rastreabilidade" class="mpane">
+  <div style="padding:14px 16px">
+
+    <!-- Header explicativo -->
+    <div class="card" style="margin-bottom:12px;border-left:3px solid var(--accent)">
+      <div class="ct" style="margin-bottom:6px">Rastreabilidade de dados</div>
+      <div style="font-size:13px;color:var(--txt-2);line-height:1.55">
+        Onde cada número deste BI nasce, com que frequência atualiza e em quem confiar quando algo parecer estranho. Use esta aba sempre que duvidar de um KPI antes de tirar conclusões.
+      </div>
+    </div>
+
+    <!-- Status em tempo real das fontes Supabase -->
+    <div class="ct" style="margin:18px 4px 8px">Status das fontes — última atualização</div>
+    <div class="g4">
+      <div class="m" id="rast-card-negocios">
+        <div class="l">Bitrix24 · negócios</div>
+        <div class="v" id="rast-neg-ts" style="font-size:16px">—</div>
+        <div class="s" id="rast-neg-info">carregando…</div>
+      </div>
+      <div class="m" id="rast-card-atividades">
+        <div class="l">Bitrix24 · atividades</div>
+        <div class="v" id="rast-ati-ts" style="font-size:16px">—</div>
+        <div class="s" id="rast-ati-info">carregando…</div>
+      </div>
+      <div class="m" id="rast-card-tickets">
+        <div class="l">Intercom · tickets</div>
+        <div class="v" id="rast-tic-ts" style="font-size:16px">—</div>
+        <div class="s" id="rast-tic-info">carregando…</div>
+      </div>
+      <div class="m" id="rast-card-usuarios">
+        <div class="l">BI · usuários</div>
+        <div class="v" id="rast-usr-ts" style="font-size:16px">—</div>
+        <div class="s" id="rast-usr-info">carregando…</div>
+      </div>
+    </div>
+
+    <!-- Diagrama de fluxo -->
+    <div class="card" style="margin-top:12px">
+      <div class="ct">Fluxo de dados</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;align-items:stretch;font-size:13px">
+        <!-- Coluna 1: origem -->
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="text-transform:uppercase;letter-spacing:.6px;font-size:11px;color:var(--txt-3);margin-bottom:2px">Origem</div>
+          <div style="background:var(--bg-surf);border:1px solid var(--border);border-radius:6px;padding:10px 12px"><div style="font-weight:500;color:#7C6FFF">Bitrix24</div><div style="font-size:12px;color:var(--txt-3);margin-top:2px">CRM · negócios e atividades</div></div>
+          <div style="background:var(--bg-surf);border:1px solid var(--border);border-radius:6px;padding:10px 12px"><div style="font-weight:500;color:#22C55E">Intercom</div><div style="font-size:12px;color:var(--txt-3);margin-top:2px">Suporte · tickets</div></div>
+          <div style="background:var(--bg-surf);border:1px solid var(--border);border-radius:6px;padding:10px 12px"><div style="font-weight:500;color:#F59E0B">DRE manual</div><div style="font-size:12px;color:var(--txt-3);margin-top:2px">Planilha financeira</div></div>
+          <div style="background:var(--bg-surf);border:1px solid var(--border);border-radius:6px;padding:10px 12px"><div style="font-weight:500;color:#F05252">Hardcoded</div><div style="font-size:12px;color:var(--txt-3);margin-top:2px">Valores no código</div></div>
+        </div>
+        <!-- Coluna 2: pipeline -->
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="text-transform:uppercase;letter-spacing:.6px;font-size:11px;color:var(--txt-3);margin-bottom:2px">Pipeline</div>
+          <div style="background:var(--bg-surf);border:1px solid var(--border);border-radius:6px;padding:10px 12px"><div style="font-weight:500">n8n Cloud</div><div style="font-size:12px;color:var(--txt-3);margin-top:2px">jjru547KjXL2LUbA · diário 6h</div></div>
+          <div style="background:var(--bg-surf);border:1px solid var(--border);border-radius:6px;padding:10px 12px"><div style="font-weight:500">n8n Cloud</div><div style="font-size:12px;color:var(--txt-3);margin-top:2px">rclCSJvdXvJ2ExwJ · a cada 2h</div></div>
+          <div style="background:var(--bg-surf);border:1px solid var(--border);border-radius:6px;padding:10px 12px"><div style="font-weight:500">Edição direta</div><div style="font-size:12px;color:var(--txt-3);margin-top:2px">até dia 15 de cada mês</div></div>
+          <div style="background:var(--bg-surf);border:1px solid var(--border);border-radius:6px;padding:10px 12px"><div style="font-weight:500">git commit</div><div style="font-size:12px;color:var(--txt-3);margin-top:2px">manual no index.html</div></div>
+        </div>
+        <!-- Coluna 3: armazenamento -->
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="text-transform:uppercase;letter-spacing:.6px;font-size:11px;color:var(--txt-3);margin-bottom:2px">Armazenamento</div>
+          <div style="background:var(--bg-surf);border:1px solid var(--border);border-radius:6px;padding:10px 12px"><div style="font-weight:500">Supabase · public.negocios</div><div style="font-size:12px;color:var(--txt-3);margin-top:2px">8.195 linhas · 64 colunas · RLS ✓</div></div>
+          <div style="background:var(--bg-surf);border:1px solid var(--border);border-radius:6px;padding:10px 12px"><div style="font-weight:500">Supabase · public.atividades</div><div style="font-size:12px;color:var(--txt-3);margin-top:2px">36.373 linhas · 25 colunas · RLS ✓</div></div>
+          <div style="background:var(--bg-surf);border:1px solid var(--border);border-radius:6px;padding:10px 12px"><div style="font-weight:500">Supabase · public.tickets</div><div style="font-size:12px;color:var(--txt-3);margin-top:2px">5.839 linhas · 37 colunas · <span style="color:#F05252">RLS ⚠</span></div></div>
+          <div style="background:var(--bg-surf);border:1px solid var(--border);border-radius:6px;padding:10px 12px"><div style="font-weight:500">index.html · objetos JS</div><div style="font-size:12px;color:var(--txt-3);margin-top:2px">arrays/objetos no &lt;script&gt;</div></div>
+        </div>
+        <!-- Coluna 4: consumo -->
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="text-transform:uppercase;letter-spacing:.6px;font-size:11px;color:var(--txt-3);margin-bottom:2px">Consumido por</div>
+          <div style="background:var(--bg-surf);border:1px solid var(--border);border-radius:6px;padding:10px 12px"><div style="font-weight:500">Comercial · Closer · NRR · Funil</div><div style="font-size:12px;color:var(--txt-3);margin-top:2px">+ Vertical (Elofy)</div></div>
+          <div style="background:var(--bg-surf);border:1px solid var(--border);border-radius:6px;padding:10px 12px"><div style="font-weight:500">CX (todas as visões)</div><div style="font-size:12px;color:var(--txt-3);margin-top:2px">+ NRR (health score)</div></div>
+          <div style="background:var(--bg-surf);border:1px solid var(--border);border-radius:6px;padding:10px 12px"><div style="font-weight:500">Financeiro · DRE</div><div style="font-size:12px;color:var(--txt-3);margin-top:2px">+ Waterfall MRR · Projeção</div></div>
+          <div style="background:var(--bg-surf);border:1px solid var(--border);border-radius:6px;padding:10px 12px"><div style="font-weight:500">Visão Geral · Marketing · Tecnologia</div><div style="font-size:12px;color:var(--txt-3);margin-top:2px">+ Vertical (visão executiva)</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela mestre: aba x fonte -->
+    <div class="card" style="margin-top:12px">
+      <div class="ct">Mapeamento aba × fonte</div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead>
+            <tr style="text-align:left;border-bottom:1px solid var(--border);color:var(--txt-3);font-weight:500">
+              <th style="padding:8px 10px">Aba</th>
+              <th style="padding:8px 10px">O que contém</th>
+              <th style="padding:8px 10px">Fonte primária</th>
+              <th style="padding:8px 10px">Refresh</th>
+              <th style="padding:8px 10px">Confiabilidade</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:9px 10px;font-weight:500">Visão Geral</td>
+              <td style="padding:9px 10px;color:var(--txt-2)">KPIs executivos, alertas, charts MRR/EBITDA</td>
+              <td style="padding:9px 10px"><span class="tag tr">Hardcoded</span> + NRR dinâmico</td>
+              <td style="padding:9px 10px;color:var(--txt-3)">Manual no código</td>
+              <td style="padding:9px 10px"><span class="tag ta">Baixa — pode estar defasado</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:9px 10px;font-weight:500">Financeiro · DRE</td>
+              <td style="padding:9px 10px;color:var(--txt-2)">Receitas, despesas, EBITDA por mês</td>
+              <td style="padding:9px 10px"><span class="tag ta">DRE manual</span></td>
+              <td style="padding:9px 10px;color:var(--txt-3)">Mensal · até dia 15</td>
+              <td style="padding:9px 10px"><span class="tag ta">Média — depende do fechamento</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:9px 10px;font-weight:500">Financeiro · NRR / R40</td>
+              <td style="padding:9px 10px;color:var(--txt-2)">Net Revenue Retention, Rule of 40, churn</td>
+              <td style="padding:9px 10px"><span class="tag tg">Bitrix24 + Intercom</span></td>
+              <td style="padding:9px 10px;color:var(--txt-3)">Diário (Bitrix) · 2h (Intercom)</td>
+              <td style="padding:9px 10px"><span class="tag tg">Alta — dado vivo</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:9px 10px;font-weight:500">Receita · Marketing (visão)</td>
+              <td style="padding:9px 10px;color:var(--txt-2)">MQL, CPL, taxa ICP, ROAS</td>
+              <td style="padding:9px 10px"><span class="tag tr">Hardcoded</span></td>
+              <td style="padding:9px 10px;color:var(--txt-3)">Manual no código</td>
+              <td style="padding:9px 10px"><span class="tag ta">Baixa — atualizar antes de reunião</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:9px 10px;font-weight:500">Receita · Marketing (funil)</td>
+              <td style="padding:9px 10px;color:var(--txt-2)">Funil completo de conversão</td>
+              <td style="padding:9px 10px"><span class="tag tg">Bitrix24 (negocios)</span></td>
+              <td style="padding:9px 10px;color:var(--txt-3)">Diário às 6h</td>
+              <td style="padding:9px 10px"><span class="tag tg">Alta — dado vivo</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:9px 10px;font-weight:500">Receita · Comercial</td>
+              <td style="padding:9px 10px;color:var(--txt-2)">Pipeline, win rate, coverage, atividades</td>
+              <td style="padding:9px 10px"><span class="tag tg">Bitrix24</span></td>
+              <td style="padding:9px 10px;color:var(--txt-3)">Diário às 6h (últimas 25h)</td>
+              <td style="padding:9px 10px"><span class="tag tg">Alta — porém ver "ressalvas"</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:9px 10px;font-weight:500">Closer (Disciplina)</td>
+              <td style="padding:9px 10px;color:var(--txt-2)">Performance individual por closer</td>
+              <td style="padding:9px 10px"><span class="tag tg">Bitrix24</span></td>
+              <td style="padding:9px 10px;color:var(--txt-3)">Diário às 6h</td>
+              <td style="padding:9px 10px"><span class="tag tg">Alta — dado vivo</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:9px 10px;font-weight:500">CX</td>
+              <td style="padding:9px 10px;color:var(--txt-2)">SLA, tickets, satisfação, health score</td>
+              <td style="padding:9px 10px"><span class="tag tg">Intercom</span></td>
+              <td style="padding:9px 10px;color:var(--txt-3)">A cada 2 horas</td>
+              <td style="padding:9px 10px"><span class="tag tg">Alta — dado vivo</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:9px 10px;font-weight:500">Tecnologia</td>
+              <td style="padding:9px 10px;color:var(--txt-2)">MTTR, defect escape, retrabalho, hosting</td>
+              <td style="padding:9px 10px"><span class="tag tr">Hardcoded</span></td>
+              <td style="padding:9px 10px;color:var(--txt-3)">Manual no código</td>
+              <td style="padding:9px 10px"><span class="tag ta">Baixa — sem integração com Jira/GitHub</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:9px 10px;font-weight:500">Vertical HR Tech</td>
+              <td style="padding:9px 10px;color:var(--txt-2)">Visão consolidada Elofy / InRec / Eggup</td>
+              <td style="padding:9px 10px"><span class="tag tr">Hardcoded</span> + Elofy do Bitrix</td>
+              <td style="padding:9px 10px;color:var(--txt-3)">Misto</td>
+              <td style="padding:9px 10px"><span class="tag ta">Média — Eggup sem dados</span></td>
+            </tr>
+            <tr>
+              <td style="padding:9px 10px;font-weight:500">Rastreabilidade</td>
+              <td style="padding:9px 10px;color:var(--txt-2)">Esta aba — meta-informação do BI</td>
+              <td style="padding:9px 10px"><span class="tag tg">Supabase (live)</span></td>
+              <td style="padding:9px 10px;color:var(--txt-3)">Tempo real ao abrir</td>
+              <td style="padding:9px 10px"><span class="tag tg">Alta</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Workflows n8n -->
+    <div class="g2" style="margin-top:12px">
+      <div class="card">
+        <div class="ct">Workflow · Update Diário Negócios</div>
+        <div class="kpi-row"><span style="color:var(--txt-3)">ID</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px">jjru547KjXL2LUbA</span></div>
+        <div class="kpi-row"><span style="color:var(--txt-3)">Cron</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px">0 6 * * * (6h diário)</span></div>
+        <div class="kpi-row"><span style="color:var(--txt-3)">Janela</span><span>últimas 25h modificadas no Bitrix</span></div>
+        <div class="kpi-row"><span style="color:var(--txt-3)">Alimenta</span><span>negocios · atividades</span></div>
+        <div class="kpi-row"><span style="color:var(--txt-3)">Origem</span><span>Bitrix24 API</span></div>
+        <div style="margin-top:10px"><a href="https://elofy.app.n8n.cloud/workflow/jjru547KjXL2LUbA" target="_blank" rel="noopener" style="display:inline-block;padding:6px 12px;background:rgba(124,111,255,0.15);border:1px solid rgba(124,111,255,0.3);border-radius:6px;color:#7C6FFF;text-decoration:none;font-size:12px;font-weight:500">Abrir no n8n →</a></div>
+      </div>
+      <div class="card">
+        <div class="ct">Workflow · Sync Intercom Tickets</div>
+        <div class="kpi-row"><span style="color:var(--txt-3)">ID</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px">rclCSJvdXvJ2ExwJ</span></div>
+        <div class="kpi-row"><span style="color:var(--txt-3)">Cron</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px">0 */2 * * * (a cada 2h)</span></div>
+        <div class="kpi-row"><span style="color:var(--txt-3)">Janela</span><span>tickets atualizados nas últimas 3h</span></div>
+        <div class="kpi-row"><span style="color:var(--txt-3)">Alimenta</span><span>tickets</span></div>
+        <div class="kpi-row"><span style="color:var(--txt-3)">Origem</span><span>Intercom API</span></div>
+        <div style="margin-top:10px"><a href="https://elofy.app.n8n.cloud/workflow/rclCSJvdXvJ2ExwJ" target="_blank" rel="noopener" style="display:inline-block;padding:6px 12px;background:rgba(124,111,255,0.15);border:1px solid rgba(124,111,255,0.3);border-radius:6px;color:#7C6FFF;text-decoration:none;font-size:12px;font-weight:500">Abrir no n8n →</a></div>
+      </div>
+    </div>
+
+    <!-- Tabelas Supabase -->
+    <div class="card" style="margin-top:12px">
+      <div class="ct">Schema · projeto Supabase ctdqizsaajdovclltxgr (sa-east-1)</div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead>
+            <tr style="text-align:left;border-bottom:1px solid var(--border);color:var(--txt-3);font-weight:500">
+              <th style="padding:8px 10px">Tabela</th>
+              <th style="padding:8px 10px">Linhas</th>
+              <th style="padding:8px 10px">PK</th>
+              <th style="padding:8px 10px">Campo p/ freshness</th>
+              <th style="padding:8px 10px">RLS</th>
+              <th style="padding:8px 10px">Função no BI</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">public.negocios</td>
+              <td style="padding:9px 10px">8.195</td>
+              <td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">bitrix_id</td>
+              <td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">modificado_em</td>
+              <td style="padding:9px 10px"><span class="tag tg">ativo</span></td>
+              <td style="padding:9px 10px;color:var(--txt-2)">deals do Bitrix · alimenta pipeline, win rate, NRR, funil</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">public.atividades</td>
+              <td style="padding:9px 10px">36.373</td>
+              <td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">bitrix_id</td>
+              <td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">modificado_em</td>
+              <td style="padding:9px 10px"><span class="tag tg">ativo</span></td>
+              <td style="padding:9px 10px;color:var(--txt-2)">tarefas/ligações/emails · alimenta disciplina e interações</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">public.tickets</td>
+              <td style="padding:9px 10px">5.839</td>
+              <td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">id</td>
+              <td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">atualizado_em</td>
+              <td style="padding:9px 10px"><span class="tag tr">desativado ⚠</span></td>
+              <td style="padding:9px 10px;color:var(--txt-2)">tickets Intercom · alimenta CX, SLA, health score</td>
+            </tr>
+            <tr>
+              <td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">public.bi_usuarios</td>
+              <td style="padding:9px 10px">11</td>
+              <td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">login</td>
+              <td style="padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:12px">atualizado_em</td>
+              <td style="padding:9px 10px"><span class="tag ta">permissivo ⚠</span></td>
+              <td style="padding:9px 10px;color:var(--txt-2)">login e roles do próprio BI</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Ressalvas e pontos cegos -->
+    <div class="card" style="margin-top:12px">
+      <div class="ct">Ressalvas conhecidas</div>
+      <div class="ins wa" style="margin-bottom:8px"><div class="ins-t">Visão Geral usa valores hardcoded</div><div class="ins-b">MRR (R$968k), ARR (R$11,8M), Churn (5,9%), Win rate (75%), Clientes (143), ARPA (R$6.766) e SLA (~15h) estão fixos no código (index.html). Não refletem mudanças até alguém atualizar o arquivo e dar push.</div></div>
+      <div class="ins wa" style="margin-bottom:8px"><div class="ins-t">Pipeline Bitrix pode estar "sujo"</div><div class="ins-b">Coverage de 0,28x e win rate de 75% provavelmente carregam deals zumbis (sem atividade há meses, ainda em fases abertas). Antes de tirar conclusão da Comercial/Closer, considerar limpeza.</div></div>
+      <div class="ins wa" style="margin-bottom:8px"><div class="ins-t">Tecnologia 100% manual</div><div class="ins-b">MTTR, defect escape, retrabalho e hosting são preenchidos à mão. Sem integração com Jira, GitHub ou monitoramento, os números podem refletir percepção mais que medição.</div></div>
+      <div class="ins wa" style="margin-bottom:8px"><div class="ins-t">Eggup é ponto cego</div><div class="ins-b">Vertical mostra "sem dados". Não temos integração com o produto Eggup hoje — qualquer KPI consolidado da vertical exclui essa linha de receita.</div></div>
+      <div class="ins cr"><div class="ins-t">Tabela tickets sem RLS</div><div class="ins-b">A tabela `tickets` está acessível via anon key sem proteção de linha. Não afeta a leitura do BI hoje (uso pessoal), mas precisa ser tratada antes de liberar para o time. Fix: 1 SQL no Supabase.</div></div>
+    </div>
+
+    <!-- Responsabilidades -->
+    <div class="card" style="margin-top:12px">
+      <div class="ct">Quem mexe em quê</div>
+      <div class="kpi-row"><span style="color:var(--txt-2)">Visão Geral / Marketing / Tecnologia (hardcoded)</span><span style="font-weight:500">Bruno Cortez</span></div>
+      <div class="kpi-row"><span style="color:var(--txt-2)">DRE / Financeiro</span><span style="font-weight:500">Time financeiro · mensal até dia 15</span></div>
+      <div class="kpi-row"><span style="color:var(--txt-2)">Workflows n8n</span><span style="font-weight:500">Bruno Cortez (admin n8n)</span></div>
+      <div class="kpi-row"><span style="color:var(--txt-2)">Dados do Bitrix (qualidade, fases)</span><span style="font-weight:500">Time comercial</span></div>
+      <div class="kpi-row"><span style="color:var(--txt-2)">Dados do Intercom (tags, prioridade)</span><span style="font-weight:500">Time CX</span></div>
+      <div class="kpi-row"><span style="color:var(--txt-2)">Estrutura Supabase (schema)</span><span style="font-weight:500">Bruno Cortez</span></div>
+      <div class="kpi-row"><span style="color:var(--txt-2)">Usuários e permissões do BI</span><span style="font-weight:500">Bruno Cortez (admin)</span></div>
+    </div>
+
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
@@ -1220,7 +1494,7 @@ function mtGroup(id, el, grpId) {
 // Usuarios gerenciados no Supabase (tabela bi_usuarios)
 var _biUsuarios = {};
 var _biUsuariosLoaded = false;
-const TODAS_ABAS = ['visao-geral','financeiro','comercial','closer','cx','marketing','tecnologia','vertical'];
+const TODAS_ABAS = ['visao-geral','financeiro','comercial','closer','cx','marketing','tecnologia','vertical','rastreabilidade'];
 
 async function carregarUsuarios() {
   if (_biUsuariosLoaded) return;
@@ -1239,7 +1513,7 @@ async function carregarUsuarios() {
 
 // Abas visíveis por role
 const ROLE_TABS = {
-  admin:      ['visao-geral','financeiro','comercial','closer','cx','marketing','tecnologia','vertical'],
+  admin:      ['visao-geral','financeiro','comercial','closer','cx','marketing','tecnologia','vertical','rastreabilidade'],
   closer:     ['visao-geral','comercial','closer'],
   cx:         ['visao-geral','cx'],
   financeiro: ['visao-geral','financeiro'],
@@ -1905,6 +2179,54 @@ function mt(id, el) {
   if (id === 'financeiro')  { renderChart_cFin1(); renderDRECharts(); renderDRETabelaAno(2025); }
   if (id === 'comercial')   { renderChart_cCom1(); }
   if (id === 'tecnologia')  { renderChart_cTec1(); renderChart_cTec2(); }
+  if (id === 'rastreabilidade') { renderRastreabilidade(); }
+}
+
+// ── Rastreabilidade: freshness das fontes em tempo real ─────────────
+async function renderRastreabilidade() {
+  const fmtRelativo = function(iso) {
+    if (!iso) return { txt: '—', sub: 'sem dado', cor: '#7180A0' };
+    const d = new Date(iso);
+    if (isNaN(d)) return { txt: '—', sub: 'data inválida', cor: '#7180A0' };
+    const diffMs = Date.now() - d.getTime();
+    const min = Math.round(diffMs / 60000);
+    const hr  = Math.round(diffMs / 3600000);
+    const dia = Math.round(diffMs / 86400000);
+    const dataFmt = d.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    let sub, cor;
+    if (min < 60)        { sub = 'há ' + min + ' min · ' + dataFmt; cor = '#22C55E'; }
+    else if (hr < 24)    { sub = 'há ' + hr  + 'h · ' + dataFmt;   cor = '#22C55E'; }
+    else if (dia < 3)    { sub = 'há ' + dia + ' dias · ' + dataFmt; cor = '#F59E0B'; }
+    else                 { sub = 'há ' + dia + ' dias · ' + dataFmt; cor = '#F05252'; }
+    return { txt: dataFmt, sub: sub, cor: cor };
+  };
+  const buscarMax = async function(tabela, campo) {
+    try {
+      const r = await fetch(SB_URL + '/rest/v1/' + tabela + '?select=' + campo + '&order=' + campo + '.desc.nullslast&limit=1', {
+        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+      });
+      const rows = await r.json();
+      if (Array.isArray(rows) && rows.length && rows[0][campo]) return rows[0][campo];
+    } catch(e) { console.error('rast ' + tabela, e); }
+    return null;
+  };
+  const setCard = function(prefix, ts) {
+    const f = fmtRelativo(ts);
+    const elTs = document.getElementById('rast-' + prefix + '-ts');
+    const elIn = document.getElementById('rast-' + prefix + '-info');
+    if (elTs) { elTs.textContent = f.txt; elTs.style.color = f.cor; }
+    if (elIn) elIn.textContent = f.sub;
+  };
+  const pares = [
+    ['neg', 'negocios',   'modificado_em'],
+    ['ati', 'atividades', 'modificado_em'],
+    ['tic', 'tickets',    'atualizado_em'],
+    ['usr', 'bi_usuarios','atualizado_em']
+  ];
+  await Promise.all(pares.map(async function(p) {
+    const ts = await buscarMax(p[1], p[2]);
+    setCard(p[0], ts);
+  }));
 }
 
 function st(id, el, prefix) {
