@@ -416,8 +416,8 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt)}
 <div id="visao-geral" class="mpane on"><!-- hardcoded -->
   <div style="padding:12px 14px">
     <div class="g4">
-      <div class="m"><div class="l">MRR Mar/26</div><div class="v">R$968k</div><div class="s">+17,1% vs Mar/25 <span class="tag tg">↑</span></div></div>
-      <div class="m"><div class="l">ARR projetado</div><div class="v">R$11,8M</div><div class="s">gap ~R$500k vs orc. <span class="tag ta">↓</span></div></div>
+      <div class="m"><div class="l">MRR Abr/26</div><div class="v">R$1,08M</div><div class="s">+11,4% vs Mar/26 <span class="tag tg">↑ R$1M+</span></div></div>
+      <div class="m"><div class="l">ARR projetado</div><div class="v">R$12,9M</div><div class="s">+R$1M vs orc. <span class="tag tg">↑</span></div></div>
       <div class="m"><div class="l">Churn Mar/26</div><div class="v" style="color:#E24B4A">5,9%</div><div class="s">vs 1,2% Mar/25 <span class="tag tr">↑</span></div></div>
       <div class="m"><div class="l">Win rate YTD</div><div class="v" style="color:#3B6D11">75%</div><div class="s">vs ~12% 2025 <span class="tag tg">↑</span></div></div>
     </div>
@@ -553,7 +553,8 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt)}
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
       <div style="font-size:14px;font-weight:600;color:var(--txt)">DRE Histórico mensal</div>
       <div style="display:flex;gap:6px" id="dre-ano-btns">
-        <button class="cbtn cbtn-periodo dre-ano-btn on" data-ano="2025" onclick="filtraAno(this)" style="font-size:14px;padding:3px 10px;background:var(--accent);color:white;border-color:var(--accent)">2025</button>
+        <button class="cbtn cbtn-periodo dre-ano-btn on" data-ano="2026" onclick="filtraAno(this)" style="font-size:14px;padding:3px 10px;background:var(--accent);color:white;border-color:var(--accent)">2026</button>
+        <button class="cbtn cbtn-periodo dre-ano-btn" data-ano="2025" onclick="filtraAno(this)" style="font-size:14px;padding:3px 10px">2025</button>
         <button class="cbtn cbtn-periodo dre-ano-btn" data-ano="2024" onclick="filtraAno(this)" style="font-size:14px;padding:3px 10px">2024</button>
         <button class="cbtn cbtn-periodo dre-ano-btn" data-ano="2023" onclick="filtraAno(this)" style="font-size:14px;padding:3px 10px">2023</button>
         <button class="cbtn cbtn-periodo dre-ano-btn" data-ano="2022" onclick="filtraAno(this)" style="font-size:14px;padding:3px 10px">2022</button>
@@ -582,14 +583,14 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt)}
   <div id="fin-projecao" class="spane">
     <div class="g4">
       <div class="m"><div class="l">ARR orc. 2026</div><div class="v">R$12,3M</div><div class="s">pressupõe superar pico histórico</div></div>
-      <div class="m"><div class="l">ARR projetado</div><div class="v" style="color:#854F0B">~R$11,8M</div><div class="s">gap estimado ~R$500k</div></div>
-      <div class="m"><div class="l">Pico histórico</div><div class="v">R$988k</div><div class="s">Jun/25 — melhor mês</div></div>
-      <div class="m"><div class="l">Meta Jun/26</div><div class="v" style="color:#E24B4A">R$1,031M</div><div class="s">acima do pico histórico</div></div>
+      <div class="m"><div class="l">ARR projetado</div><div class="v" style="color:#3B6D11">~R$12,9M</div><div class="s">+R$600k vs orc. (Abr/26)</div></div>
+      <div class="m"><div class="l">Pico histórico (anterior)</div><div class="v">R$988k</div><div class="s">Jun/25 — superado em Abr/26</div></div>
+      <div class="m"><div class="l">Novo pico</div><div class="v" style="color:#3B6D11">R$1,078M</div><div class="s">Abr/26 — primeiro mês acima de R$1M</div></div>
     </div>
     <div class="card">
-      <div class="ct">SaaS projetado Abr–Dez 2026 vs 2025</div>
-      <div class="chart-wrap" style="height:160px"><canvas id="cFin1" role="img" aria-label="SaaS projetado 2026 vs realizado 2025">SaaS projeção.</canvas></div>
-      <div class="ins wa" style="margin-top:8px"><div class="ins-t">Orçado pressupõe superar o pico histórico</div><div class="ins-b">Jun/26 orçado em R$1,031M vs pico de Jun/25 (R$988k). No ritmo atual, gap estimado de ~R$700k no ARR.</div></div>
+      <div class="ct">SaaS realizado e projetado 2026 vs 2025</div>
+      <div class="chart-wrap" style="height:160px"><canvas id="cFin1" role="img" aria-label="SaaS realizado e projetado 2026 vs realizado 2025">SaaS projeção.</canvas></div>
+      <div class="ins ok" style="margin-top:8px"><div class="ins-t">Abr/26 superou o pico histórico</div><div class="ins-b">R$1,078M em Abr/26 ultrapassou Jun/25 (R$988k), 2 meses antes do esperado. ARR projetado agora acima do orçado em ~R$600k.</div></div>
     </div>
   </div>
   <div id="fin-nrr" class="spane" style="padding:0">
@@ -1111,16 +1112,16 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt)}
   </div>
   <div id="vert-visao" class="spane on">
     <div class="g4">
-      <div class="m"><div class="l">MRR vertical</div><div class="v">~R$975k</div><div class="s">Elofy + Inrecruiting</div></div>
-      <div class="m"><div class="l">ARR projetado</div><div class="v" style="color:#854F0B">~R$11,9M</div><div class="s">gap ~R$400k vs orc.</div></div>
+      <div class="m"><div class="l">MRR vertical Abr/26</div><div class="v">~R$1,08M</div><div class="s">Elofy + Inrecruiting</div></div>
+      <div class="m"><div class="l">ARR projetado</div><div class="v" style="color:#3B6D11">~R$13,0M</div><div class="s">+R$1M vs orc.</div></div>
       <div class="m"><div class="l">Clientes ativos</div><div class="v">~197</div><div class="s">Elofy 176 + InRec ~21</div></div>
       <div class="m"><div class="l">Produtos com dados</div><div class="v">2 de 3</div><div class="s">Eggup sem dados</div></div>
     </div>
     <div class="g3">
       <div class="prod-card" style="border-top-color:#534AB7">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><div style="background:#534AB7;color:white;width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">EL</div><div><div style="font-size:13px;font-weight:500">Elofy</div><div style="font-size:14px;color:var(--color-text-secondary)">Gestão desempenho e metas</div></div><div style="margin-left:auto"><span class="badge b-ok">Principal</span></div></div>
-        <div class="kpi-row"><span style="color:var(--color-text-secondary)">MRR</span><span style="font-weight:500">R$968k</span></div>
-        <div class="kpi-row"><span style="color:var(--color-text-secondary)">Crescimento</span><span style="color:#3B6D11;font-weight:500">+17,1% vs Mar/25</span></div>
+        <div class="kpi-row"><span style="color:var(--color-text-secondary)">MRR Abr/26</span><span style="font-weight:500">R$1,08M</span></div>
+        <div class="kpi-row"><span style="color:var(--color-text-secondary)">Crescimento</span><span style="color:#3B6D11;font-weight:500">+11,4% vs Mar/26</span></div>
         <div class="kpi-row"><span style="color:var(--color-text-secondary)">Win rate</span><span style="color:#3B6D11;font-weight:500">75%</span></div>
         <div class="kpi-row"><span style="color:var(--color-text-secondary)">Churn Mar</span><span style="color:#E24B4A;font-weight:500">5,9%</span></div>
       </div>
@@ -1144,11 +1145,11 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt)}
   </div>
   <div id="vert-receita" class="spane">
     <div class="card">
-      <div class="ct">Composição MRR — Mar/26</div>
-      <div class="kpi-row"><span style="color:var(--color-text-secondary)">Elofy</span><div style="display:flex;gap:5px"><span style="font-weight:500">R$968k</span><span class="tag tg">99,4%</span></div></div>
+      <div class="ct">Composição MRR — Abr/26</div>
+      <div class="kpi-row"><span style="color:var(--color-text-secondary)">Elofy</span><div style="display:flex;gap:5px"><span style="font-weight:500">R$1,08M</span><span class="tag tg">99,4%</span></div></div>
       <div class="kpi-row"><span style="color:var(--color-text-secondary)">In Recruiting</span><div style="display:flex;gap:5px"><span style="font-weight:500;color:#854F0B">~R$6,2k</span><span class="tag ta">0,6%</span></div></div>
       <div class="kpi-row"><span style="color:var(--color-text-secondary)">Eggup</span><span style="color:var(--color-text-secondary)">— sem dados</span></div>
-      <div class="kpi-row"><span style="font-weight:500">Total vertical</span><span style="font-weight:500;color:#534AB7">~R$975k</span></div>
+      <div class="kpi-row"><span style="font-weight:500">Total vertical</span><span style="font-weight:500;color:#534AB7">~R$1,08M</span></div>
     </div>
     <div class="card">
       <div class="ct">Movimentações YTD 2026</div>
@@ -1272,10 +1273,10 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt)}
             </tr>
             <tr style="border-bottom:1px solid var(--border)">
               <td style="padding:9px 10px;font-weight:500">Financeiro · DRE</td>
-              <td style="padding:9px 10px;color:var(--txt-2)">Receitas, despesas, EBITDA por mês</td>
-              <td style="padding:9px 10px"><span class="tag ta">DRE manual</span></td>
-              <td style="padding:9px 10px;color:var(--txt-3)">Mensal · até dia 15</td>
-              <td style="padding:9px 10px"><span class="tag ta">Média — depende do fechamento</span></td>
+              <td style="padding:9px 10px;color:var(--txt-2)">Receitas, despesas, EBITDA por mês (2021–2026)</td>
+              <td style="padding:9px 10px"><span class="tag ta">LeverPro · DRE manual</span></td>
+              <td style="padding:9px 10px;color:var(--txt-3)">Mensal · validado 26/05/2026 (até Abr/26)</td>
+              <td style="padding:9px 10px"><span class="tag tg">Alta — validado pela Controladoria</span></td>
             </tr>
             <tr style="border-bottom:1px solid var(--border)">
               <td style="padding:9px 10px;font-weight:500">Financeiro · NRR / R40</td>
@@ -1423,7 +1424,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt)}
     <!-- Ressalvas e pontos cegos -->
     <div class="card" style="margin-top:12px">
       <div class="ct">Ressalvas conhecidas</div>
-      <div class="ins wa" style="margin-bottom:8px"><div class="ins-t">Visão Geral usa valores hardcoded</div><div class="ins-b">MRR (R$968k), ARR (R$11,8M), Churn (5,9%), Win rate (75%), Clientes (143), ARPA (R$6.766) e SLA (~15h) estão fixos no código (index.html). Não refletem mudanças até alguém atualizar o arquivo e dar push.</div></div>
+      <div class="ins wa" style="margin-bottom:8px"><div class="ins-t">Visão Geral usa valores hardcoded</div><div class="ins-b">MRR (R$1,08M Abr/26), ARR (R$12,9M), Churn (5,9%), Win rate (75%), Clientes (143), ARPA (R$6.766) e SLA (~15h) estão fixos no código. MRR/ARR atualizados em 26/05/2026 com base no DRE validado. Demais KPIs aguardam refresh.</div></div>
       <div class="ins wa" style="margin-bottom:8px"><div class="ins-t">Pipeline Bitrix pode estar "sujo"</div><div class="ins-b">Coverage de 0,28x e win rate de 75% provavelmente carregam deals zumbis (sem atividade há meses, ainda em fases abertas). Antes de tirar conclusão da Comercial/Closer, considerar limpeza.</div></div>
       <div class="ins wa" style="margin-bottom:8px"><div class="ins-t">Tecnologia 100% manual</div><div class="ins-b">MTTR, defect escape, retrabalho e hosting são preenchidos à mão. Sem integração com Jira, GitHub ou monitoramento, os números podem refletir percepção mais que medição.</div></div>
       <div class="ins wa" style="margin-bottom:8px"><div class="ins-t">Eggup é ponto cego</div><div class="ins-b">Vertical mostra "sem dados". Não temos integração com o produto Eggup hoje — qualquer KPI consolidado da vertical exclui essa linha de receita.</div></div>
@@ -2176,7 +2177,7 @@ function mt(id, el) {
     }
   }
   if (id === 'visao-geral') { renderChart_cG1(); renderChart_cG2(); }
-  if (id === 'financeiro')  { renderChart_cFin1(); renderDRECharts(); renderDRETabelaAno(2025); }
+  if (id === 'financeiro')  { renderChart_cFin1(); renderDRECharts(); renderDRETabelaAno(2026); }
   if (id === 'comercial')   { renderChart_cCom1(); }
   if (id === 'tecnologia')  { renderChart_cTec1(); renderChart_cTec2(); }
   if (id === 'rastreabilidade') { renderRastreabilidade(); }
@@ -2235,7 +2236,7 @@ function st(id, el, prefix) {
   tabs.forEach(t=>t.classList.remove('on'));
   document.getElementById(id).classList.add('on');
   el.classList.add('on');
-  if (id === 'fin-resumo')   { renderDRECharts(); renderDRETabelaAno(2025); }
+  if (id === 'fin-resumo')   { renderDRECharts(); renderDRETabelaAno(2026); }
   if (id === 'fin-projecao') renderChart_cFin1();
   if (id === 'fin-r40')       renderR40();
   if (id === 'com-funil')    renderChart_cCom1();
@@ -4031,6 +4032,15 @@ const DRE_HIST = {
     ebitda:   [-3639,-17220,-39745,23084,-13466,176360,39742,109928,166528,113977,277376,191679],
     ebitda_pct:[-0.47,-2.11,-4.81,2.86,-1.69,17.84,4.24,12.39,18.04,12.18,26.33,18.55],
     ytd:{receita:10780537,deducoes:-1004664,despesas:-8751268,ebitda:1024605,ebitda_pct:9.50}
+  },
+  // 2026: validado pela Controladoria em 26/05/2026 (LeverPro DRE)
+  2026: {
+    receita:  [1060175,1007292,1070324,1089282,null,null,null,null,null,null,null,null],
+    deducoes: [-87548,-83762,-90133,-93964,null,null,null,null,null,null,null,null],
+    despesas: [-789702,-754271,-752759,-854030,null,null,null,null,null,null,null,null],
+    ebitda:   [182925,169259,227432,141288,null,null,null,null,null,null,null,null],
+    ebitda_pct:[17.25,16.80,21.25,12.97,null,null,null,null,null,null,null,null],
+    ytd:{receita:4227073,deducoes:-355407,despesas:-3150762,ebitda:720904,ebitda_pct:17.05}
   }
 };
 
@@ -4059,6 +4069,7 @@ function renderDRETabelaAno(ano) {
   var meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
   function fmtM(v) {
+    if (v === null || v === undefined) return '—';
     var abs = Math.abs(v);
     var str = abs >= 1000000 ? 'R$' + (abs/1000000).toFixed(2) + 'M'
             : abs >= 1000    ? 'R$' + (abs/1000).toFixed(0) + 'k'
@@ -4067,18 +4078,22 @@ function renderDRETabelaAno(ano) {
   }
 
   function corE(v) {
+    if (v === null || v === undefined) return '#7180A0';
     return v >= 15?'#4ADE80':v>=5?'#A3E635':v>=0?'#FCD34D':'#FC8181';
   }
 
   var rows = meses.map(function(mes, i) {
+    var hasData = d.ebitda_pct[i] !== null && d.ebitda_pct[i] !== undefined;
     var ce = corE(d.ebitda_pct[i]);
-    return '<tr style="border-bottom:1px solid var(--border)">'
+    var ebitdaCor = !hasData ? '#7180A0' : (d.ebitda[i]>=0?'#4ADE80':'#FC8181');
+    var pctTxt = hasData ? d.ebitda_pct[i].toFixed(1) + '%' : '—';
+    return '<tr style="border-bottom:1px solid var(--border)' + (hasData ? '' : ';opacity:.45') + '">'
       + '<td style="padding:7px 10px;font-size:11px;color:var(--txt);font-weight:500">' + mes + '</td>'
       + '<td style="padding:7px 10px;font-size:15px;font-family:JetBrains Mono,monospace;color:var(--txt-2);text-align:right">' + fmtM(d.receita[i]) + '</td>'
       + '<td style="padding:7px 10px;font-size:15px;font-family:JetBrains Mono,monospace;color:#FC8181;text-align:right">' + fmtM(d.deducoes[i]) + '</td>'
       + '<td style="padding:7px 10px;font-size:15px;font-family:JetBrains Mono,monospace;color:#FC8181;text-align:right">' + fmtM(d.despesas[i]) + '</td>'
-      + '<td style="padding:7px 10px;font-size:15px;font-family:JetBrains Mono,monospace;color:' + (d.ebitda[i]>=0?'#4ADE80':'#FC8181') + ';text-align:right;font-weight:500">' + fmtM(d.ebitda[i]) + '</td>'
-      + '<td style="padding:7px 10px;text-align:center"><span style="font-size:13px;font-weight:600;font-family:JetBrains Mono,monospace;padding:2px 8px;border-radius:5px;background:' + ce + '18;color:' + ce + ';border:1px solid ' + ce + '28">' + d.ebitda_pct[i].toFixed(1) + '%</span></td>'
+      + '<td style="padding:7px 10px;font-size:15px;font-family:JetBrains Mono,monospace;color:' + ebitdaCor + ';text-align:right;font-weight:500">' + fmtM(d.ebitda[i]) + '</td>'
+      + '<td style="padding:7px 10px;text-align:center"><span style="font-size:13px;font-weight:600;font-family:JetBrains Mono,monospace;padding:2px 8px;border-radius:5px;background:' + ce + '18;color:' + ce + ';border:1px solid ' + ce + '28">' + pctTxt + '</span></td>'
       + '</tr>';
   }).join('');
 
@@ -4911,14 +4926,14 @@ function initChart(id, fn) {
 
 function renderChart_cG1() {
   initChart('cG1', (el) => {
-    new Chart(document.getElementById('cG1'),{type:'bar',data:{labels:['Nov/25','Dez/25','Jan/26','Fev/26','Mar/26'],datasets:[{label:'2025',data:[850,921,null,null,null],backgroundColor:'#CECBF6',borderRadius:2},{label:'2026',data:[null,null,922,963,968],backgroundColor:'#534AB7',borderRadius:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:9},color:'#8892C0'}},y:{ticks:{font:{size:9},color:'#8892C0',callback:v=>v+'k'},grid:{color:'rgba(255,255,255,0.05)'},min:700}}}});
+    new Chart(document.getElementById('cG1'),{type:'bar',data:{labels:['Nov/25','Dez/25','Jan/26','Fev/26','Mar/26','Abr/26'],datasets:[{label:'2025',data:[850,921,null,null,null,null],backgroundColor:'#CECBF6',borderRadius:2},{label:'2026',data:[null,null,922,963,968,1078],backgroundColor:'#534AB7',borderRadius:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:9},color:'#8892C0'}},y:{ticks:{font:{size:9},color:'#8892C0',callback:v=>v+'k'},grid:{color:'rgba(255,255,255,0.05)'},min:700}}}});
 ;
   });
 }
 
 function renderChart_cFin1() {
   initChart('cFin1', (el) => {
-    new Chart(document.getElementById('cFin1'),{type:'bar',data:{labels:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],datasets:[{label:'2025',data:[777,816,825,800,795,988,922,880,908,916,995,1013],backgroundColor:'#CECBF6',borderRadius:2},{label:'2026 real',data:[922,963,968,null,null,null,null,null,null,null,null,null],backgroundColor:'#534AB7',borderRadius:2},{label:'2026 proj.',data:[null,null,null,992,1007,1031,1047,1062,1077,1102,1117,1131],backgroundColor:'#d0d0d0',borderRadius:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:9},color:'#8892C0',autoSkip:false}},y:{ticks:{font:{size:9},color:'#8892C0',callback:v=>v+'k'},grid:{color:'rgba(255,255,255,0.05)'},min:600}}}});
+    new Chart(document.getElementById('cFin1'),{type:'bar',data:{labels:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],datasets:[{label:'2025',data:[777,816,825,800,795,988,922,880,908,916,995,1013],backgroundColor:'#CECBF6',borderRadius:2},{label:'2026 real',data:[922,963,968,1078,null,null,null,null,null,null,null,null],backgroundColor:'#534AB7',borderRadius:2},{label:'2026 proj.',data:[null,null,null,null,1007,1031,1047,1062,1077,1102,1117,1131],backgroundColor:'#d0d0d0',borderRadius:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:9},color:'#8892C0',autoSkip:false}},y:{ticks:{font:{size:9},color:'#8892C0',callback:v=>v+'k'},grid:{color:'rgba(255,255,255,0.05)'},min:600}}}});
 ;
   });
 }
