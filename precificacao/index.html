@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Formação de Preço · HR Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header class="hdr">
+  <div>
+    <h1>Formação de Preço · HR Tech</h1>
+    <p>Calculadora comercial · base: Política Comercial Elofy 2025 v5</p>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <span class="badge" id="produtoBadge">Elofy</span>
+    <span id="userBox" class="hide" style="font-size:12px;color:var(--txt-2)">
+      <span id="userEmail" class="mono"></span>
+      <button class="btn ghost" id="btnLogout" style="padding:5px 10px;margin-left:8px">Sair</button>
+    </span>
+  </div>
+</header>
+
+<!-- ====== GATE DE LOGIN ====== -->
+<div id="loginGate" class="hide" style="max-width:440px;margin:60px auto;padding:0 24px">
+  <section class="card">
+    <h2>Acesso restrito</h2>
+    <p style="font-size:13px;color:var(--txt-2);margin-bottom:16px">
+      Esta ferramenta contém dados comerciais sensíveis. Informe seu e-mail
+      corporativo para receber um link de acesso. Apenas e-mails autorizados entram.
+    </p>
+    <div class="field">
+      <label>E-mail corporativo</label>
+      <input type="email" id="loginEmail" placeholder="voce@zucchetti.com" autocomplete="email">
+    </div>
+    <button class="btn" id="btnLogin" style="width:100%">Enviar link de acesso</button>
+    <p id="loginMsg" style="font-size:12px;margin-top:12px"></p>
+  </section>
+</div>
+
+<!-- ====== APP (visível só após login autorizado) ====== -->
+<div id="appRoot" class="hide">
+<nav class="tabs" id="tabs"></nav>
+
+<!-- ====== ELOFY ====== -->
+<main class="wrap" id="painelElofy">
+  <section class="card">
+    <h2>Parâmetros da proposta</h2>
+
+    <div class="field">
+      <label>Cliente</label>
+      <input type="text" id="cliente" placeholder="Nome do cliente / proposta">
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Nº de usuários (licenças)</label>
+        <input type="number" id="usuarios" min="1" value="100">
+      </div>
+      <div class="field">
+        <label>Desconto (%)</label>
+        <input type="number" id="desconto" min="0" max="100" step="0.5" value="0">
+      </div>
+    </div>
+
+    <h3>Módulos</h3>
+    <label class="chk" data-mod><input type="checkbox" id="m_completos">
+      <span class="nm">Completos<small>Metas + Engajamento + Desempenho</small></span></label>
+    <label class="chk" data-mod><input type="checkbox" id="m_desempenho">
+      <span class="nm">Desempenho<small>módulo avulso</small></span></label>
+    <label class="chk" data-mod><input type="checkbox" id="m_engajamento">
+      <span class="nm">Engajamento<small>módulo avulso</small></span></label>
+    <label class="chk" data-mod><input type="checkbox" id="m_metas">
+      <span class="nm">Metas<small>módulo avulso</small></span></label>
+    <label class="chk" data-mod><input type="checkbox" id="m_rv">
+      <span class="nm">RV — Remuneração Variável<small>+15% sobre Metas/Completos</small></span></label>
+    <label class="chk" data-mod><input type="checkbox" id="m_ia">
+      <span class="nm">IA<small>+5% sobre Desempenho/Completos + pack de tokens</small></span></label>
+
+    <div id="iaBox" class="hide">
+      <h3>IA — estimativa de tokens</h3>
+      <div class="row">
+        <div class="field"><label>AVDs / 12 meses</label><input type="number" id="avds" min="0" value="0"></div>
+        <div class="field"><label>PDIs / 12 meses</label><input type="number" id="pdis" min="0" value="0"></div>
+      </div>
+      <div class="field">
+        <label>Preço do pack de tokens</label>
+        <select id="tokenMode"><option value="piso">Piso (mínimo)</option><option value="ideal">Ideal</option></select>
+      </div>
+    </div>
+
+    <h3>People Analytics (QuickSight)</h3>
+    <div class="field">
+      <select id="peopleAnalytics">
+        <option value="">Não incluir</option>
+        <option value="Smart">Smart (Baixa)</option>
+        <option value="Standard">Standard (Média)</option>
+        <option value="Premium">Premium (Alta)</option>
+      </select>
+    </div>
+
+    <h3>Serviços não recorrentes (NR)</h3>
+    <p style="font-size:11px;color:var(--txt-3);margin-bottom:10px">Implantação é calculada automaticamente por escopo × porte. Demais serviços: informe as horas.</p>
+    <div class="row">
+      <div class="field"><label>Consultoria (h)</label><input type="number" id="s_consultoria" min="0" value="0"></div>
+      <div class="field"><label>Endomarketing (h)</label><input type="number" id="s_endomarketing" min="0" value="0"></div>
+      <div class="field"><label>Desenvolvimento (h)</label><input type="number" id="s_desenvolvimento" min="0" value="0"></div>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn" id="btnSalvar">Salvar proposta</button>
+      <button class="btn ghost" id="btnCopiar">Copiar resumo</button>
+      <button class="btn ghost" id="btnLimpar">Limpar</button>
+    </div>
+    <p id="salvarMsg" style="font-size:12px;margin-top:10px"></p>
+  </section>
+
+  <section class="card">
+    <h2>Resultado</h2>
+    <div class="kpis" id="kpis"></div>
+    <div class="alerts" id="alertas"></div>
+    <div id="tabela"></div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:22px">
+      <h2 style="margin:0">Propostas salvas</h2>
+      <button class="btn ghost" id="btnHistorico" style="padding:6px 12px">Atualizar</button>
+    </div>
+    <div id="historico" style="margin-top:12px"></div>
+  </section>
+</main>
+
+<!-- ====== EM BREVE (In Recruiting / Eggup) ====== -->
+<main class="wrap hide" id="painelSoon">
+  <section class="card" style="grid-column:1/-1">
+    <div class="soon-box">
+      <p style="font-size:16px"><b id="soonNome">Produto</b> — em breve</p>
+      <p style="margin-top:8px">A precificação deste produto ainda não foi cadastrada.<br>
+      Envie a tabela de preços e as regras para habilitar a calculadora.</p>
+    </div>
+  </section>
+</main>
+</div><!-- /appRoot -->
+
+<p class="foot">HR Tech · Formação de Preço · uso interno · base Política Comercial Elofy 2025 v5</p>
+
+<!-- Supabase JS (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Conexão (chave pública). Os DADOS DE PREÇO ficam no Supabase, protegidos
+     por login + RLS, e são carregados só após autenticação autorizada. -->
+<script src="data/supabase.js"></script>
+<!-- Motor + auth + UI -->
+<script src="src/engine.js"></script>
+<script src="src/auth.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>

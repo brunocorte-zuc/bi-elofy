@@ -1,0 +1,108 @@
+/* ============================================================================
+ *  Formação de Preço · Elofy — estilos (tema claro, leve)
+ * ========================================================================== */
+:root{
+  --bg:#F6F7FB; --bg-2:#EEF0F7;
+  --card:#FFFFFF; --surf:#F8F9FC; --hover:#F1F2F9;
+  --border:#E6E8F0; --border-md:#D7DAE8;
+  --accent:#7C6FFF; --accent-2:#6457E6; --accent-soft:#F0EEFF;
+  --gold:#B45309; --gold-bg:#FEF6E7;
+  --green:#15803D; --green-bg:#E9F8EF;
+  --red:#DC2626; --red-bg:#FDECEC;
+  --txt:#1C2030; --txt-2:#5A6178; --txt-3:#9AA0B4;
+  --shadow:0 1px 2px rgba(20,24,40,.04), 0 4px 16px rgba(20,24,40,.05);
+  --shadow-sm:0 1px 2px rgba(20,24,40,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',system-ui,sans-serif;background:var(--bg);color:var(--txt);
+  font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+
+/* Header */
+.hdr{background:var(--card);border-bottom:1px solid var(--border);
+  padding:16px 28px;display:flex;justify-content:space-between;align-items:center;
+  flex-wrap:wrap;gap:12px}
+.hdr h1{font-size:17px;font-weight:600;letter-spacing:-.01em}
+.hdr p{font-size:13px;color:var(--txt-3);margin-top:2px}
+.badge{font-size:11px;font-weight:600;color:var(--accent-2);border:1px solid var(--border-md);
+  background:var(--accent-soft);padding:5px 12px;border-radius:99px}
+
+/* Abas */
+.tabs{display:flex;gap:6px;padding:16px 28px 0;flex-wrap:wrap}
+.tab{font-size:13px;font-weight:600;color:var(--txt-2);background:transparent;
+  border:1px solid transparent;border-radius:9px;padding:8px 16px;cursor:pointer}
+.tab:hover{background:var(--hover)}
+.tab.on{color:var(--accent-2);background:var(--accent-soft)}
+
+.wrap{max-width:1240px;margin:0 auto;padding:24px 28px;display:grid;
+  grid-template-columns:400px 1fr;gap:24px;align-items:start}
+@media(max-width:920px){.wrap{grid-template-columns:1fr}}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;
+  padding:22px;box-shadow:var(--shadow)}
+.card h2{font-size:12px;font-weight:700;color:var(--txt-3);text-transform:uppercase;
+  letter-spacing:.07em;margin-bottom:16px}
+.card h3{font-size:11px;font-weight:700;color:var(--txt-3);text-transform:uppercase;
+  letter-spacing:.06em;margin:20px 0 10px}
+
+/* Form */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:500;color:var(--txt-2);margin-bottom:6px}
+.field input,.field select{width:100%;background:var(--surf);border:1px solid var(--border-md);
+  border-radius:10px;padding:10px 13px;color:var(--txt);font-family:inherit;font-size:14px;
+  transition:border-color .12s, box-shadow .12s}
+.field input:focus,.field select:focus{outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-soft);background:#fff}
+.row{display:flex;gap:12px}.row>*{flex:1}
+
+/* Checkboxes módulos */
+.chk{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:11px;
+  border:1px solid var(--border);background:var(--surf);margin-bottom:8px;cursor:pointer;
+  transition:.14s}
+.chk:hover{background:var(--hover);border-color:var(--border-md)}
+.chk.on{border-color:var(--accent);background:var(--accent-soft)}
+.chk input{accent-color:var(--accent);width:17px;height:17px;flex:none}
+.chk .nm{flex:1;font-weight:500}
+.chk .nm small{display:block;color:var(--txt-3);font-size:11px;font-weight:400;margin-top:1px}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+@media(max-width:560px){.kpis{grid-template-columns:1fr 1fr}}
+.kpi{background:var(--surf);border:1px solid var(--border);border-radius:13px;padding:15px}
+.kpi .lbl{font-size:10px;font-weight:600;color:var(--txt-3);text-transform:uppercase;letter-spacing:.05em}
+.kpi .val{font-size:21px;font-weight:700;margin-top:5px;letter-spacing:-.02em}
+.kpi .sub{font-size:11px;color:var(--txt-3);margin-top:3px}
+.kpi:first-child{background:linear-gradient(135deg,#7C6FFF,#6457E6);border:none}
+.kpi:first-child .lbl{color:rgba(255,255,255,.8)}
+.kpi:first-child .val{color:#fff}
+.kpi:first-child .sub{color:rgba(255,255,255,.7)}
+
+/* Tabela */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:right;padding:9px 10px;border-bottom:1px solid var(--border)}
+th:first-child,td:first-child{text-align:left}
+th{font-size:10px;color:var(--txt-3);text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+tbody tr:hover{background:var(--surf)}
+.sub-row td{color:var(--txt-2)}
+.tot-row td{font-weight:700;color:var(--txt);border-top:1px solid var(--border-md)}
+
+/* Pílulas / alertas */
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;
+  padding:6px 12px;border-radius:99px;border:1px solid transparent}
+.pill.ok{color:var(--green);background:var(--green-bg);border-color:#C9EDD6}
+.pill.warn{color:var(--gold);background:var(--gold-bg);border-color:#F6E4BD}
+.pill.bad{color:var(--red);background:var(--red-bg);border-color:#F7CFCF}
+.alerts{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+
+/* Botões */
+.btn{font-family:inherit;font-size:13px;font-weight:600;color:#fff;background:var(--accent);
+  border:none;border-radius:10px;padding:10px 17px;cursor:pointer;transition:.14s;
+  box-shadow:var(--shadow-sm)}
+.btn:hover{background:var(--accent-2)}
+.btn.ghost{background:#fff;border:1px solid var(--border-md);color:var(--txt-2);box-shadow:none}
+.btn.ghost:hover{background:var(--hover);color:var(--txt)}
+.toolbar{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.foot{color:var(--txt-3);font-size:11px;text-align:center;padding:28px}
+.hide{display:none}
+.soon-box{padding:48px;text-align:center;color:var(--txt-3)}
+.soon-box b{color:var(--txt-2)}
