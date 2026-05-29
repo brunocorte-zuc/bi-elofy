@@ -1,5 +1,5 @@
 /* ============================================================================
- *  INTERFACE DO SIMULADOR DE PROPOSTA  ·  HR TECH
+ *  INTERFACE DA CALCULADORA DE PREÇO  ·  ELOFY
  *  ----------------------------------------------------------------------------
  *  Liga os dados (data/*.js) + o motor (engine.js) à tela.
  *  Não contém regra de preço — apenas leitura de inputs e renderização.
@@ -7,178 +7,201 @@
 (function () {
   "use strict";
 
-  const CATALOGO = window.PRECIFICACAO_CATALOGO || [];
-  const PARAMS   = window.PRECIFICACAO_PARAMS   || {};
-  const ALCADA   = window.PRECIFICACAO_ALCADA   || [];
-  const ctx = { catalogo: CATALOGO, params: PARAMS, alcada: ALCADA };
+  const ctx = {
+    tabela:          window.ELOFY_TABELA_PRECOS   || [],
+    params:          window.ELOFY_PARAMS          || {},
+    autonomia:       window.ELOFY_AUTONOMIA       || [],
+    peopleAnalytics: window.ELOFY_PEOPLE_ANALYTICS|| [],
+    aiPacks:         window.ELOFY_AI_PACKS        || [],
+    servicos:        window.ELOFY_SERVICOS        || {},
+  };
+  const PRODUTOS = window.ELOFY_PRODUTOS || [{ id: "elofy", nome: "Elofy", ativo: true }];
 
   const $  = s => document.querySelector(s);
-  const brl = v => new Intl.NumberFormat("pt-BR", { style: "currency", currency: PARAMS.moeda || "BRL" }).format(v || 0);
+  const brl = v => new Intl.NumberFormat("pt-BR", { style: "currency", currency: ctx.params.moeda || "BRL" }).format(v || 0);
   const pct = v => (v * 100).toFixed(1).replace(".", ",") + "%";
+  const num = v => new Intl.NumberFormat("pt-BR").format(v || 0);
 
-  /* ---- Render do catálogo (checkboxes agrupados por categoria) ---- */
-  function renderCatalogo() {
-    const box = $("#modulos");
-    const cats = [...new Set(CATALOGO.filter(m => m.ativo !== false).map(m => m.categoria))];
-    box.innerHTML = cats.map(cat => {
-      const itens = CATALOGO.filter(m => m.categoria === cat && m.ativo !== false).map(m => {
-        const u = m.cobranca === "por_colaborador" ? "/colab/mês"
-                : m.cobranca === "fixo_mensal"     ? "/mês"
-                : " único";
-        return `<label class="mod" data-id="${m.id}">
-          <input type="checkbox" value="${m.id}">
-          <span class="nm">${m.nome}<small>${rotuloCobranca(m.cobranca)}</small></span>
-          <span class="pr mono">${brl(m.preco_lista)}${u}</span>
-        </label>`;
-      }).join("");
-      return `<div class="cat-h">${cat}</div>${itens}`;
-    }).join("");
-
-    box.querySelectorAll(".mod input").forEach(cb => {
-      cb.addEventListener("change", () => {
-        cb.closest(".mod").classList.toggle("on", cb.checked);
-        recalc();
-      });
-    });
+  /* ---- Abas de produto ---- */
+  function renderTabs() {
+    $("#tabs").innerHTML = PRODUTOS.map(p =>
+      `<button class="tab ${p.id === "elofy" ? "on" : ""} ${p.ativo ? "" : "soon"}" data-prod="${p.id}">
+        ${p.nome}${p.ativo ? "" : '<span class="mini">em breve</span>'}</button>`).join("");
+    $("#tabs").querySelectorAll(".tab").forEach(t =>
+      t.addEventListener("click", () => selecionarProduto(t.dataset.prod)));
   }
 
-  function rotuloCobranca(c) {
-    return c === "por_colaborador" ? "Recorrente · por colaborador"
-         : c === "fixo_mensal"     ? "Recorrente · fixo"
-         : "Cobrança única (setup)";
+  function selecionarProduto(id) {
+    const prod = PRODUTOS.find(p => p.id === id);
+    $("#tabs").querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.prod === id));
+    $("#produtoBadge").textContent = prod ? prod.nome : id;
+    const elofy = id === "elofy";
+    $("#painelElofy").classList.toggle("hide", !elofy);
+    $("#painelSoon").classList.toggle("hide", elofy);
+    if (!elofy) $("#soonNome").textContent = prod ? prod.nome : id;
   }
 
+  /* ---- Leitura dos inputs ---- */
   function lerInput() {
     return {
-      colaboradores: $("#colaboradores").value,
-      prazoMeses:    $("#prazo").value,
-      descontoPct:     (Number($("#desconto").value) || 0) / 100,
-      descontoSetupPct:(Number($("#descontoSetup").value) || 0) / 100,
-      modulosIds: [...document.querySelectorAll(".mod input:checked")].map(i => i.value),
+      usuarios: $("#usuarios").value,
+      descontoPct: (Number($("#desconto").value) || 0) / 100,
+      sel: {
+        completos:   $("#m_completos").checked,
+        desempenho:  $("#m_desempenho").checked,
+        engajamento: $("#m_engajamento").checked,
+        metas:       $("#m_metas").checked,
+        rv:          $("#m_rv").checked,
+        ia:          $("#m_ia").checked,
+        peopleAnalytics: $("#peopleAnalytics").value,
+        avds: Number($("#avds").value) || 0,
+        pdis: Number($("#pdis").value) || 0,
+        tokenMode: $("#tokenMode").value,
+      },
+      servicosAvulsosHoras: {
+        consultoria:     $("#s_consultoria").value,
+        endomarketing:   $("#s_endomarketing").value,
+        desenvolvimento: $("#s_desenvolvimento").value,
+      },
     };
   }
 
   /* ---- Cálculo + render ---- */
   function recalc() {
+    sincronizaUI();
     const r = window.PricingEngine.simular(lerInput(), ctx);
     renderKpis(r);
     renderAlertas(r);
     renderTabela(r);
   }
 
+  function sincronizaUI() {
+    $("#iaBox").classList.toggle("hide", !$("#m_ia").checked);
+    document.querySelectorAll("[data-mod]").forEach(l =>
+      l.classList.toggle("on", l.querySelector("input").checked));
+  }
+
   function renderKpis(r) {
+    const fxTxt = r.faixa ? `${r.faixa.porte} · ${num(r.faixa.de)}–${r.faixa.ate === Infinity ? "∞" : num(r.faixa.ate)}` : "—";
     $("#kpis").innerHTML = `
-      <div class="kpi"><div class="lbl">MRR (mensal)</div>
-        <div class="val mono">${brl(r.mrr.final)}</div>
-        <div class="sub">lista ${brl(r.mrr.lista)} · desc. ${pct(r.descontoMrr)}</div></div>
-      <div class="kpi"><div class="lbl">Setup (único)</div>
-        <div class="val mono">${brl(r.setup.final)}</div>
-        <div class="sub">implantação / serviços</div></div>
-      <div class="kpi"><div class="lbl">TCV (${r.prazo}m)</div>
-        <div class="val mono">${brl(r.tcv)}</div>
-        <div class="sub">${r.prazo}× MRR + setup</div></div>
-      <div class="kpi"><div class="lbl">Margem MRR</div>
-        <div class="val mono ${r.mrr.margemPct < (PARAMS.margem_minima||0) ? "neg":"pos"}">${pct(r.mrr.margemPct)}</div>
-        <div class="sub">alvo ${pct(PARAMS.margem_alvo||0)} · mín ${pct(PARAMS.margem_minima||0)}</div></div>
-      <div class="kpi"><div class="lbl">Margem Setup</div>
-        <div class="val mono">${r.setup.final ? pct(r.setup.margemPct) : "—"}</div>
-        <div class="sub">contribuição</div></div>
-      <div class="kpi"><div class="lbl">Colaboradores</div>
-        <div class="val mono">${r.colaboradores}</div>
-        <div class="sub">base da simulação</div></div>`;
+      <div class="kpi"><div class="lbl">Mensalidade (c/ imposto)</div>
+        <div class="val mono">${brl(r.mrr.comImposto)}</div>
+        <div class="sub">${brl(r.mrr.semImposto)} s/ imposto</div></div>
+      <div class="kpi"><div class="lbl">Implantação + NR</div>
+        <div class="val mono">${brl(r.nr.comImposto)}</div>
+        <div class="sub">único · ${r.implantacao.horas}h implantação</div></div>
+      <div class="kpi"><div class="lbl">Valor global</div>
+        <div class="val mono">${brl(r.global.comImposto)}</div>
+        <div class="sub">1ª mensalidade + NR</div></div>
+      <div class="kpi"><div class="lbl">Preço / usuário</div>
+        <div class="val mono">${brl(r.mrr.unit)}</div>
+        <div class="sub">c/ desconto · s/ imposto</div></div>
+      <div class="kpi"><div class="lbl">Faixa de preço</div>
+        <div class="val mono" style="font-size:16px">${fxTxt}</div>
+        <div class="sub">${r.usuarios} usuários</div></div>
+      <div class="kpi"><div class="lbl">Desconto</div>
+        <div class="val mono">${pct(r.desconto.descontoPct)}</div>
+        <div class="sub">${r.desconto.papel ? r.desconto.papel.papel : (r.desconto.descontoPct ? "acima da autonomia" : "sem desconto")}</div></div>`;
   }
 
   function renderAlertas(r) {
     const out = [];
-    if (r.alcada) {
-      const top = r.descontoMrr <= (ALCADA[0]?.desconto_max_pct ?? 0);
-      out.push(`<span class="pill ${top ? "ok" : "warn"}">
-        ✓ Aprovação: ${r.alcada.papel} (até ${pct(r.alcada.desconto_max_pct)})</span>`);
-    } else {
-      out.push(`<span class="pill bad">✕ Desconto ${pct(r.descontoMrr)} excede toda a alçada — requer exceção</span>`);
-    }
-    if (r.alertaMargem) out.push(`<span class="pill bad">⚠ Margem MRR abaixo do mínimo (${pct(PARAMS.margem_minima||0)})</span>`);
-    if (r.alertaPiso)   out.push(`<span class="pill warn">⚠ Há item abaixo do piso de preço</span>`);
-    if (!r.alertaMargem && !r.alertaPiso && r.alcada && r.linhas.length)
-      out.push(`<span class="pill ok">✓ Proposta dentro das políticas</span>`);
+    if (r.desconto.excedeAutonomia)
+      out.push(`<span class="pill bad">✕ Desconto ${pct(r.desconto.descontoPct)} excede a autonomia máxima — requer exceção</span>`);
+    else if (r.desconto.papel)
+      out.push(`<span class="pill warn">Aprovação: ${r.desconto.papel.papel} (até ${pct(r.desconto.papel.desconto_max_pct)})</span>`);
+    if (r.pack)
+      out.push(`<span class="pill ok">IA: pack ${r.pack.pack} · ${num(r.tokens)} tokens</span>`);
+    if (!anyModuloSelecionado(r))
+      out.push(`<span class="pill warn">Selecione ao menos um módulo</span>`);
     $("#alertas").innerHTML = out.join("");
   }
 
+  function anyModuloSelecionado(r) {
+    const d = r.detalheUnit || {};
+    return (d.completos || d.desempenho || d.engajamento || d.metas) > 0;
+  }
+
   function renderTabela(r) {
-    if (!r.linhas.length) {
-      $("#tabela").innerHTML = `<p style="color:var(--txt-3);padding:8px 0">Selecione módulos para montar a proposta.</p>`;
-      return;
-    }
-    const linha = l => `<tr>
-      <td>${l.nome} <span class="tag">${l.cobranca === "unica" ? "único" : "rec."}</span>${l.abaixoPiso ? ' <span class="pill bad" style="padding:1px 7px">piso</span>' : ""}</td>
-      <td class="mono">${brl(l.lista)}</td>
-      <td class="mono">${l.desconto ? pct(l.desconto) : "—"}</td>
-      <td class="mono">${brl(l.final)}</td>
-      <td class="mono ${l.margemPct < (PARAMS.margem_minima||0) ? "neg":""}">${pct(l.margemPct)}</td></tr>`;
+    const d = r.detalheUnit || {};
+    const u = r.usuarios || 0;
+    const linhaUnit = (nome, unit) => unit ? `<tr class="sub-row">
+      <td>${nome}</td><td class="mono">${brl(unit)}</td><td class="mono">${brl(unit * u)}</td></tr>` : "";
 
-    const bloco = (titulo, linhas, tot) => linhas.length ? `
-      <tr><td colspan="5" class="cat-h" style="padding-top:14px">${titulo}</td></tr>
-      ${linhas.map(linha).join("")}
-      <tr style="border-top:1px solid var(--border-md)">
-        <td><b>Subtotal ${titulo}</b></td>
-        <td class="mono">${brl(tot.lista)}</td>
-        <td class="mono">${tot.lista ? pct(1 - tot.final/tot.lista) : "—"}</td>
-        <td class="mono"><b>${brl(tot.final)}</b></td>
-        <td class="mono">${pct(tot.margemPct)}</td></tr>` : "";
+    const recorrente = `
+      <tr><th>Recorrente (mensal)</th><th>Unit. (usuário)</th><th>Total (×${u})</th></tr>
+      ${linhaUnit("Completos", d.completos)}
+      ${linhaUnit("Desempenho", d.desempenho)}
+      ${linhaUnit("Engajamento", d.engajamento)}
+      ${linhaUnit("Metas", d.metas)}
+      ${linhaUnit("RV (+15%)", d.rv)}
+      ${linhaUnit("IA (+5%)", d.ia)}
+      ${linhaUnit("IA — tokens", d.iaTokens)}
+      ${linhaUnit("People Analytics", d.peopleAnalytics)}
+      <tr class="sub-row"><td>Desconto aplicado</td><td class="mono">${pct(r.desconto.descontoPct)}</td>
+        <td class="mono">−${brl((r.unitSemImp - r.unitComDesconto) * u)}</td></tr>
+      <tr class="tot-row"><td>Subtotal s/ imposto</td><td></td><td class="mono">${brl(r.mrr.semImposto)}</td></tr>
+      <tr class="tot-row"><td>Mensalidade c/ imposto (5,65%)</td><td></td><td class="mono">${brl(r.mrr.comImposto)}</td></tr>`;
 
-    $("#tabela").innerHTML = `<table>
-      <thead><tr><th>Item</th><th>Lista</th><th>Desc.</th><th>Final</th><th>Margem</th></tr></thead>
-      <tbody>
-        ${bloco("Recorrente / mês", r.recorrentes, r.mrr)}
-        ${bloco("Cobrança única", r.unicos, r.setup)}
-      </tbody></table>`;
+    const linhaNR = (nome, horas, val) => val ? `<tr class="sub-row">
+      <td>${nome}</td><td class="mono">${horas}h</td><td class="mono">${brl(val)}</td></tr>` : "";
+    const nr = `
+      <tr><th>Não recorrente (único)</th><th>Horas</th><th>Total c/ imp.</th></tr>
+      ${linhaNR(`Implantação (${r.implantacao.porte})`, r.implantacao.horas, r.implantacao.comImposto)}
+      ${r.avulsos.map(a => linhaNR(a.nome, a.horas, a.comImposto)).join("")}
+      <tr class="tot-row"><td>Total NR c/ imposto</td><td></td><td class="mono">${brl(r.nr.comImposto)}</td></tr>`;
+
+    $("#tabela").innerHTML = `<table><tbody>${recorrente}
+      <tr><td colspan="3" style="height:10px"></td></tr>${nr}</tbody></table>`;
   }
 
   /* ---- Resumo copiável ---- */
   function copiarResumo() {
     const r = window.PricingEngine.simular(lerInput(), ctx);
     const cliente = $("#cliente").value || "(cliente)";
-    const itens = r.linhas.map(l => `  • ${l.nome}: ${brl(l.final)}${l.cobranca==="unica"?" (único)":"/mês"}`).join("\n");
+    const mods = [];
+    const d = r.detalheUnit;
+    if (d.completos) mods.push("Completos");
+    if (d.desempenho) mods.push("Desempenho");
+    if (d.engajamento) mods.push("Engajamento");
+    if (d.metas) mods.push("Metas");
+    if (d.rv) mods.push("RV");
+    if (d.ia) mods.push("IA");
+    if (d.peopleAnalytics) mods.push("People Analytics");
     const txt =
-`PROPOSTA — ${cliente}
-Colaboradores: ${r.colaboradores} · Prazo: ${r.prazo} meses
-${itens}
+`PROPOSTA ELOFY — ${cliente}
+Usuários: ${r.usuarios} (faixa ${r.faixa ? r.faixa.porte : "-"})
+Módulos: ${mods.join(", ") || "—"}
+Desconto: ${pct(r.desconto.descontoPct)} — ${r.desconto.papel ? r.desconto.papel.papel : "EXCEÇÃO (acima da autonomia)"}
 -----------------------------
-MRR: ${brl(r.mrr.final)}/mês  (desc. ${pct(r.descontoMrr)})
-Setup: ${brl(r.setup.final)}
-TCV (${r.prazo}m): ${brl(r.tcv)}
-Margem MRR: ${pct(r.mrr.margemPct)}
-Aprovação: ${r.alcada ? r.alcada.papel : "EXCEÇÃO (acima da alçada)"}`;
-    navigator.clipboard.writeText(txt).then(
-      () => flash("Resumo copiado!"),
-      () => { window.prompt("Copie o resumo:", txt); }
-    );
+Mensalidade: ${brl(r.mrr.comImposto)}/mês (c/ imposto)
+Implantação + NR: ${brl(r.nr.comImposto)} (único)
+Valor global: ${brl(r.global.comImposto)}`;
+    navigator.clipboard.writeText(txt).then(() => flash("Copiado!"), () => window.prompt("Copie:", txt));
   }
-
-  function flash(msg) {
-    const b = $("#btnCopiar"); const o = b.textContent;
-    b.textContent = msg; setTimeout(() => (b.textContent = o), 1600);
-  }
+  function flash(msg) { const b = $("#btnCopiar"), o = b.textContent; b.textContent = msg; setTimeout(() => (b.textContent = o), 1500); }
 
   /* ---- Init ---- */
   function init() {
-    if (!CATALOGO.length) {
+    if (!ctx.tabela.length) {
       document.body.insertAdjacentHTML("afterbegin",
-        '<p style="color:#F05252;padding:20px">Erro: catálogo não carregado. Verifique data/catalogo.js</p>');
+        '<p style="color:#F05252;padding:20px">Erro: tabela de preços não carregada (data/tabela-precos.js).</p>');
       return;
     }
-    $("#prazo").value = PARAMS.prazo_padrao_meses || 12;
-    renderCatalogo();
-    ["#colaboradores","#prazo","#desconto","#descontoSetup"].forEach(s =>
-      $(s).addEventListener("input", recalc));
+    renderTabs();
+    [
+      "#usuarios","#desconto","#avds","#pdis","#tokenMode","#peopleAnalytics",
+      "#s_consultoria","#s_endomarketing","#s_desenvolvimento",
+      "#m_completos","#m_desempenho","#m_engajamento","#m_metas","#m_rv","#m_ia",
+    ].forEach(s => { const el = $(s); if (el) el.addEventListener("input", recalc); });
     $("#btnCopiar").addEventListener("click", copiarResumo);
     $("#btnLimpar").addEventListener("click", () => {
-      document.querySelectorAll(".mod input:checked").forEach(i => { i.checked = false; i.closest(".mod").classList.remove("on"); });
-      $("#desconto").value = 0; $("#descontoSetup").value = 0;
+      document.querySelectorAll('#painelElofy input[type=checkbox]').forEach(c => c.checked = false);
+      ["#desconto","#avds","#pdis","#s_consultoria","#s_endomarketing","#s_desenvolvimento"].forEach(s => $(s).value = 0);
+      $("#peopleAnalytics").value = ""; $("#cliente").value = "";
       recalc();
     });
     recalc();
   }
-
   document.addEventListener("DOMContentLoaded", init);
 })();
