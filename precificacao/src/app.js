@@ -7,15 +7,45 @@
 (function () {
   "use strict";
 
+  // A configuração de preço NÃO vem mais de arquivos estáticos (evita expor
+  // custos/margens num site público). É carregada do Supabase após o login,
+  // somente para usuários autorizados (RPC pricing_config + RLS).
   const ctx = {
-    tabela:          window.ELOFY_TABELA_PRECOS   || [],
-    params:          window.ELOFY_PARAMS          || {},
-    autonomia:       window.ELOFY_AUTONOMIA       || [],
-    peopleAnalytics: window.ELOFY_PEOPLE_ANALYTICS|| [],
-    aiPacks:         window.ELOFY_AI_PACKS        || [],
-    servicos:        window.ELOFY_SERVICOS        || {},
+    tabela: [], params: { moeda: "BRL" }, autonomia: [],
+    peopleAnalytics: [], aiPacks: [], servicos: {},
   };
-  const PRODUTOS = window.ELOFY_PRODUTOS || [{ id: "elofy", nome: "Elofy", ativo: true }];
+  let configCarregada = false;
+  const PRODUTOS = [{ id: "elofy", nome: "Elofy", ativo: true }];
+
+  // Transforma o JSON plano da RPC nas estruturas que o motor espera.
+  function aplicarConfig(cfg) {
+    if (!cfg) return;
+    ctx.tabela = cfg.tabela || [];
+    ctx.aiPacks = cfg.aiPacks || [];
+    ctx.peopleAnalytics = cfg.peopleAnalytics || [];
+    ctx.autonomia = cfg.autonomia || [];
+    ctx.params = Object.assign({ moeda: "BRL" }, cfg.parametros || {});
+
+    // servicoHoras (lista escopo×porte) → estrutura implantacao_horas + portes
+    const horas = { completos: {}, desempenho: {}, engajamento: {}, metas: {} };
+    (cfg.servicoHoras || []).forEach(s => {
+      (horas[s.escopo] = horas[s.escopo] || {})[s.porte] = s.horas;
+    });
+    ctx.servicos = {
+      valor_hora: ctx.params.valor_hora_padrao || 220,
+      implantacao_horas: horas,
+      portes: [
+        { porte: "smart", ate: 100 }, { porte: "standard", ate: 500 },
+        { porte: "premium", ate: 1000 }, { porte: "enterprise", ate: Infinity },
+      ],
+      avulsos: [
+        { id: "consultoria", nome: "Consultoria" },
+        { id: "endomarketing", nome: "Endomarketing" },
+        { id: "desenvolvimento", nome: "Desenvolvimento" },
+      ],
+    };
+    configCarregada = true;
+  }
 
   const $  = s => document.querySelector(s);
   const brl = v => new Intl.NumberFormat("pt-BR", { style: "currency", currency: ctx.params.moeda || "BRL" }).format(v || 0);
@@ -71,6 +101,7 @@
 
   /* ---- Cálculo + render ---- */
   function recalc() {
+    if (!configCarregada) return; // tabela de preços ainda não chegou do banco
     sincronizaUI();
     const r = window.PricingEngine.simular(lerInput(), ctx);
     renderKpis(r);
@@ -257,30 +288,48 @@ Valor global: ${brl(r.global.comImposto)}`;
 
   /* ---- Login gate ---- */
   function aplicarEstadoAuth(st) {
-    const semSupabase = !st.disponivel;
-    // Sem Supabase configurado → libera o app só como calculadora (sem salvar).
-    const liberado = semSupabase || st.autorizado;
+    // Os dados de preço vivem no Supabase. Sem login autorizado não há config,
+    // então o app só abre após autenticação + allowlist.
+    const liberado = !!st.autorizado;
     $("#appRoot").classList.toggle("hide", !liberado);
     $("#loginGate").classList.toggle("hide", liberado);
-    $("#userBox").classList.toggle("hide", !(st.logado));
+    $("#userBox").classList.toggle("hide", !st.logado);
     if (st.logado && st.perfil) $("#userEmail").textContent = st.perfil.email || "";
 
-    // Logado mas NÃO autorizado → mensagem no gate
-    if (st.logado && !st.autorizado && !semSupabase) {
+    if (!st.disponivel) {
+      setMsg($("#loginMsg"),
+        "Serviço indisponível: não foi possível conectar ao Supabase.", "bad");
+    } else if (st.logado && !st.autorizado) {
       setMsg($("#loginMsg"),
         "Seu e-mail não está autorizado. Solicite acesso ao administrador.", "bad");
     }
-    // Botão salvar só faz sentido com persistência
-    const btnSalvar = $("#btnSalvar");
-    if (btnSalvar) btnSalvar.classList.toggle("hide", !liberado || semSupabase);
-    if (liberado && st.autorizado) carregarHistorico();
+
+    if (liberado) iniciarSessaoAutorizada();
+  }
+
+  // Carrega a config do banco (uma vez) e habilita a calculadora + histórico.
+  async function iniciarSessaoAutorizada() {
+    if (configCarregada) { recalc(); carregarHistorico(); return; }
+    const store = window.PricingStore;
+    try {
+      const cfg = await store.carregarConfig();
+      aplicarConfig(cfg);
+      renderTabs();
+      recalc();
+      carregarHistorico();
+    } catch (e) {
+      $("#tabela").innerHTML =
+        `<p class="pill bad">Erro ao carregar tabela de preços: ${escapeHtml(e.message || String(e))}</p>`;
+    }
   }
 
   function ligarLogin() {
     const store = window.PricingStore;
     if (!store) {
-      // auth.js não carregou → app funciona como calculadora pura.
-      aplicarEstadoAuth({ disponivel: false, logado: false, autorizado: false, perfil: null });
+      // auth.js não carregou → sem dados de preço, app não pode operar.
+      $("#appRoot").classList.add("hide");
+      $("#loginGate").classList.remove("hide");
+      setMsg($("#loginMsg"), "Serviço indisponível (falha ao carregar o módulo de acesso).", "bad");
       return;
     }
     store.onChange(aplicarEstadoAuth);
@@ -301,15 +350,9 @@ Valor global: ${brl(r.global.comImposto)}`;
 
   /* ---- Init ---- */
   function init() {
-    if (!ctx.tabela.length) {
-      document.body.insertAdjacentHTML("afterbegin",
-        '<p style="color:#F05252;padding:20px">Erro: tabela de preços não carregada (data/tabela-precos.js).</p>');
-      return;
-    }
     ligarLogin();
     $("#btnSalvar").addEventListener("click", salvarProposta);
     $("#btnHistorico").addEventListener("click", carregarHistorico);
-    renderTabs();
     [
       "#usuarios","#desconto","#avds","#pdis","#tokenMode","#peopleAnalytics",
       "#s_consultoria","#s_endomarketing","#s_desenvolvimento",
@@ -322,7 +365,6 @@ Valor global: ${brl(r.global.comImposto)}`;
       $("#peopleAnalytics").value = ""; $("#cliente").value = "";
       recalc();
     });
-    recalc();
   }
   document.addEventListener("DOMContentLoaded", init);
 })();

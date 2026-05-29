@@ -90,11 +90,21 @@
     return data || [];
   }
 
+  // Toda a configuração de preço (tabela, packs, PA, serviços, autonomia,
+  // parâmetros) — só retorna para usuário autorizado. Vem do banco, nunca
+  // do código estático, para não expor custos/margens em site público.
+  async function carregarConfig() {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("pricing_config");
+    if (error) throw error;
+    return data;
+  }
+
   global.PricingStore = {
     init, estado, disponivel,
     onChange: cb => { listeners.push(cb); },
     login, logout,
     perfil: () => perfilCache,
-    salvarProposta, listarPropostas,
+    salvarProposta, listarPropostas, carregarConfig,
   };
 })(window);
