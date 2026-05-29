@@ -31,9 +31,11 @@ precificacao/
 │   ├── ai-packs.js         # packs de tokens de IA (aba Pricing AI)
 │   ├── ai-tokens.js        # tokens por AVD/PDI
 │   ├── people-analytics.js # pacotes QuickSight
-│   └── servicos.js         # horas de implantação por escopo × porte
+│   ├── servicos.js         # horas de implantação por escopo × porte
+│   └── supabase.js         # URL + chave pública do Supabase
 └── src/
     ├── engine.js           # motor de cálculo
+    ├── auth.js             # login (magic link) + salvar/listar propostas
     └── app.js              # interface
 ```
 
@@ -85,9 +87,39 @@ com a regra de preço dele. (Aguardando os dados.)
 ## Onde os dados são salvos
 
 - **Tabelas de preço / regras:** no próprio código (`data/`), como na planilha.
-- **Propostas/simulações:** planejado para um schema dedicado `pricing` no
-  Supabase (projeto compartilhado com o BI), com histórico de cliente, valores e
-  aprovação. *(Integração ainda não implementada.)*
+- **Propostas/simulações:** salvas no **Supabase**, schema dedicado **`pricing`**
+  (projeto compartilhado com o BI, mas totalmente isolado das tabelas dele).
+
+### Segurança (feito do jeito certo)
+
+O app é client-side, mas **não expõe dados**:
+
+- O schema `pricing` **não é exposto** à API pública (PostgREST). Ninguém lê as
+  tabelas direto com a chave pública.
+- O acesso acontece **só por 3 funções RPC** (`pricing_salvar_proposta`,
+  `pricing_listar_propostas`, `pricing_meu_perfil`), executáveis apenas pelo
+  papel `authenticated`.
+- Cada RPC valida internamente a **allowlist** (`pricing.usuarios_permitidos`).
+  E-mail fora da lista → acesso negado, mesmo logado.
+- **RLS** ligado em todas as tabelas do schema.
+- **Login por magic link** (Supabase Auth): nenhuma senha é armazenada.
+- A `publishableKey` em `data/supabase.js` é **pública por design** — a
+  segurança não depende dela.
+
+### Configuração necessária no painel Supabase (uma vez)
+
+1. **Auth → Providers → Email**: habilitar (magic link já vem ligado).
+2. **Auth → URL Configuration → Redirect URLs**: adicionar a URL onde o app é
+   hospedado (ex.: `https://SEU-USUARIO.github.io/bi-elofy/precificacao/` e,
+   para testes locais, `http://localhost:*`).
+3. **Autorizar usuários** (no SQL editor):
+   ```sql
+   insert into pricing.usuarios_permitidos (email, papel)
+   values ('fulano@zucchetti.com', 'closer');  -- closer|gestor|diretor|admin
+   ```
+
+> Sem Supabase acessível, o app continua funcionando como **calculadora**
+> (sem salvar/listar propostas).
 
 ---
 
@@ -103,7 +135,8 @@ Abra `index.html` no navegador. Sem instalação nem build.
 ## Pendências
 
 1. Dados de precificação do **In Recruiting** e do **Eggup**.
-2. Integração **Supabase** (schema `pricing`) para salvar propostas.
+2. Configurar **Redirect URLs** no painel Supabase (ver seção de segurança) e
+   autorizar os e-mails do time na allowlist.
 3. Discrepância na planilha: a fórmula do Engajamento (C25) aponta para a coluna
    de Desempenho; o app usa a coluna correta de Engajamento. Confirmar com a
    Controladoria qual é a regra certa.

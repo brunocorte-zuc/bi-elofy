@@ -181,6 +181,121 @@ Valor global: ${brl(r.global.comImposto)}`;
   }
   function flash(msg) { const b = $("#btnCopiar"), o = b.textContent; b.textContent = msg; setTimeout(() => (b.textContent = o), 1500); }
 
+  /* ---- Persistência (Supabase) ---- */
+  let ultimoResultado = null;
+
+  function montarPayload() {
+    const input = lerInput();
+    const r = window.PricingEngine.simular(input, ctx);
+    return {
+      cliente: $("#cliente").value || null,
+      produto: "elofy",
+      usuarios: r.usuarios,
+      descontoPct: r.desconto.descontoPct,
+      mrr: round2(r.mrr.comImposto),
+      nr: round2(r.nr.comImposto),
+      global: round2(r.global.comImposto),
+      aprovacaoPapel: r.desconto.papel ? r.desconto.papel.papel : null,
+      excedeAutonomia: !!r.desconto.excedeAutonomia,
+      entrada: input,
+      resultado: {
+        faixa: r.faixa ? r.faixa.porte : null,
+        unitSemImp: round2(r.unitSemImp),
+        unitComDesconto: round2(r.unitComDesconto),
+        mrr: { semImposto: round2(r.mrr.semImposto), comImposto: round2(r.mrr.comImposto) },
+        nr: { semImposto: round2(r.nr.semImposto), comImposto: round2(r.nr.comImposto) },
+        implantacao: { porte: r.implantacao.porte, horas: r.implantacao.horas },
+        tokens: r.tokens, pack: r.pack ? r.pack.pack : null,
+      },
+    };
+  }
+  function round2(v) { return Math.round((v || 0) * 100) / 100; }
+
+  async function salvarProposta() {
+    const store = window.PricingStore;
+    const msg = $("#salvarMsg");
+    if (!store || !store.estado().autorizado) { setMsg(msg, "Faça login para salvar.", "warn"); return; }
+    try {
+      setMsg(msg, "Salvando…", "");
+      await store.salvarProposta(montarPayload());
+      setMsg(msg, "✓ Proposta salva.", "ok");
+      carregarHistorico();
+    } catch (e) {
+      setMsg(msg, "Erro ao salvar: " + (e.message || e), "bad");
+    }
+  }
+
+  async function carregarHistorico() {
+    const store = window.PricingStore;
+    const box = $("#historico");
+    if (!store || !store.estado().autorizado) { box.innerHTML = ""; return; }
+    try {
+      const rows = await store.listarPropostas(50);
+      if (!rows.length) { box.innerHTML = '<p style="color:var(--txt-3);font-size:13px">Nenhuma proposta salva ainda.</p>'; return; }
+      box.innerHTML = `<table><tbody>
+        <tr><th>Data</th><th>Cliente</th><th>Usuários</th><th>Mensal</th><th>Global</th></tr>
+        ${rows.map(p => `<tr>
+          <td>${new Date(p.criado_em).toLocaleDateString("pt-BR")}</td>
+          <td>${escapeHtml(p.cliente || "—")}</td>
+          <td class="mono">${num(p.usuarios)}</td>
+          <td class="mono">${brl(p.mrr_com_imposto)}</td>
+          <td class="mono">${brl(p.global_com_imposto)}</td></tr>`).join("")}
+      </tbody></table>`;
+    } catch (e) {
+      box.innerHTML = `<p class="pill bad">Erro ao listar: ${escapeHtml(e.message || String(e))}</p>`;
+    }
+  }
+
+  function escapeHtml(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+  function setMsg(el, txt, kind) {
+    el.textContent = txt;
+    el.style.color = kind === "ok" ? "var(--green)" : kind === "bad" ? "var(--red)" : kind === "warn" ? "var(--gold)" : "var(--txt-3)";
+  }
+
+  /* ---- Login gate ---- */
+  function aplicarEstadoAuth(st) {
+    const semSupabase = !st.disponivel;
+    // Sem Supabase configurado → libera o app só como calculadora (sem salvar).
+    const liberado = semSupabase || st.autorizado;
+    $("#appRoot").classList.toggle("hide", !liberado);
+    $("#loginGate").classList.toggle("hide", liberado);
+    $("#userBox").classList.toggle("hide", !(st.logado));
+    if (st.logado && st.perfil) $("#userEmail").textContent = st.perfil.email || "";
+
+    // Logado mas NÃO autorizado → mensagem no gate
+    if (st.logado && !st.autorizado && !semSupabase) {
+      setMsg($("#loginMsg"),
+        "Seu e-mail não está autorizado. Solicite acesso ao administrador.", "bad");
+    }
+    // Botão salvar só faz sentido com persistência
+    const btnSalvar = $("#btnSalvar");
+    if (btnSalvar) btnSalvar.classList.toggle("hide", !liberado || semSupabase);
+    if (liberado && st.autorizado) carregarHistorico();
+  }
+
+  function ligarLogin() {
+    const store = window.PricingStore;
+    if (!store) {
+      // auth.js não carregou → app funciona como calculadora pura.
+      aplicarEstadoAuth({ disponivel: false, logado: false, autorizado: false, perfil: null });
+      return;
+    }
+    store.onChange(aplicarEstadoAuth);
+    $("#btnLogin").addEventListener("click", async () => {
+      const email = $("#loginEmail").value.trim();
+      const msg = $("#loginMsg");
+      if (!email) { setMsg(msg, "Informe seu e-mail.", "warn"); return; }
+      try {
+        setMsg(msg, "Enviando…", "");
+        await store.login(email);
+        setMsg(msg, "✓ Link enviado! Verifique seu e-mail e clique para entrar.", "ok");
+      } catch (e) { setMsg(msg, "Erro: " + (e.message || e), "bad"); }
+    });
+    $("#loginEmail").addEventListener("keydown", e => { if (e.key === "Enter") $("#btnLogin").click(); });
+    $("#btnLogout").addEventListener("click", () => store.logout());
+    store.init();
+  }
+
   /* ---- Init ---- */
   function init() {
     if (!ctx.tabela.length) {
@@ -188,6 +303,9 @@ Valor global: ${brl(r.global.comImposto)}`;
         '<p style="color:#F05252;padding:20px">Erro: tabela de preços não carregada (data/tabela-precos.js).</p>');
       return;
     }
+    ligarLogin();
+    $("#btnSalvar").addEventListener("click", salvarProposta);
+    $("#btnHistorico").addEventListener("click", carregarHistorico);
     renderTabs();
     [
       "#usuarios","#desconto","#avds","#pdis","#tokenMode","#peopleAnalytics",

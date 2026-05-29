@@ -15,9 +15,34 @@
     <h1>Formação de Preço · HR Tech</h1>
     <p>Calculadora comercial · base: Política Comercial Elofy 2025 v5</p>
   </div>
-  <span class="badge" id="produtoBadge">Elofy</span>
+  <div style="display:flex;align-items:center;gap:12px">
+    <span class="badge" id="produtoBadge">Elofy</span>
+    <span id="userBox" class="hide" style="font-size:12px;color:var(--txt-2)">
+      <span id="userEmail" class="mono"></span>
+      <button class="btn ghost" id="btnLogout" style="padding:5px 10px;margin-left:8px">Sair</button>
+    </span>
+  </div>
 </header>
 
+<!-- ====== GATE DE LOGIN ====== -->
+<div id="loginGate" class="hide" style="max-width:440px;margin:60px auto;padding:0 24px">
+  <section class="card">
+    <h2>Acesso restrito</h2>
+    <p style="font-size:13px;color:var(--txt-2);margin-bottom:16px">
+      Esta ferramenta contém dados comerciais sensíveis. Informe seu e-mail
+      corporativo para receber um link de acesso. Apenas e-mails autorizados entram.
+    </p>
+    <div class="field">
+      <label>E-mail corporativo</label>
+      <input type="email" id="loginEmail" placeholder="voce@zucchetti.com" autocomplete="email">
+    </div>
+    <button class="btn" id="btnLogin" style="width:100%">Enviar link de acesso</button>
+    <p id="loginMsg" style="font-size:12px;margin-top:12px"></p>
+  </section>
+</div>
+
+<!-- ====== APP (visível só após login autorizado) ====== -->
+<div id="appRoot" class="hide">
 <nav class="tabs" id="tabs"></nav>
 
 <!-- ====== ELOFY ====== -->
@@ -85,9 +110,11 @@
     </div>
 
     <div class="toolbar">
-      <button class="btn" id="btnCopiar">Copiar resumo</button>
+      <button class="btn" id="btnSalvar">Salvar proposta</button>
+      <button class="btn ghost" id="btnCopiar">Copiar resumo</button>
       <button class="btn ghost" id="btnLimpar">Limpar</button>
     </div>
+    <p id="salvarMsg" style="font-size:12px;margin-top:10px"></p>
   </section>
 
   <section class="card">
@@ -95,6 +122,12 @@
     <div class="kpis" id="kpis"></div>
     <div class="alerts" id="alertas"></div>
     <div id="tabela"></div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:22px">
+      <h2 style="margin:0">Propostas salvas</h2>
+      <button class="btn ghost" id="btnHistorico" style="padding:6px 12px">Atualizar</button>
+    </div>
+    <div id="historico" style="margin-top:12px"></div>
   </section>
 </main>
 
@@ -108,18 +141,23 @@
     </div>
   </section>
 </main>
+</div><!-- /appRoot -->
 
 <p class="foot">HR Tech · Formação de Preço · uso interno · base Política Comercial Elofy 2025 v5</p>
 
-<!-- Dados -->
+<!-- Supabase JS (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Config + dados -->
+<script src="data/supabase.js"></script>
 <script src="data/parametros.js"></script>
 <script src="data/tabela-precos.js"></script>
 <script src="data/ai-packs.js"></script>
 <script src="data/ai-tokens.js"></script>
 <script src="data/people-analytics.js"></script>
 <script src="data/servicos.js"></script>
-<!-- Motor + UI -->
+<!-- Motor + auth + UI -->
 <script src="src/engine.js"></script>
+<script src="src/auth.js"></script>
 <script src="src/app.js"></script>
 </body>
 </html>
