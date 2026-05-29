@@ -36,10 +36,13 @@ window.ELOFY_AUTONOMIA = [
 
 /* ----------------------------------------------------------------------------
  *  PRODUTOS DISPONÍVEIS
- *  Elofy está ativo. In Recruiting e Eggup entram quando os dados chegarem.
+ *  Foco atual: Elofy. In Recruiting e Eggup ficam ocultos (ativo:false) até
+ *  termos os dados de precificação deles. Para reativar, basta ativo:true e
+ *  criar os arquivos de dados correspondentes.
+ *  Obs.: produtos inativos não aparecem na interface.
  * -------------------------------------------------------------------------- */
 window.ELOFY_PRODUTOS = [
   { id: "elofy",        nome: "Elofy",         ativo: true  },
-  { id: "in_recruiting",nome: "In Recruiting", ativo: false }, // dados pendentes
-  { id: "eggup",        nome: "Eggup",         ativo: false }, // dados pendentes
+  { id: "in_recruiting",nome: "In Recruiting", ativo: false }, // fora de escopo por ora
+  { id: "eggup",        nome: "Eggup",         ativo: false }, // fora de escopo por ora
 ];

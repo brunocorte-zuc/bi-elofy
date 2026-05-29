@@ -24,9 +24,12 @@
 
   /* ---- Abas de produto ---- */
   function renderTabs() {
-    $("#tabs").innerHTML = PRODUTOS.map(p =>
-      `<button class="tab ${p.id === "elofy" ? "on" : ""} ${p.ativo ? "" : "soon"}" data-prod="${p.id}">
-        ${p.nome}${p.ativo ? "" : '<span class="mini">em breve</span>'}</button>`).join("");
+    // Mostra apenas produtos ativos. Com um único ativo, oculta a barra de abas.
+    const ativos = PRODUTOS.filter(p => p.ativo);
+    if (ativos.length <= 1) { $("#tabs").classList.add("hide"); return; }
+    $("#tabs").classList.remove("hide");
+    $("#tabs").innerHTML = ativos.map((p, i) =>
+      `<button class="tab ${i === 0 ? "on" : ""}" data-prod="${p.id}">${p.nome}</button>`).join("");
     $("#tabs").querySelectorAll(".tab").forEach(t =>
       t.addEventListener("click", () => selecionarProduto(t.dataset.prod)));
   }
