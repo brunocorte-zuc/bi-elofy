@@ -51,6 +51,15 @@
     <h2>Parâmetros da proposta</h2>
 
     <div class="field">
+      <label>Oportunidade do Bitrix</label>
+      <div class="bitrix-search">
+        <input type="text" id="bitrixBusca" placeholder="Buscar negócio por nome, empresa ou ID…" autocomplete="off">
+        <div id="bitrixResultados" class="bitrix-results hide"></div>
+      </div>
+      <div id="bitrixVinculo" class="bitrix-link hide"></div>
+    </div>
+
+    <div class="field">
       <label>Cliente</label>
       <input type="text" id="cliente" placeholder="Nome do cliente / proposta">
     </div>
@@ -89,6 +98,7 @@
         <label>Preço do pack de tokens</label>
         <select id="tokenMode"><option value="piso">Piso (mínimo)</option><option value="ideal">Ideal</option></select>
       </div>
+      <div id="tokenSignal" class="token-signal hide"></div>
     </div>
 
     <h3>People Analytics (QuickSight)</h3>

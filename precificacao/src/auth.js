@@ -78,6 +78,7 @@
       p_nr_com_imposto: p.nr, p_global_com_imposto: p.global,
       p_aprovacao_papel: p.aprovacaoPapel, p_excede_autonomia: p.excedeAutonomia,
       p_entrada: p.entrada, p_resultado: p.resultado,
+      p_bitrix_id: p.bitrixId, p_bitrix_nome: p.bitrixNome,
     });
     if (error) throw error;
     return data; // uuid
@@ -100,11 +101,21 @@
     return data;
   }
 
+  // Busca negócios do Bitrix (via public.negocios, alimentada pelo n8n).
+  async function buscarNegocios(busca, limit) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("pricing_buscar_negocios", {
+      p_busca: busca, p_limit: limit || 20,
+    });
+    if (error) throw error;
+    return data || [];
+  }
+
   global.PricingStore = {
     init, estado, disponivel,
     onChange: cb => { listeners.push(cb); },
     login, logout,
     perfil: () => perfilCache,
-    salvarProposta, listarPropostas, carregarConfig,
+    salvarProposta, listarPropostas, carregarConfig, buscarNegocios,
   };
 })(window);

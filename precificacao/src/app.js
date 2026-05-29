@@ -51,6 +51,10 @@
   const brl = v => new Intl.NumberFormat("pt-BR", { style: "currency", currency: ctx.params.moeda || "BRL" }).format(v || 0);
   const pct = v => (v * 100).toFixed(1).replace(".", ",") + "%";
   const num = v => new Intl.NumberFormat("pt-BR").format(v || 0);
+  const escapeHtml = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  // Negócio do Bitrix vinculado à proposta atual (null = nenhum)
+  let bitrixVinculado = null;
 
   /* ---- Abas de produto ---- */
   function renderTabs() {
@@ -107,6 +111,24 @@
     renderKpis(r);
     renderAlertas(r);
     renderTabela(r);
+    renderTokenSignal(r);
+  }
+
+  // Sinaliza, de forma explícita, quantos tokens de IA estão sendo vendidos e
+  // qual o valor desse pack — que fica DILUÍDO na mensalidade por usuário.
+  function renderTokenSignal(r) {
+    const box = $("#tokenSignal");
+    if (!box) return;
+    if (!r.pack || !r.tokens) { box.classList.add("hide"); box.innerHTML = ""; return; }
+    const modo = $("#tokenMode").value === "ideal" ? "ideal" : "piso";
+    const valorAnual = modo === "ideal" ? r.pack.valor_ideal : r.pack.valor_piso;
+    const u = r.usuarios || 1;
+    const mensalUnit = valorAnual / 12 / u; // o que entra por usuário/mês
+    box.classList.remove("hide");
+    box.innerHTML =
+      `Vendendo <b>${num(r.tokens)} tokens/ano</b> (pack ${r.pack.pack}, preço ${modo}: ` +
+      `<b>${brl(valorAnual)}/ano</b>). Esse valor está <b>diluído na mensalidade</b>: ` +
+      `${brl(mensalUnit)}/usuário/mês · ${brl(valorAnual / 12)}/mês no total.`;
   }
 
   function sincronizaUI() {
@@ -224,6 +246,8 @@ Valor global: ${brl(r.global.comImposto)}`;
     return {
       cliente: $("#cliente").value || null,
       produto: "elofy",
+      bitrixId: bitrixVinculado ? bitrixVinculado.bitrix_id : null,
+      bitrixNome: bitrixVinculado ? (bitrixVinculado.nome || bitrixVinculado.empresa_nome) : null,
       usuarios: r.usuarios,
       descontoPct: r.desconto.descontoPct,
       mrr: round2(r.mrr.comImposto),
@@ -267,10 +291,11 @@ Valor global: ${brl(r.global.comImposto)}`;
       const rows = await store.listarPropostas(50);
       if (!rows.length) { box.innerHTML = '<p style="color:var(--txt-3);font-size:13px">Nenhuma proposta salva ainda.</p>'; return; }
       box.innerHTML = `<table><tbody>
-        <tr><th>Data</th><th>Cliente</th><th>Usuários</th><th>Mensal</th><th>Global</th></tr>
+        <tr><th>Data</th><th>Cliente</th><th>Bitrix</th><th>Usuários</th><th>Mensal</th><th>Global</th></tr>
         ${rows.map(p => `<tr>
           <td>${new Date(p.criado_em).toLocaleDateString("pt-BR")}</td>
           <td>${escapeHtml(p.cliente || "—")}</td>
+          <td class="mono">${p.bitrix_id ? "#" + escapeHtml(p.bitrix_id) : "—"}</td>
           <td class="mono">${num(p.usuarios)}</td>
           <td class="mono">${brl(p.mrr_com_imposto)}</td>
           <td class="mono">${brl(p.global_com_imposto)}</td></tr>`).join("")}
@@ -280,7 +305,6 @@ Valor global: ${brl(r.global.comImposto)}`;
     }
   }
 
-  function escapeHtml(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
   function setMsg(el, txt, kind) {
     el.textContent = txt;
     el.style.color = kind === "ok" ? "var(--green)" : kind === "bad" ? "var(--red)" : kind === "warn" ? "var(--gold)" : "var(--txt-3)";
@@ -323,6 +347,83 @@ Valor global: ${brl(r.global.comImposto)}`;
     }
   }
 
+  /* ---- Integração Bitrix (buscar e pré-preencher) ---- */
+  let buscaTimer = null;
+
+  function ligarBitrix() {
+    const inp = $("#bitrixBusca");
+    if (!inp) return;
+    inp.addEventListener("input", () => {
+      clearTimeout(buscaTimer);
+      const termo = inp.value.trim();
+      if (termo.length < 2) { fecharResultados(); return; }
+      buscaTimer = setTimeout(() => buscarNegocios(termo), 300); // debounce
+    });
+    // fecha o dropdown ao clicar fora
+    document.addEventListener("click", e => {
+      if (!e.target.closest(".bitrix-search")) fecharResultados();
+    });
+  }
+
+  function fecharResultados() {
+    const box = $("#bitrixResultados");
+    box.classList.add("hide"); box.innerHTML = "";
+  }
+
+  async function buscarNegocios(termo) {
+    const store = window.PricingStore;
+    const box = $("#bitrixResultados");
+    if (!store || !store.estado().autorizado) return;
+    try {
+      const rows = await store.buscarNegocios(termo, 20);
+      if (!rows.length) {
+        box.innerHTML = `<div class="bitrix-empty">Nenhum negócio encontrado para "${escapeHtml(termo)}".</div>`;
+      } else {
+        box.innerHTML = rows.map((n, i) => {
+          const lic = n.qtd_licencas ? `${num(n.qtd_licencas)} licenças` : "sem licenças";
+          const meta = [escapeHtml(n.fase || "—"), lic, n.valor_rec ? brl(n.valor_rec) + "/mês" : null]
+            .filter(Boolean).join(" · ");
+          return `<div class="bitrix-item" data-i="${i}">
+            <div class="b-nome">${escapeHtml(n.nome || n.empresa_nome || "Negócio " + n.bitrix_id)}</div>
+            <div class="b-meta"><span>#${escapeHtml(n.bitrix_id)}</span><span>${meta}</span></div>
+          </div>`;
+        }).join("");
+        box.querySelectorAll(".bitrix-item").forEach(el =>
+          el.addEventListener("click", () => selecionarNegocio(rows[Number(el.dataset.i)])));
+      }
+      box.classList.remove("hide");
+    } catch (e) {
+      box.innerHTML = `<div class="bitrix-empty">Erro na busca: ${escapeHtml(e.message || String(e))}</div>`;
+      box.classList.remove("hide");
+    }
+  }
+
+  function selecionarNegocio(n) {
+    bitrixVinculado = n;
+    fecharResultados();
+    $("#bitrixBusca").value = "";
+    // pré-preenche cliente e nº de usuários (licenças têm prioridade)
+    if (!$("#cliente").value) $("#cliente").value = n.nome || n.empresa_nome || "";
+    const lic = Number(n.qtd_licencas) || Number(n.total_colaboradores) || 0;
+    if (lic > 0) $("#usuarios").value = lic;
+    renderVinculo();
+    recalc();
+  }
+
+  function renderVinculo() {
+    const box = $("#bitrixVinculo");
+    if (!bitrixVinculado) { box.classList.add("hide"); box.innerHTML = ""; return; }
+    const n = bitrixVinculado;
+    const atual = n.valor_rec ? ` · atual no Bitrix: <b>${brl(n.valor_rec)}/mês</b>` : "";
+    box.classList.remove("hide");
+    box.innerHTML =
+      `🔗 Vinculado: <b>${escapeHtml(n.nome || n.empresa_nome)}</b> (#${escapeHtml(n.bitrix_id)})${atual}` +
+      `<button class="b-x" id="bitrixDesvincular" title="Desvincular">✕</button>`;
+    $("#bitrixDesvincular").addEventListener("click", () => {
+      bitrixVinculado = null; renderVinculo();
+    });
+  }
+
   function ligarLogin() {
     const store = window.PricingStore;
     if (!store) {
@@ -351,6 +452,7 @@ Valor global: ${brl(r.global.comImposto)}`;
   /* ---- Init ---- */
   function init() {
     ligarLogin();
+    ligarBitrix();
     $("#btnSalvar").addEventListener("click", salvarProposta);
     $("#btnHistorico").addEventListener("click", carregarHistorico);
     [
@@ -363,6 +465,7 @@ Valor global: ${brl(r.global.comImposto)}`;
       document.querySelectorAll('#painelElofy input[type=checkbox]').forEach(c => c.checked = false);
       ["#desconto","#avds","#pdis","#s_consultoria","#s_endomarketing","#s_desenvolvimento"].forEach(s => $(s).value = 0);
       $("#peopleAnalytics").value = ""; $("#cliente").value = "";
+      bitrixVinculado = null; renderVinculo();
       recalc();
     });
   }
