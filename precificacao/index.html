@@ -119,6 +119,16 @@
       <div class="field"><label>Desenvolvimento (h)</label><input type="number" id="s_desenvolvimento" min="0" value="0"></div>
     </div>
 
+    <h3>Customizações (Jira)</h3>
+    <p style="font-size:11px;color:var(--txt-3);margin-bottom:10px">Desenvolvimentos do projeto PDMC liberados para venda (status "Elaborar Proposta"). Valor = (horas dev + QA) × R$/hora.</p>
+    <div class="row" style="align-items:flex-end">
+      <button class="btn ghost" id="btnBuscarCustoms" type="button">Buscar customs</button>
+      <label class="toggle-mrr" id="toggleCustomWrap" title="Define se as customs entram na mensalidade ou como cobrança única">
+        <input type="checkbox" id="customNoMrr"> <span>Cobrar dentro do MRR</span>
+      </label>
+    </div>
+    <div id="customsLista"></div>
+
     <div class="toolbar">
       <button class="btn" id="btnSalvar">Salvar proposta</button>
       <button class="btn ghost" id="btnCopiar">Copiar resumo</button>

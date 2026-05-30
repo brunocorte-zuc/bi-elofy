@@ -79,6 +79,7 @@
       p_aprovacao_papel: p.aprovacaoPapel, p_excede_autonomia: p.excedeAutonomia,
       p_entrada: p.entrada, p_resultado: p.resultado,
       p_bitrix_id: p.bitrixId, p_bitrix_nome: p.bitrixNome,
+      p_customs: p.customs || [], p_custom_no_mrr: !!p.customNoMrr, p_custom_total: p.customTotal || 0,
     });
     if (error) throw error;
     return data; // uuid
@@ -111,11 +112,21 @@
     return data || [];
   }
 
+  // Customs (Jira/PDMC) ELEGÍVEIS para um negócio/cliente, já com valor.
+  async function buscarCustoms(bitrixId, cliente) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("pricing_customs_elegiveis", {
+      p_bitrix_id: bitrixId || null, p_cliente: cliente || null,
+    });
+    if (error) throw error;
+    return data || [];
+  }
+
   global.PricingStore = {
     init, estado, disponivel,
     onChange: cb => { listeners.push(cb); },
     login, logout,
     perfil: () => perfilCache,
-    salvarProposta, listarPropostas, carregarConfig, buscarNegocios,
+    salvarProposta, listarPropostas, carregarConfig, buscarNegocios, buscarCustoms,
   };
 })(window);

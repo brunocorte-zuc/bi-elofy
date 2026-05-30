@@ -78,7 +78,24 @@ Os dados de preço ficam em **tabelas do schema `pricing`** no Supabase. Edite n
 | `pricing.people_analytics` | valor anual dos pacotes QuickSight |
 | `pricing.servico_horas` | horas de implantação por escopo e porte |
 | `pricing.autonomia` | autonomia de desconto (Closer/Gestor/Diretor) |
-| `pricing.parametros` | impostos, % de RV/IA, tokens por AVD/PDI, R$/hora |
+| `pricing.parametros` | impostos, % de RV/IA, tokens por AVD/PDI, R$/hora (inclui `valor_hora_custom`) |
+| `pricing.customs_status_elegivel` | status do Jira que liberam a custom (hoje: Elaborar Proposta) |
+
+### Customizações (Jira / projeto PDMC)
+
+Desenvolvimentos sob demanda vêm do Jira (projeto **PDMC**), sincronizados pelo
+n8n para `pricing.customs`. Campos de horas: `customfield_10910` (DEV) e
+`customfield_10911` (QA). Vínculo Bitrix: `customfield_10811`; cliente:
+`customfield_10275`.
+
+- **Elegibilidade:** só entram customs em status liberado
+  (`pricing.customs_status_elegivel`). Para liberar outro status, insira a linha
+  — sem mexer no código.
+- **Preço:** `(horas_dev + horas_qa) × valor_hora_custom` (R$ 220), + imposto.
+- **Posição:** o grupo de customs pode entrar **dentro do MRR** (recorrente) ou
+  como **NR** (único), via toggle na tela. O total compõe o valor global.
+- **Sync:** workflow n8n "Sync Customs Jira para Supabase" (a cada 2h). Requer a
+  credencial **Jira Header Auth** (Header `Authorization: Basic <base64 email:token>`).
 
 Exemplo — ajustar o imposto:
 ```sql

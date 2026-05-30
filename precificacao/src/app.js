@@ -55,6 +55,9 @@
 
   // Negócio do Bitrix vinculado à proposta atual (null = nenhum)
   let bitrixVinculado = null;
+  // Customs (Jira) carregadas e selecionadas
+  let customsDisponiveis = [];          // resultado da busca
+  const customsSelecionadas = new Set(); // jira_key marcados
 
   /* ---- Abas de produto ---- */
   function renderTabs() {
@@ -100,6 +103,8 @@
         endomarketing:   $("#s_endomarketing").value,
         desenvolvimento: $("#s_desenvolvimento").value,
       },
+      customs: customsDisponiveis.filter(c => customsSelecionadas.has(c.jira_key)),
+      customNoMrr: $("#customNoMrr").checked,
     };
   }
 
@@ -184,6 +189,11 @@
     const linhaUnit = (nome, unit) => unit ? `<tr class="sub-row">
       <td>${nome}</td><td class="mono">${brl(unit)}</td><td class="mono">${brl(unit * u)}</td></tr>` : "";
 
+    const cst = r.customs || { itens: [], semImposto: 0, noMrr: false };
+    const linhaCustomMrr = (cst.noMrr && cst.semImposto)
+      ? `<tr class="sub-row"><td>Customizações (${cst.itens.length})</td><td></td><td class="mono">${brl(cst.semImposto)}</td></tr>`
+      : "";
+
     const recorrente = `
       <tr><th>Recorrente (mensal)</th><th>Unit. (usuário)</th><th>Total (×${u})</th></tr>
       ${linhaUnit("Completos", d.completos)}
@@ -196,15 +206,20 @@
       ${linhaUnit("People Analytics", d.peopleAnalytics)}
       <tr class="sub-row"><td>Desconto aplicado</td><td class="mono">${pct(r.desconto.descontoPct)}</td>
         <td class="mono">−${brl((r.unitSemImp - r.unitComDesconto) * u)}</td></tr>
+      ${linhaCustomMrr}
       <tr class="tot-row"><td>Subtotal s/ imposto</td><td></td><td class="mono">${brl(r.mrr.semImposto)}</td></tr>
       <tr class="tot-row"><td>Mensalidade c/ imposto (5,65%)</td><td></td><td class="mono">${brl(r.mrr.comImposto)}</td></tr>`;
 
     const linhaNR = (nome, horas, val) => val ? `<tr class="sub-row">
       <td>${nome}</td><td class="mono">${horas}h</td><td class="mono">${brl(val)}</td></tr>` : "";
+    const customNR = (!cst.noMrr && cst.semImposto)
+      ? `<tr class="sub-row"><td>Customizações (${cst.itens.length})</td><td class="mono">—</td><td class="mono">${brl(cst.comImposto)}</td></tr>`
+      : "";
     const nr = `
       <tr><th>Não recorrente (único)</th><th>Horas</th><th>Total c/ imp.</th></tr>
       ${linhaNR(`Implantação (${r.implantacao.porte})`, r.implantacao.horas, r.implantacao.comImposto)}
       ${r.avulsos.map(a => linhaNR(a.nome, a.horas, a.comImposto)).join("")}
+      ${customNR}
       <tr class="tot-row"><td>Total NR c/ imposto</td><td></td><td class="mono">${brl(r.nr.comImposto)}</td></tr>`;
 
     $("#tabela").innerHTML = `<table><tbody>${recorrente}
@@ -255,6 +270,13 @@ Valor global: ${brl(r.global.comImposto)}`;
       global: round2(r.global.comImposto),
       aprovacaoPapel: r.desconto.papel ? r.desconto.papel.papel : null,
       excedeAutonomia: !!r.desconto.excedeAutonomia,
+      customNoMrr: !!r.customs.noMrr,
+      customTotal: round2(r.customs.comImposto),
+      customs: r.customs.itens.map(c => ({
+        jira_key: c.jira_key, summary: c.summary,
+        horas_dev: c.horas_dev, horas_qa: c.horas_qa,
+        valor_sem_imposto: c.valor_sem_imposto,
+      })),
       entrada: input,
       resultado: {
         faixa: r.faixa ? r.faixa.porte : null,
@@ -264,6 +286,7 @@ Valor global: ${brl(r.global.comImposto)}`;
         nr: { semImposto: round2(r.nr.semImposto), comImposto: round2(r.nr.comImposto) },
         implantacao: { porte: r.implantacao.porte, horas: r.implantacao.horas },
         tokens: r.tokens, pack: r.pack ? r.pack.pack : null,
+        customs: { total: round2(r.customs.comImposto), noMrr: !!r.customs.noMrr, qtd: r.customs.itens.length },
       },
     };
   }
@@ -424,6 +447,67 @@ Valor global: ${brl(r.global.comImposto)}`;
     });
   }
 
+  /* ---- Customizações (Jira) ---- */
+  async function buscarCustoms() {
+    const store = window.PricingStore;
+    const box = $("#customsLista");
+    if (!store || !store.estado().autorizado) return;
+    const bitrixId = bitrixVinculado ? bitrixVinculado.bitrix_id : null;
+    const cliente = $("#cliente").value.trim() || (bitrixVinculado ? (bitrixVinculado.empresa_nome || bitrixVinculado.nome) : null);
+    if (!bitrixId && !cliente) {
+      box.innerHTML = '<p class="customs-empty">Vincule um negócio do Bitrix ou informe o cliente para buscar customs.</p>';
+      return;
+    }
+    box.innerHTML = '<p class="customs-empty">Buscando…</p>';
+    try {
+      customsDisponiveis = await store.buscarCustoms(bitrixId, cliente);
+      // mantém seleção anterior apenas para itens ainda presentes
+      [...customsSelecionadas].forEach(k => {
+        if (!customsDisponiveis.some(c => c.jira_key === k)) customsSelecionadas.delete(k);
+      });
+      renderCustoms();
+      recalc();
+    } catch (e) {
+      box.innerHTML = `<p class="pill bad">Erro ao buscar customs: ${escapeHtml(e.message || String(e))}</p>`;
+    }
+  }
+
+  function renderCustoms() {
+    const box = $("#customsLista");
+    if (!customsDisponiveis.length) {
+      box.innerHTML = '<p class="customs-empty">Nenhuma custom liberada (status "Elaborar Proposta") para este cliente.</p>';
+      return;
+    }
+    const itens = customsDisponiveis.map(c => {
+      const on = customsSelecionadas.has(c.jira_key);
+      return `<label class="custom-item ${on ? "on" : ""}" data-key="${escapeHtml(c.jira_key)}">
+        <input type="checkbox" ${on ? "checked" : ""}>
+        <span class="ci-main">
+          <span class="ci-nome">${escapeHtml(c.summary || c.jira_key)}</span>
+          <span class="ci-meta">
+            <a class="ci-key" href="${escapeHtml(c.url || "#")}" target="_blank" rel="noopener">${escapeHtml(c.jira_key)}</a>
+            <span>${num(c.horas_dev)}h dev + ${num(c.horas_qa)}h QA = ${num(c.horas_total)}h</span>
+          </span>
+        </span>
+        <span class="ci-val">${brl(c.valor_sem_imposto)}</span>
+      </label>`;
+    }).join("");
+    const sel = customsDisponiveis.filter(c => customsSelecionadas.has(c.jira_key));
+    const totSemImp = sel.reduce((s, c) => s + (Number(c.valor_sem_imposto) || 0), 0);
+    const tot = sel.length
+      ? `<div class="customs-tot"><span>${sel.length} custom(s) · grupo</span><span>${brl(totSemImp)} + imp.</span></div>`
+      : "";
+    box.innerHTML = itens + tot;
+    box.querySelectorAll(".custom-item input").forEach(cb => {
+      cb.addEventListener("change", () => {
+        const key = cb.closest(".custom-item").dataset.key;
+        if (cb.checked) customsSelecionadas.add(key); else customsSelecionadas.delete(key);
+        renderCustoms();
+        recalc();
+      });
+    });
+  }
+
   function ligarLogin() {
     const store = window.PricingStore;
     if (!store) {
@@ -455,6 +539,8 @@ Valor global: ${brl(r.global.comImposto)}`;
     ligarBitrix();
     $("#btnSalvar").addEventListener("click", salvarProposta);
     $("#btnHistorico").addEventListener("click", carregarHistorico);
+    $("#btnBuscarCustoms").addEventListener("click", buscarCustoms);
+    $("#customNoMrr").addEventListener("change", recalc);
     [
       "#usuarios","#desconto","#avds","#pdis","#tokenMode","#peopleAnalytics",
       "#s_consultoria","#s_endomarketing","#s_desenvolvimento",
@@ -466,6 +552,8 @@ Valor global: ${brl(r.global.comImposto)}`;
       ["#desconto","#avds","#pdis","#s_consultoria","#s_endomarketing","#s_desenvolvimento"].forEach(s => $(s).value = 0);
       $("#peopleAnalytics").value = ""; $("#cliente").value = "";
       bitrixVinculado = null; renderVinculo();
+      customsDisponiveis = []; customsSelecionadas.clear();
+      $("#customNoMrr").checked = false; $("#customsLista").innerHTML = "";
       recalc();
     });
   }

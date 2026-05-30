@@ -153,12 +153,26 @@
       return { id: a.id, nome: a.nome, horas, semImposto: semImp, comImposto: comImposto(semImp) };
     });
 
-    const nrSemImp = impl.semImposto + avulsos.reduce((s, a) => s + a.semImposto, 0);
+    // 4c) Customizações (Jira) — soma do grupo selecionado.
+    // Podem entrar no MRR (recorrente) ou como NR (único), conforme negociação.
+    const customsSel = Array.isArray(input.customs) ? input.customs : [];
+    const customSemImp = customsSel.reduce((s, c) => s + (Number(c.valor_sem_imposto) || 0), 0);
+    const customNoMrr = !!input.customNoMrr;
+
+    // Mensalidade final (soma custom se for "dentro do MRR")
+    const mrrSemImpFinal = mensalSemImp + (customNoMrr ? customSemImp : 0);
+    const mrrComImpFinal = comImposto(mrrSemImpFinal);
+
+    // NR = implantação + avulsos + (custom se for "fora do MRR")
+    const nrSemImp = impl.semImposto + avulsos.reduce((s, a) => s + a.semImposto, 0)
+                   + (customNoMrr ? 0 : customSemImp);
     const nrComImp = comImposto(nrSemImp);
 
+    const customComImp = comImposto(customSemImp);
+
     // 5) Valor global
-    const tcvSemImp = mensalSemImp + nrSemImp; // mensal + setup (referência)
-    const globalComImp = mensalComImp + nrComImp;
+    const tcvSemImp = mrrSemImpFinal + nrSemImp; // mensal + setup (referência)
+    const globalComImp = mrrComImpFinal + nrComImp;
 
     return {
       usuarios,
@@ -169,9 +183,11 @@
       unitSemImp: base.unit,
       unitComDesconto: desc.final,
       desconto: desc,
-      mrr: { semImposto: mensalSemImp, comImposto: mensalComImp, unit: mensalSemImpUnit },
+      mrr: { semImposto: mrrSemImpFinal, comImposto: mrrComImpFinal, unit: mensalSemImpUnit,
+             semImpostoModulos: mensalSemImp, comImpostoModulos: mensalComImp },
       implantacao: impl,
       avulsos,
+      customs: { itens: customsSel, semImposto: customSemImp, comImposto: customComImp, noMrr: customNoMrr },
       nr: { semImposto: nrSemImp, comImposto: nrComImp },
       global: { semImposto: tcvSemImp, comImposto: globalComImp },
     };
