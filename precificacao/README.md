@@ -81,6 +81,18 @@ Os dados de preço ficam em **tabelas do schema `pricing`** no Supabase. Edite n
 | `pricing.parametros` | impostos, % de RV/IA, tokens por AVD/PDI, R$/hora (inclui `valor_hora_custom`) |
 | `pricing.customs_status_elegivel` | status do Jira que liberam a custom (hoje: Elaborar Proposta) |
 
+### Proposta em PDF
+
+Botão **Gerar PDF** abre uma proposta comercial caprichada (marca elofy +
+"Butique de RH", dados do cliente, escopo, resumo de investimento, pitch e
+condições) e usa a **impressão nativa** do navegador → *Salvar como PDF*.
+Vetorial, sem bibliotecas, offline (`src/pdf.js`).
+
+- Mostra **apenas valores de venda** (mensalidade, único, 1º pagamento,
+  customs). Nunca expõe custo, margem, piso ou autonomia.
+- Logo é **tipográfico provisório** (SVG em `PricingPDF.LOGO_SVG`); para usar o
+  logo oficial da Elofy, basta trocar esse SVG.
+
 ### Histórico & versões de proposta
 
 Cada cliente/oportunidade acumula um histórico de versões, agrupado pela

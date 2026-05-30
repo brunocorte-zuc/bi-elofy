@@ -252,6 +252,47 @@ Valor global: ${brl(r.global.comImposto)}`;
   }
   function flash(msg) { const b = $("#btnCopiar"), o = b.textContent; b.textContent = msg; setTimeout(() => (b.textContent = o), 1500); }
 
+  /* ---- Gerar PDF da proposta (somente valores de venda) ---- */
+  function gerarPdf() {
+    const r = window.PricingEngine.simular(lerInput(), ctx);
+    const d = r.detalheUnit || {};
+    const u = r.usuarios || 0;
+    // itens recorrentes (mensal, total do mês = unit × usuários)
+    const recorrente = [
+      { nome: "Plataforma — Módulos Completos", valor: (d.completos || 0) * u },
+      { nome: "Módulo Desempenho", valor: (d.desempenho || 0) * u },
+      { nome: "Módulo Engajamento", valor: (d.engajamento || 0) * u },
+      { nome: "Módulo Metas", valor: (d.metas || 0) * u },
+      { nome: "Remuneração Variável (RV)", valor: (d.rv || 0) * u },
+      { nome: "Inteligência Artificial", valor: ((d.ia || 0) + (d.iaTokens || 0)) * u },
+      { nome: "People Analytics", valor: (d.peopleAnalytics || 0) * u },
+    ];
+    const naoRecorrente = [
+      { nome: `Implantação & configuração`, valor: r.implantacao.comImposto },
+      ...r.avulsos.map(a => ({ nome: a.nome, valor: a.comImposto })),
+    ];
+    const customs = (r.customs.itens || []).map(c => ({
+      nome: c.summary || c.jira_key, valor: comImpostoView(c.valor_sem_imposto),
+    }));
+    window.PricingPDF.gerar({
+      cliente: $("#cliente").value || "",
+      usuarios: u,
+      versao: propostaAtualVersao || null,
+      bitrix: bitrixVinculado ? bitrixVinculado.bitrix_id : null,
+      vendedor: (window.PricingStore && window.PricingStore.perfil && window.PricingStore.perfil())
+        ? window.PricingStore.perfil().email : null,
+      validadeDias: 15,
+      recorrente, naoRecorrente, customs,
+      customNoMrr: !!r.customs.noMrr,
+      customTotal: r.customs.comImposto,
+      mrr: r.mrr.comImposto,
+      nr: r.nr.comImposto,
+      global: r.global.comImposto,
+    });
+  }
+  // valor com imposto p/ exibição (mesma convenção do motor: / 0.9435)
+  function comImpostoView(semImp) { return (Number(semImp) || 0) / 0.9435; }
+
   /* ---- Persistência (Supabase) ---- */
   let ultimoResultado = null;
 
@@ -673,6 +714,7 @@ Valor global: ${brl(r.global.comImposto)}`;
       "#m_completos","#m_desempenho","#m_engajamento","#m_metas","#m_rv","#m_ia",
     ].forEach(s => { const el = $(s); if (el) el.addEventListener("input", recalc); });
     $("#btnCopiar").addEventListener("click", copiarResumo);
+    $("#btnPdf").addEventListener("click", gerarPdf);
     $("#btnLimpar").addEventListener("click", () => {
       document.querySelectorAll('#painelElofy input[type=checkbox]').forEach(c => c.checked = false);
       ["#desconto","#avds","#pdis","#s_consultoria","#s_endomarketing","#s_desenvolvimento"].forEach(s => $(s).value = 0);

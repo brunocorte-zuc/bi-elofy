@@ -132,6 +132,7 @@
     <div class="toolbar">
       <button class="btn" id="btnNovaVersao" type="button">Salvar como nova versão</button>
       <button class="btn ghost" id="btnAtualizar" type="button">Atualizar atual</button>
+      <button class="btn ghost" id="btnPdf" type="button">Gerar PDF</button>
       <button class="btn ghost" id="btnCopiar" type="button">Copiar resumo</button>
       <button class="btn ghost" id="btnLimpar" type="button">Limpar</button>
     </div>
@@ -171,9 +172,10 @@
 <!-- Conexão (chave pública). Os DADOS DE PREÇO ficam no Supabase, protegidos
      por login + RLS, e são carregados só após autenticação autorizada. -->
 <script src="data/supabase.js"></script>
-<!-- Motor + auth + UI -->
+<!-- Motor + auth + PDF + UI -->
 <script src="src/engine.js"></script>
 <script src="src/auth.js"></script>
+<script src="src/pdf.js"></script>
 <script src="src/app.js"></script>
 </body>
 </html>
