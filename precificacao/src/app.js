@@ -292,40 +292,160 @@ Valor global: ${brl(r.global.comImposto)}`;
   }
   function round2(v) { return Math.round((v || 0) * 100) / 100; }
 
-  async function salvarProposta() {
+  // Proposta atualmente "aberta" na tela (para "Atualizar atual"). null = nenhuma.
+  let propostaAtualId = null;
+  let propostaAtualVersao = null;
+
+  // Salvar como NOVA versão. Versiona pela oportunidade do Bitrix.
+  async function salvarNovaVersao() {
     const store = window.PricingStore;
     const msg = $("#salvarMsg");
     if (!store || !store.estado().autorizado) { setMsg(msg, "Faça login para salvar.", "warn"); return; }
+    if (!bitrixVinculado) {
+      setMsg(msg, "Vincule uma oportunidade do Bitrix para versionar (sem vínculo, a proposta fica avulsa).", "warn");
+    }
     try {
       setMsg(msg, "Salvando…", "");
-      await store.salvarProposta(montarPayload());
-      setMsg(msg, "✓ Proposta salva.", "ok");
+      const r = await store.salvarProposta(montarPayload());
+      propostaAtualId = r && r.id ? r.id : null;
+      propostaAtualVersao = r && r.versao ? r.versao : null;
+      setMsg(msg, `✓ Salva como versão ${propostaAtualVersao || "?"}.`, "ok");
+      atualizarBotoesVersao();
       carregarHistorico();
     } catch (e) {
       setMsg(msg, "Erro ao salvar: " + (e.message || e), "bad");
     }
   }
 
+  // Atualizar a versão atualmente aberta (sem criar nova).
+  async function atualizarAtual() {
+    const store = window.PricingStore;
+    const msg = $("#salvarMsg");
+    if (!store || !store.estado().autorizado) { setMsg(msg, "Faça login para salvar.", "warn"); return; }
+    if (!propostaAtualId) { setMsg(msg, "Nenhuma versão aberta. Use 'Salvar como nova versão'.", "warn"); return; }
+    try {
+      setMsg(msg, "Atualizando…", "");
+      const r = await store.atualizarProposta(propostaAtualId, montarPayload());
+      setMsg(msg, `✓ Versão ${r && r.versao ? r.versao : ""} atualizada.`, "ok");
+      carregarHistorico();
+    } catch (e) {
+      setMsg(msg, "Erro ao atualizar: " + (e.message || e), "bad");
+    }
+  }
+
+  function atualizarBotoesVersao() {
+    const btn = $("#btnAtualizar");
+    if (btn) btn.disabled = !propostaAtualId;
+  }
+
+  // Carrega o histórico/timeline da oportunidade vinculada (com deltas).
   async function carregarHistorico() {
     const store = window.PricingStore;
     const box = $("#historico");
     if (!store || !store.estado().autorizado) { box.innerHTML = ""; return; }
-    try {
-      const rows = await store.listarPropostas(50);
-      if (!rows.length) { box.innerHTML = '<p style="color:var(--txt-3);font-size:13px">Nenhuma proposta salva ainda.</p>'; return; }
-      box.innerHTML = `<table><tbody>
-        <tr><th>Data</th><th>Cliente</th><th>Bitrix</th><th>Usuários</th><th>Mensal</th><th>Global</th></tr>
-        ${rows.map(p => `<tr>
-          <td>${new Date(p.criado_em).toLocaleDateString("pt-BR")}</td>
-          <td>${escapeHtml(p.cliente || "—")}</td>
-          <td class="mono">${p.bitrix_id ? "#" + escapeHtml(p.bitrix_id) : "—"}</td>
-          <td class="mono">${num(p.usuarios)}</td>
-          <td class="mono">${brl(p.mrr_com_imposto)}</td>
-          <td class="mono">${brl(p.global_com_imposto)}</td></tr>`).join("")}
-      </tbody></table>`;
-    } catch (e) {
-      box.innerHTML = `<p class="pill bad">Erro ao listar: ${escapeHtml(e.message || String(e))}</p>`;
+    if (!bitrixVinculado) {
+      box.innerHTML = '<p style="color:var(--txt-3);font-size:13px">Vincule uma oportunidade do Bitrix para ver o histórico de versões e a evolução de valor.</p>';
+      return;
     }
+    try {
+      const rows = await store.historicoProposta(bitrixVinculado.bitrix_id);
+      if (!rows.length) { box.innerHTML = '<p style="color:var(--txt-3);font-size:13px">Nenhuma versão salva para esta oportunidade ainda.</p>'; return; }
+      box.innerHTML = renderTimeline(rows);
+      box.querySelectorAll("[data-abrir]").forEach(el =>
+        el.addEventListener("click", () => abrirVersao(rows.find(r => r.id === el.dataset.abrir))));
+    } catch (e) {
+      box.innerHTML = `<p class="pill bad">Erro ao carregar histórico: ${escapeHtml(e.message || String(e))}</p>`;
+    }
+  }
+
+  function deltaBadge(row) {
+    if (row.delta_global == null) return '<span class="delta zero">v1 · base</span>';
+    const up = row.delta_global > 0, zero = Math.abs(row.delta_global) < 0.005;
+    const cls = zero ? "zero" : (up ? "up" : "down");
+    const sinal = up ? "+" : (zero ? "" : "−");
+    const pctTxt = row.delta_global_pct == null ? "" : ` (${sinal}${Math.abs(row.delta_global_pct)}%)`;
+    return `<span class="delta ${cls}">${sinal}${brl(Math.abs(row.delta_global))}${pctTxt}</span>`;
+  }
+
+  // Diferenças relevantes entre uma versão e a anterior (usuarios, desconto, customs).
+  function diffVersao(row, anterior) {
+    if (!anterior) return "";
+    const parts = [];
+    if (Number(row.usuarios) !== Number(anterior.usuarios))
+      parts.push(`usuários ${num(anterior.usuarios)}→${num(row.usuarios)}`);
+    if (Number(row.desconto_pct) !== Number(anterior.desconto_pct))
+      parts.push(`desconto ${pct(Number(anterior.desconto_pct))}→${pct(Number(row.desconto_pct))}`);
+    const cQtd = (row.customs || []).length, cQtdAnt = (anterior.customs || []).length;
+    if (cQtd !== cQtdAnt) parts.push(`customs ${cQtdAnt}→${cQtd}`);
+    if (Number(row.custom_total) !== Number(anterior.custom_total))
+      parts.push(`valor custom ${brl(anterior.custom_total)}→${brl(row.custom_total)}`);
+    return parts.length ? `<div class="tl-diff">${parts.join(" · ")}</div>` : "";
+  }
+
+  function renderTimeline(rows) {
+    // rows vêm da mais recente para a mais antiga
+    const linhas = rows.map((r, i) => {
+      const anterior = rows[i + 1]; // a próxima na lista é a versão anterior
+      return `<div class="tl-item">
+        <div class="tl-head">
+          <span class="tl-v">v${r.versao}</span>
+          <span class="tl-data">${new Date(r.criado_em).toLocaleDateString("pt-BR")}</span>
+          ${deltaBadge(r)}
+        </div>
+        <div class="tl-vals">
+          <span>Global <b>${brl(r.global_com_imposto)}</b></span>
+          <span>Mensal ${brl(r.mrr_com_imposto)}</span>
+          <span>NR ${brl(r.nr_com_imposto)}</span>
+          <span>${num(r.usuarios)} usuários · ${pct(Number(r.desconto_pct))}</span>
+        </div>
+        ${diffVersao(r, anterior)}
+        <button class="tl-abrir" data-abrir="${r.id}" type="button">Abrir na calculadora</button>
+      </div>`;
+    }).join("");
+    const atual = rows[0], primeira = rows[rows.length - 1];
+    const evol = (atual && primeira && atual.versao !== primeira.versao)
+      ? `<div class="tl-resumo">Evolução v1→v${atual.versao}: ${brl(primeira.global_com_imposto)} → <b>${brl(atual.global_com_imposto)}</b> (${atual.global_com_imposto >= primeira.global_com_imposto ? "+" : "−"}${brl(Math.abs(atual.global_com_imposto - primeira.global_com_imposto))})</div>`
+      : "";
+    return evol + `<div class="timeline">${linhas}</div>`;
+  }
+
+  // Recarrega os inputs da tela a partir de uma versão salva (entrada jsonb).
+  function abrirVersao(row) {
+    if (!row || !row.entrada) return;
+    const e = row.entrada;
+    propostaAtualId = row.id; propostaAtualVersao = row.versao;
+    if (e.usuarios != null) $("#usuarios").value = e.usuarios;
+    if (e.descontoPct != null) $("#desconto").value = Math.round(e.descontoPct * 1000) / 10;
+    const sel = e.sel || {};
+    $("#m_completos").checked = !!sel.completos;
+    $("#m_desempenho").checked = !!sel.desempenho;
+    $("#m_engajamento").checked = !!sel.engajamento;
+    $("#m_metas").checked = !!sel.metas;
+    $("#m_rv").checked = !!sel.rv;
+    $("#m_ia").checked = !!sel.ia;
+    if (sel.peopleAnalytics != null) $("#peopleAnalytics").value = sel.peopleAnalytics;
+    if (sel.avds != null) $("#avds").value = sel.avds;
+    if (sel.pdis != null) $("#pdis").value = sel.pdis;
+    if (sel.tokenMode) $("#tokenMode").value = sel.tokenMode;
+    const sa = e.servicosAvulsosHoras || {};
+    $("#s_consultoria").value = sa.consultoria || 0;
+    $("#s_endomarketing").value = sa.endomarketing || 0;
+    $("#s_desenvolvimento").value = sa.desenvolvimento || 0;
+    $("#customNoMrr").checked = !!e.customNoMrr;
+    // customs salvas → repõe disponíveis/selecionadas
+    customsDisponiveis = (row.customs || []).map(c => ({
+      jira_key: c.jira_key, summary: c.summary, status: "Elaborar Proposta",
+      horas_dev: c.horas_dev, horas_qa: c.horas_qa,
+      horas_total: (Number(c.horas_dev) || 0) + (Number(c.horas_qa) || 0),
+      valor_sem_imposto: c.valor_sem_imposto, url: "#",
+    }));
+    customsSelecionadas.clear();
+    customsDisponiveis.forEach(c => customsSelecionadas.add(c.jira_key));
+    renderCustoms();
+    atualizarBotoesVersao();
+    recalc();
+    setMsg($("#salvarMsg"), `Versão ${row.versao} aberta. "Atualizar atual" sobrescreve esta versão.`, "");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function setMsg(el, txt, kind) {
@@ -423,6 +543,8 @@ Valor global: ${brl(r.global.comImposto)}`;
 
   function selecionarNegocio(n) {
     bitrixVinculado = n;
+    // novo vínculo → contexto de versão zera; histórico passa a ser desta oportunidade
+    propostaAtualId = null; propostaAtualVersao = null; atualizarBotoesVersao();
     fecharResultados();
     $("#bitrixBusca").value = "";
     // pré-preenche cliente e nº de usuários (licenças têm prioridade)
@@ -430,6 +552,7 @@ Valor global: ${brl(r.global.comImposto)}`;
     const lic = Number(n.qtd_licencas) || Number(n.total_colaboradores) || 0;
     if (lic > 0) $("#usuarios").value = lic;
     renderVinculo();
+    carregarHistorico();
     recalc();
   }
 
@@ -443,7 +566,8 @@ Valor global: ${brl(r.global.comImposto)}`;
       `🔗 Vinculado: <b>${escapeHtml(n.nome || n.empresa_nome)}</b> (#${escapeHtml(n.bitrix_id)})${atual}` +
       `<button class="b-x" id="bitrixDesvincular" title="Desvincular">✕</button>`;
     $("#bitrixDesvincular").addEventListener("click", () => {
-      bitrixVinculado = null; renderVinculo();
+      bitrixVinculado = null; propostaAtualId = null; propostaAtualVersao = null;
+      atualizarBotoesVersao(); renderVinculo(); carregarHistorico();
     });
   }
 
@@ -537,9 +661,11 @@ Valor global: ${brl(r.global.comImposto)}`;
   function init() {
     ligarLogin();
     ligarBitrix();
-    $("#btnSalvar").addEventListener("click", salvarProposta);
+    $("#btnNovaVersao").addEventListener("click", salvarNovaVersao);
+    $("#btnAtualizar").addEventListener("click", atualizarAtual);
     $("#btnHistorico").addEventListener("click", carregarHistorico);
     $("#btnBuscarCustoms").addEventListener("click", buscarCustoms);
+    atualizarBotoesVersao();
     $("#customNoMrr").addEventListener("change", recalc);
     [
       "#usuarios","#desconto","#avds","#pdis","#tokenMode","#peopleAnalytics",
@@ -554,6 +680,8 @@ Valor global: ${brl(r.global.comImposto)}`;
       bitrixVinculado = null; renderVinculo();
       customsDisponiveis = []; customsSelecionadas.clear();
       $("#customNoMrr").checked = false; $("#customsLista").innerHTML = "";
+      propostaAtualId = null; propostaAtualVersao = null;
+      atualizarBotoesVersao(); carregarHistorico();
       recalc();
     });
   }

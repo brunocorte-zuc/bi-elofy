@@ -81,6 +81,22 @@ Os dados de preço ficam em **tabelas do schema `pricing`** no Supabase. Edite n
 | `pricing.parametros` | impostos, % de RV/IA, tokens por AVD/PDI, R$/hora (inclui `valor_hora_custom`) |
 | `pricing.customs_status_elegivel` | status do Jira que liberam a custom (hoje: Elaborar Proposta) |
 
+### Histórico & versões de proposta
+
+Cada cliente/oportunidade acumula um histórico de versões, agrupado pela
+**oportunidade do Bitrix** (`bitrix_id`):
+
+- **Salvar como nova versão** → cria v1, v2, v3… (numeração automática por
+  oportunidade). Exige um negócio do Bitrix vinculado; sem vínculo a proposta
+  fica avulsa (v1).
+- **Atualizar atual** → sobrescreve a versão aberta, sem criar nova.
+- **Histórico & evolução** → timeline das versões com **valor global, mensalidade,
+  NR**, o **delta de valor** vs. a versão anterior (R$ e %) e um **diff** do que
+  mudou (usuários, desconto, customs). "Abrir na calculadora" recarrega a versão.
+
+RPCs: `pricing_salvar_proposta` (retorna `{id, versao}`),
+`pricing_atualizar_proposta`, `pricing_historico_proposta(bitrix_id)`.
+
 ### Customizações (Jira / projeto PDMC)
 
 Desenvolvimentos sob demanda vêm do Jira (projeto **PDMC**), sincronizados pelo

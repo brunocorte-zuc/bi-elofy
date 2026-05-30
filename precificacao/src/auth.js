@@ -82,7 +82,30 @@
       p_customs: p.customs || [], p_custom_no_mrr: !!p.customNoMrr, p_custom_total: p.customTotal || 0,
     });
     if (error) throw error;
-    return data; // uuid
+    return data; // { id, versao }
+  }
+
+  // Atualiza uma proposta existente (mesma versão), por id.
+  async function atualizarProposta(id, p) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("pricing_atualizar_proposta", {
+      p_id: id, p_cliente: p.cliente, p_usuarios: p.usuarios,
+      p_desconto_pct: p.descontoPct, p_mrr_com_imposto: p.mrr,
+      p_nr_com_imposto: p.nr, p_global_com_imposto: p.global,
+      p_aprovacao_papel: p.aprovacaoPapel, p_excede_autonomia: p.excedeAutonomia,
+      p_entrada: p.entrada, p_resultado: p.resultado,
+      p_customs: p.customs || [], p_custom_no_mrr: !!p.customNoMrr, p_custom_total: p.customTotal || 0,
+    });
+    if (error) throw error;
+    return data; // { id, versao }
+  }
+
+  // Histórico de versões de uma oportunidade (bitrix_id), com delta de valor.
+  async function historicoProposta(bitrixId) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("pricing_historico_proposta", { p_bitrix_id: bitrixId });
+    if (error) throw error;
+    return data || [];
   }
 
   async function listarPropostas(limit) {
@@ -127,6 +150,7 @@
     onChange: cb => { listeners.push(cb); },
     login, logout,
     perfil: () => perfilCache,
-    salvarProposta, listarPropostas, carregarConfig, buscarNegocios, buscarCustoms,
+    salvarProposta, atualizarProposta, historicoProposta,
+    listarPropostas, carregarConfig, buscarNegocios, buscarCustoms,
   };
 })(window);
