@@ -114,8 +114,17 @@ tbody tr:hover{background:var(--surf)}
 .bitrix-item{padding:9px 11px;border-radius:8px;cursor:pointer;font-size:13px}
 .bitrix-item:hover{background:var(--accent-soft)}
 .bitrix-item .b-nome{font-weight:600;color:var(--txt)}
-.bitrix-item .b-meta{font-size:11px;color:var(--txt-3);margin-top:2px;
+.bitrix-item .b-fase{margin-top:5px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.bitrix-item .b-meta{font-size:11px;color:var(--txt-3);margin-top:4px;
   display:flex;gap:8px;flex-wrap:wrap}
+/* Selo da fase do funil */
+.fase-badge{font-size:10px;font-weight:700;letter-spacing:.02em;padding:2px 9px;border-radius:99px;
+  text-transform:uppercase;white-space:nowrap}
+.fase-badge.andamento{color:var(--accent-2);background:var(--accent-soft)}
+.fase-badge.proposta{color:#9a6b00;background:var(--gold-bg)}
+.fase-badge.ganho{color:var(--green);background:var(--green-bg)}
+.fase-badge.perdido{color:var(--red);background:var(--red-bg)}
+.fase-funil{font-size:10px;color:var(--txt-3);font-weight:500}
 .bitrix-empty{padding:11px;font-size:12px;color:var(--txt-3);text-align:center}
 .bitrix-link{margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
   font-size:12px;background:var(--accent-soft);border:1px solid var(--border-md);

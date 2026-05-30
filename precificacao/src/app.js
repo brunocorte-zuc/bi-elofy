@@ -554,6 +554,18 @@ Valor global: ${brl(r.global.comImposto)}`;
     box.classList.add("hide"); box.innerHTML = "";
   }
 
+  // Selo da fase do funil, com cor por tipo de fase (ganho/perdido/proposta/andamento).
+  function faseBadge(fase, pipeline) {
+    if (!fase) return "";
+    const f = fase.toLowerCase();
+    let cls = "andamento";
+    if (/ganho|realizada/.test(f)) cls = "ganho";
+    else if (/perdid/.test(f)) cls = "perdido";
+    else if (/proposta|negocia|apresenta/.test(f)) cls = "proposta";
+    const funil = pipeline ? ` <span class="fase-funil">${escapeHtml(pipeline)}</span>` : "";
+    return `<span class="fase-badge ${cls}">${escapeHtml(fase)}</span>${funil}`;
+  }
+
   async function buscarNegocios(termo) {
     const store = window.PricingStore;
     const box = $("#bitrixResultados");
@@ -565,10 +577,10 @@ Valor global: ${brl(r.global.comImposto)}`;
       } else {
         box.innerHTML = rows.map((n, i) => {
           const lic = n.qtd_licencas ? `${num(n.qtd_licencas)} licenças` : "sem licenças";
-          const meta = [escapeHtml(n.fase || "—"), lic, n.valor_rec ? brl(n.valor_rec) + "/mês" : null]
-            .filter(Boolean).join(" · ");
+          const meta = [lic, n.valor_rec ? brl(n.valor_rec) + "/mês" : null].filter(Boolean).join(" · ");
           return `<div class="bitrix-item" data-i="${i}">
             <div class="b-nome">${escapeHtml(n.nome || n.empresa_nome || "Negócio " + n.bitrix_id)}</div>
+            <div class="b-fase">${faseBadge(n.fase, n.pipeline)}</div>
             <div class="b-meta"><span>#${escapeHtml(n.bitrix_id)}</span><span>${meta}</span></div>
           </div>`;
         }).join("");
@@ -605,6 +617,7 @@ Valor global: ${brl(r.global.comImposto)}`;
     box.classList.remove("hide");
     box.innerHTML =
       `🔗 Vinculado: <b>${escapeHtml(n.nome || n.empresa_nome)}</b> (#${escapeHtml(n.bitrix_id)})${atual}` +
+      (n.fase ? ` ${faseBadge(n.fase, n.pipeline)}` : "") +
       `<button class="b-x" id="bitrixDesvincular" title="Desvincular">✕</button>`;
     $("#bitrixDesvincular").addEventListener("click", () => {
       bitrixVinculado = null; propostaAtualId = null; propostaAtualVersao = null;
