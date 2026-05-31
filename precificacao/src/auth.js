@@ -71,6 +71,20 @@
     return true;
   }
 
+  // Login pelo CÓDIGO de 6 dígitos enviado por e-mail. Não depende de clicar no
+  // link (logo, imune ao SafeLinks do Outlook, que "consome" o link) e funciona
+  // em qualquer navegador/celular.
+  async function verificarCodigo(email, codigo) {
+    if (!disponivel()) throw new Error("Supabase não configurado.");
+    const { error } = await sb.auth.verifyOtp({
+      email: (email || "").trim(),
+      token: (codigo || "").trim(),
+      type: "email",
+    });
+    if (error) throw error;
+    return true;
+  }
+
   async function logout() {
     if (sb) await sb.auth.signOut();
     perfilCache = null; emit();
@@ -207,7 +221,7 @@
   global.PricingStore = {
     init, estado, disponivel,
     onChange: cb => { listeners.push(cb); },
-    login, logout,
+    login, verificarCodigo, logout,
     perfil: () => perfilCache,
     salvarProposta, atualizarProposta, historicoProposta,
     listarPropostas, carregarConfig, buscarNegocios, buscarCustoms,

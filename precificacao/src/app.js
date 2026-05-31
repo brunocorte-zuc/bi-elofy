@@ -889,12 +889,27 @@ Valor global: ${brl(r.global.comImposto)}`;
       const msg = $("#loginMsg");
       if (!email) { setMsg(msg, "Informe seu e-mail.", "warn"); return; }
       try {
-        setMsg(msg, "Enviando…", "");
+        setMsg(msg, "Enviando código…", "");
         await store.login(email);
-        setMsg(msg, "✓ Link enviado! Verifique seu e-mail e clique para entrar.", "ok");
+        $("#codigoBox").classList.remove("hide");
+        $("#loginCodigo").focus();
+        setMsg(msg, "✓ Enviamos um código (e um link) para " + email + ". Digite o código abaixo.", "ok");
       } catch (e) { setMsg(msg, "Erro: " + (e.message || e), "bad"); }
     });
+    // Entrar com o código de 6 dígitos (imune ao SafeLinks do Outlook).
+    $("#btnCodigo").addEventListener("click", async () => {
+      const email = $("#loginEmail").value.trim();
+      const codigo = $("#loginCodigo").value.replace(/\D/g, "");
+      const msg = $("#loginMsg");
+      if (codigo.length < 6) { setMsg(msg, "Digite os 6 dígitos do código.", "warn"); return; }
+      try {
+        setMsg(msg, "Entrando…", "");
+        await store.verificarCodigo(email, codigo);
+        // onAuthStateChange cuida de carregar o perfil e abrir o app.
+      } catch (e) { setMsg(msg, "Código inválido ou expirado. " + (e.message || ""), "bad"); }
+    });
     $("#loginEmail").addEventListener("keydown", e => { if (e.key === "Enter") $("#btnLogin").click(); });
+    $("#loginCodigo").addEventListener("keydown", e => { if (e.key === "Enter") $("#btnCodigo").click(); });
     $("#btnLogout").addEventListener("click", () => store.logout());
     store.init();
   }
