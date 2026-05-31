@@ -297,46 +297,62 @@ Valor global: ${brl(r.global.comImposto)}`;
   }
   function flash(msg) { const b = $("#btnCopiar"), o = b.textContent; b.textContent = msg; setTimeout(() => (b.textContent = o), 1500); }
 
-  /* ---- Gerar PDF da proposta (somente valores de venda) ---- */
-  function gerarPdf() {
-    const r = window.PricingEngine.simular(lerInput(), ctx);
+  // Copia texto e dá feedback no próprio botão.
+  function copiarTexto(txt, btn, original) {
+    const ok = () => { btn.textContent = "✓ Copiado!"; setTimeout(() => (btn.textContent = original), 1500); };
+    navigator.clipboard.writeText(txt).then(ok, () => window.prompt("Copie:", txt));
+  }
+
+  function perfilEmail() {
+    return (window.PricingStore && window.PricingStore.perfil && window.PricingStore.perfil())
+      ? window.PricingStore.perfil().email : null;
+  }
+
+  // Monta a visão CLIENT-SAFE da proposta (só valores de venda, com imposto e
+  // já com o desconto aplicado). Usada pelo PDF e pelo snapshot da página pública.
+  // As linhas somam exatamente os totais (mensalidade, NR, global).
+  function montarDadosProposta(r) {
     const d = r.detalheUnit || {};
     const u = r.usuarios || 0;
-    // itens recorrentes (mensal, total do mês = unit × usuários)
+    // fator: sem imposto → com imposto, já com desconto (igual ao motor).
+    const f = (1 - (r.desconto.descontoPct || 0)) / 0.9435;
+    const line = (nome, det) => ({ nome, valor: (det || 0) * f * u });
     const recorrente = [
-      { nome: "Plataforma — Módulos Completos", valor: (d.completos || 0) * u },
-      { nome: "Módulo Desempenho", valor: (d.desempenho || 0) * u },
-      { nome: "Módulo Engajamento", valor: (d.engajamento || 0) * u },
-      { nome: "Módulo Metas", valor: (d.metas || 0) * u },
-      { nome: "Remuneração Variável (RV)", valor: (d.rv || 0) * u },
-      { nome: "Inteligência Artificial", valor: ((d.ia || 0) + (d.iaTokens || 0)) * u },
-      { nome: "People Analytics", valor: (d.peopleAnalytics || 0) * u },
-    ];
+      line("Plataforma — Pacote Completo", d.completos),
+      line("Módulo Desempenho", d.desempenho),
+      line("Módulo Engajamento", d.engajamento),
+      line("Módulo Metas", d.metas),
+      line("Remuneração Variável (RV)", d.rv),
+      line("Inteligência Artificial (IA)", d.ia),
+      line("IA — pacote de tokens", d.iaTokens),
+      line("People Analytics", d.peopleAnalytics),
+    ].filter(x => x.valor > 0.005);
     const naoRecorrente = [
-      { nome: `Implantação & configuração`, valor: r.implantacao.comImposto },
+      { nome: "Implantação & configuração", valor: r.implantacao.comImposto },
       ...r.avulsos.map(a => ({ nome: a.descricao ? `${a.tipo} — ${a.descricao}` : a.tipo, valor: a.comImposto })),
-    ];
-    const customs = (r.customs.itens || []).map(c => ({
-      nome: c.summary || c.jira_key, valor: comImpostoView(c.valor_sem_imposto),
+    ].filter(x => x.valor > 0.005);
+    // customizações: cada uma vira um item, no recorrente ou no NR conforme cobrança.
+    const customLines = (r.customs.itens || []).map(c => ({
+      nome: "Customização · " + (c.summary || c.jira_key),
+      valor: window.PricingEngine.comImposto(c.valor_sem_imposto),
     }));
-    window.PricingPDF.gerar({
+    if (r.customs.noMrr) recorrente.push(...customLines); else naoRecorrente.push(...customLines);
+    return {
       cliente: $("#cliente").value || "",
       usuarios: u,
       versao: propostaAtualVersao || null,
-      bitrix: bitrixVinculado ? bitrixVinculado.bitrix_id : null,
-      vendedor: (window.PricingStore && window.PricingStore.perfil && window.PricingStore.perfil())
-        ? window.PricingStore.perfil().email : null,
+      vendedor: perfilEmail(),
       validadeDias: 15,
-      recorrente, naoRecorrente, customs,
-      customNoMrr: !!r.customs.noMrr,
-      customTotal: r.customs.comImposto,
-      mrr: r.mrr.comImposto,
-      nr: r.nr.comImposto,
-      global: r.global.comImposto,
-    });
+      recorrente, naoRecorrente,
+      mrr: r.mrr.comImposto, nr: r.nr.comImposto, global: r.global.comImposto,
+    };
   }
-  // valor com imposto p/ exibição (mesma convenção do motor: / 0.9435)
-  function comImpostoView(semImp) { return (Number(semImp) || 0) / 0.9435; }
+
+  /* ---- Gerar PDF da proposta (somente valores de venda) ---- */
+  function gerarPdf() {
+    const r = window.PricingEngine.simular(lerInput(), ctx);
+    window.PricingPDF.gerar(montarDadosProposta(r));
+  }
 
   /* ---- Persistência (Supabase) ---- */
   let ultimoResultado = null;
@@ -374,6 +390,8 @@ Valor global: ${brl(r.global.comImposto)}`;
         tokens: r.tokens, pack: r.pack ? r.pack.pack : null,
         customs: { total: round2(r.customs.comImposto), noMrr: !!r.customs.noMrr, qtd: r.customs.itens.length },
       },
+      // visão client-safe congelada (o que a página pública e o PDF mostram)
+      snapshot: montarDadosProposta(r),
     };
   }
   function round2(v) { return Math.round((v || 0) * 100) / 100; }
@@ -441,9 +459,62 @@ Valor global: ${brl(r.global.comImposto)}`;
       box.innerHTML = renderTimeline(rows);
       box.querySelectorAll("[data-abrir]").forEach(el =>
         el.addEventListener("click", () => abrirVersao(rows.find(r => r.id === el.dataset.abrir))));
+      box.querySelectorAll("[data-copylink]").forEach(el =>
+        el.addEventListener("click", () => {
+          const r = rows.find(x => x.id === el.dataset.copylink);
+          copiarTexto(linkCliente(r.public_token), el, "🔗 Copiar link");
+        }));
+      box.querySelectorAll("[data-copymail]").forEach(el =>
+        el.addEventListener("click", () => {
+          const r = rows.find(x => x.id === el.dataset.copymail);
+          copiarTexto(emailCliente(r, linkCliente(r.public_token)), el, "✉ Copiar e-mail");
+        }));
     } catch (e) {
       box.innerHTML = `<p class="pill bad">Erro ao carregar histórico: ${escapeHtml(e.message || String(e))}</p>`;
     }
+  }
+
+  // Link público da proposta (página do cliente, mesma pasta do app).
+  function linkCliente(token) {
+    const base = location.href.replace(/[^/]*(\?.*)?(#.*)?$/, "");
+    return base + "proposta.html?t=" + token;
+  }
+  function emailCliente(r, link) {
+    const cli = r.cliente || "cliente";
+    return `Assunto: Sua proposta Elofy — ${cli}\n\n` +
+      `Olá!\n\nPreparei a proposta da Elofy para a ${cli}. ` +
+      `Você pode visualizá-la e nos dar um retorno (se atendeu, ou o que ajustar) ` +
+      `diretamente nesta página:\n\n${link}\n\n` +
+      `Fico à disposição para qualquer dúvida.\nAbraço!`;
+  }
+
+  // Zona do cliente no histórico: status de acesso + botões de link/e-mail.
+  function zonaCliente(r) {
+    if (!r.public_token) return "";
+    const status = r.visualizada_em
+      ? `<span class="cli-pill vista">👁 Visualizada ${r.visualizacoes || 1}× · ${new Date(r.visualizada_em).toLocaleDateString("pt-BR")}</span>`
+      : `<span class="cli-pill aguard">Aguardando acesso do cliente</span>`;
+    return `<div class="tl-cliente">${status}
+      <button class="tl-link" data-copylink="${r.id}" type="button">🔗 Copiar link</button>
+      <button class="tl-link" data-copymail="${r.id}" type="button">✉ Copiar e-mail</button>
+    </div>`;
+  }
+
+  const MOTIVO_LABEL = { custo: "custo acima do esperado", prazo: "prazo não atende", escopo: "diferente do que pedi" };
+  function feedbackBlock(r) {
+    if (!r.fb_sentimento) return "";
+    const map = {
+      aprovado: { cls: "ok", txt: "✓ Cliente aprovou a proposta" },
+      ajustes: { cls: "warn", txt: "Cliente pediu ajustes" },
+      recusado: { cls: "bad", txt: "Cliente recusou" },
+    };
+    const s = map[r.fb_sentimento] || { cls: "warn", txt: r.fb_sentimento };
+    const motivos = Array.isArray(r.fb_motivos) ? r.fb_motivos : [];
+    const motTxt = motivos.length
+      ? `<div class="fb-mot">${motivos.map(m => `<span>${escapeHtml(MOTIVO_LABEL[m] || m)}</span>`).join("")}</div>` : "";
+    const com = r.fb_comentario ? `<div class="fb-com">“${escapeHtml(r.fb_comentario)}”</div>` : "";
+    const quando = r.fb_em ? ` · ${new Date(r.fb_em).toLocaleDateString("pt-BR")}` : "";
+    return `<div class="tl-fb ${s.cls}"><b>${s.txt}</b>${quando}${motTxt}${com}</div>`;
   }
 
   function deltaBadge(row) {
@@ -487,6 +558,8 @@ Valor global: ${brl(r.global.comImposto)}`;
           <span>${num(r.usuarios)} usuários · ${pct(Number(r.desconto_pct))}</span>
         </div>
         ${diffVersao(r, anterior)}
+        ${zonaCliente(r)}
+        ${feedbackBlock(r)}
         <button class="tl-abrir" data-abrir="${r.id}" type="button">Abrir na calculadora</button>
       </div>`;
     }).join("");

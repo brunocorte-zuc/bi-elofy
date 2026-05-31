@@ -50,15 +50,6 @@
         </tbody>
       </table>` : "";
 
-    const customs = (d.customs && d.customs.length) ? `
-      <table class="items">
-        <thead><tr><th>Customizações</th><th class="r">Valor</th></tr></thead>
-        <tbody>${d.customs.map(c => `<tr><td>${esc(c.nome)}</td><td class="r mono">${brl(c.valor)}</td></tr>`).join("")}
-          <tr class="sub"><td>Total customizações ${d.customNoMrr ? "(na mensalidade)" : "(único)"}</td>
-            <td class="r mono">${brl(d.customTotal)}</td></tr>
-        </tbody>
-      </table>` : "";
-
     return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8">
 <title>Proposta Elofy — ${esc(d.cliente)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -153,7 +144,7 @@
     </div>
 
     <h2 class="sec">Escopo da solução</h2>
-    ${blocoRec}${customs && d.customNoMrr ? customs : ""}${blocoNr}${customs && !d.customNoMrr ? customs : ""}
+    ${blocoRec}${blocoNr}
 
     <h2 class="sec">Resumo do investimento</h2>
     <div class="invest">

@@ -80,9 +80,10 @@
       p_entrada: p.entrada, p_resultado: p.resultado,
       p_bitrix_id: p.bitrixId, p_bitrix_nome: p.bitrixNome,
       p_customs: p.customs || [], p_custom_no_mrr: !!p.customNoMrr, p_custom_total: p.customTotal || 0,
+      p_snapshot: p.snapshot || null,
     });
     if (error) throw error;
-    return data; // { id, versao }
+    return data; // { id, versao, public_token }
   }
 
   // Atualiza uma proposta existente (mesma versão), por id.
@@ -95,9 +96,10 @@
       p_aprovacao_papel: p.aprovacaoPapel, p_excede_autonomia: p.excedeAutonomia,
       p_entrada: p.entrada, p_resultado: p.resultado,
       p_customs: p.customs || [], p_custom_no_mrr: !!p.customNoMrr, p_custom_total: p.customTotal || 0,
+      p_snapshot: p.snapshot || null,
     });
     if (error) throw error;
-    return data; // { id, versao }
+    return data; // { id, versao, public_token }
   }
 
   // Histórico de versões de uma oportunidade (bitrix_id), com delta de valor.

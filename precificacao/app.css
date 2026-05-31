@@ -193,4 +193,19 @@ tbody tr:hover{background:var(--surf)}
 .tl-abrir{margin-top:8px;font-family:inherit;font-size:11px;font-weight:600;color:var(--accent-2);
   background:transparent;border:1px solid var(--border-md);border-radius:7px;padding:4px 10px;cursor:pointer}
 .tl-abrir:hover{background:var(--accent-soft)}
+/* Zona do cliente no histórico */
+.tl-cliente{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:9px}
+.cli-pill{font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px}
+.cli-pill.vista{color:var(--green);background:var(--green-bg)}
+.cli-pill.aguard{color:var(--txt-3);background:var(--surf)}
+.tl-link{font-family:inherit;font-size:11px;font-weight:600;color:var(--accent-2);background:transparent;
+  border:1px solid var(--border-md);border-radius:7px;padding:4px 10px;cursor:pointer}
+.tl-link:hover{background:var(--accent-soft)}
+.tl-fb{margin-top:9px;border-radius:9px;padding:9px 12px;font-size:12px}
+.tl-fb.ok{background:var(--green-bg);border:1px solid #C9EDD6}
+.tl-fb.warn{background:var(--gold-bg);border:1px solid #F6E4BD}
+.tl-fb.bad{background:var(--red-bg);border:1px solid #F5C9C9}
+.tl-fb .fb-mot{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.tl-fb .fb-mot span{font-size:10px;font-weight:600;background:rgba(0,0,0,.06);padding:2px 8px;border-radius:99px}
+.tl-fb .fb-com{margin-top:6px;font-style:italic;color:var(--txt-2)}
 .soon-box b{color:var(--txt-2)}

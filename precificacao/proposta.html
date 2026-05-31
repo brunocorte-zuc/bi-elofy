@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sua proposta · Elofy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{--accent:#7C6FFF;--accent2:#6457E6;--ink:#1C2030;--ink2:#5A6178;--ink3:#9AA0B4;
+    --line:#E6E8F0;--soft:#F0EEFF;--surf:#F8F9FC;--green:#15803D;--greenbg:#E9F8EF;
+    --gold:#9a6b00;--goldbg:#FEF6E7;--red:#DC2626;--redbg:#FDECEC}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Outfit',system-ui,sans-serif;color:var(--ink);font-size:14px;line-height:1.55;
+    background:#EEF0F6;padding:24px 14px}
+  .mono{font-family:'JetBrains Mono',monospace}
+  .wrap{max-width:780px;margin:0 auto}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;
+    box-shadow:0 4px 24px rgba(30,32,48,.06);margin-bottom:18px}
+  /* Cabeçalho */
+  .top{display:flex;justify-content:space-between;align-items:flex-start;
+    border-bottom:2px solid var(--accent);padding-bottom:16px}
+  .brand .tag{font-size:11px;color:var(--ink3);letter-spacing:.18em;text-transform:uppercase;margin-top:4px}
+  .doc{text-align:right;font-size:11px;color:var(--ink2)}
+  .doc .big{font-size:15px;font-weight:600;color:var(--ink)}
+  .doc .v{display:inline-block;margin-top:5px;background:var(--soft);color:var(--accent2);
+    font-weight:600;padding:3px 10px;border-radius:99px;font-size:11px}
+  .hero{margin:22px 0 6px}
+  .hero h1{font-size:23px;font-weight:700;letter-spacing:-.5px}
+  .hero h1 span{color:var(--accent)}
+  .hero p{color:var(--ink2);margin-top:8px}
+  .meta{display:flex;gap:26px;flex-wrap:wrap;background:var(--surf);border:1px solid var(--line);
+    border-radius:12px;padding:15px 18px;margin:18px 0}
+  .meta .k{font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.07em}
+  .meta .val{font-weight:600;font-size:14px;margin-top:2px}
+  h2.sec{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);
+    margin:22px 0 10px;font-weight:700}
+  table.items{width:100%;border-collapse:collapse;margin-bottom:6px}
+  table.items th{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);
+    text-align:left;padding:8px 10px;border-bottom:2px solid var(--line);font-weight:700}
+  table.items th.r,table.items td.r{text-align:right}
+  table.items td{padding:9px 10px;border-bottom:1px solid var(--line)}
+  table.items tr.sub td{font-weight:700;color:var(--ink);border-top:1px solid var(--line);background:var(--surf)}
+  .invest{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0 4px}
+  .invest .c{flex:1;min-width:150px;border:1px solid var(--line);border-radius:12px;padding:15px}
+  .invest .c .k{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3)}
+  .invest .c .v{font-size:19px;font-weight:700;margin-top:6px}
+  .invest .c .s{font-size:10px;color:var(--ink3);margin-top:3px}
+  .invest .c.dest{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none}
+  .invest .c.dest .k{color:rgba(255,255,255,.85)}.invest .c.dest .v{color:#fff}
+  .pitch{background:var(--surf);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;
+    padding:13px 16px;margin:20px 0 0;color:var(--ink2);font-size:13px}
+  .pitch b{color:var(--ink)}
+  /* Feedback */
+  .fb h2{font-size:18px;font-weight:700}
+  .fb .sub{color:var(--ink2);margin:6px 0 16px}
+  .sent{display:flex;gap:10px;flex-wrap:wrap}
+  .sent button{flex:1;min-width:150px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;
+    border:2px solid var(--line);background:#fff;border-radius:12px;padding:16px 12px;transition:.15s;color:var(--ink)}
+  .sent button .emo{font-size:24px;display:block;margin-bottom:6px}
+  .sent button:hover{border-color:var(--accent);background:var(--soft)}
+  .sent button.on{border-color:var(--accent);background:var(--soft);box-shadow:0 0 0 3px var(--soft)}
+  .sent button.on.ok{border-color:var(--green);background:var(--greenbg);box-shadow:0 0 0 3px var(--greenbg)}
+  .sent button.on.bad{border-color:var(--red);background:var(--redbg);box-shadow:0 0 0 3px var(--redbg)}
+  .extra{margin-top:18px;display:none}
+  .extra.show{display:block}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .chip{font-family:inherit;font-size:13px;cursor:pointer;border:1px solid var(--line);background:var(--surf);
+    border-radius:99px;padding:8px 14px;color:var(--ink2);transition:.12s}
+  .chip.on{border-color:var(--accent);background:var(--soft);color:var(--accent2);font-weight:600}
+  label.fld{display:block;font-size:12px;color:var(--ink2);margin:12px 0 5px;font-weight:600}
+  textarea,input.txt{width:100%;font-family:inherit;font-size:14px;border:1px solid var(--line);
+    border-radius:10px;padding:11px 13px;background:var(--surf);color:var(--ink)}
+  textarea:focus,input.txt:focus{outline:none;border-color:var(--accent);background:#fff;
+    box-shadow:0 0 0 3px var(--soft)}
+  textarea{min-height:90px;resize:vertical}
+  .send{margin-top:16px;width:100%;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;
+    color:#fff;background:var(--accent);border:none;border-radius:12px;padding:14px}
+  .send:hover{background:var(--accent2)}
+  .send:disabled{opacity:.5;cursor:default}
+  .msg{margin-top:12px;font-size:13px;text-align:center}
+  .center{text-align:center;padding:40px 20px;color:var(--ink2)}
+  .thanks{text-align:center;padding:26px 10px}
+  .thanks .big{font-size:40px}
+  .thanks h2{margin:10px 0 6px;font-size:20px}
+  .foot{text-align:center;font-size:11px;color:var(--ink3);margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap" id="root">
+  <div class="card"><div class="center" id="loading">Carregando sua proposta…</div></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="data/supabase.js"></script>
+<script src="src/pdf.js?v=20260531c"></script>
+<script src="src/publica.js?v=20260531c"></script>
+</body>
+</html>

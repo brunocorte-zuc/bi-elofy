@@ -100,6 +100,43 @@ Tudo aparece **itemizado**, para o cliente ver o que compõe o projeto:
   duas consultorias distintas ("Clima organizacional", "Acompanhamento pós-projeto").
   Valor de cada linha = horas × valor/hora.
 
+### Acesso por papel (closer / supervisor / admin)
+
+Cada usuário em `pricing.usuarios_permitidos` tem um `papel`:
+
+- **closer** → enxerga **apenas as próprias** propostas.
+- **supervisor** e **admin** → enxergam as de **todos**.
+
+Aplicado por RLS (`propostas_select`) e nas funções `pricing_listar_propostas` /
+`pricing_historico_proposta` (que são SECURITY DEFINER e filtram por
+`pricing.ve_tudo() or criado_por = auth.uid()`).
+
+Para **gerenciar a equipe** (corrigir e-mail / trocar papel):
+
+```sql
+-- adicionar/corrigir
+insert into pricing.usuarios_permitidos(email, papel) values ('ana.sobrenome@elofy.com.br','closer');
+update pricing.usuarios_permitidos set email='novo@dominio' where email='antigo@dominio';
+update pricing.usuarios_permitidos set papel='supervisor' where email='thiago@...';
+-- papéis válidos: closer, gestor, diretor, supervisor, admin
+```
+
+### Página pública da proposta + feedback do cliente
+
+O closer compartilha um **link** (`proposta.html?t=<token>`) por e-mail. O cliente
+abre, vê a proposta itemizada (igual ao PDF, só valores de venda) e responde se
+**atende / quer ajustes / não atende**, com motivos (custo, prazo, escopo) e
+comentário. Tudo sem login.
+
+- `propostas.public_token` (UUID) = link assinado; `snapshot_cliente` (jsonb) é a
+  visão client-safe congelada no momento do salvamento.
+- RPCs públicas (anon, SECURITY DEFINER, exigem o token): `proposta_publica(token)`
+  (retorna o snapshot e registra a visualização) e
+  `proposta_feedback(token, sentimento, motivos, comentario, nome)`.
+- No histórico do closer aparece: **se o cliente abriu** (👁 visualizada Nx), os
+  botões **Copiar link / Copiar e-mail**, e o **feedback** recebido.
+- Nunca expõe custo, margem, piso ou autonomia — só o snapshot de venda.
+
 ### Proposta em PDF
 
 Botão **Gerar PDF** abre uma proposta comercial caprichada (marca elofy +
