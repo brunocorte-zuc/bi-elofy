@@ -469,6 +469,12 @@ Valor global: ${brl(r.global.comImposto)}`;
           const r = rows.find(x => x.id === el.dataset.copymail);
           copiarTexto(emailCliente(r, linkCliente(r.public_token)), el, "✉ Copiar e-mail");
         }));
+      box.querySelectorAll("[data-ganho]").forEach(el =>
+        el.addEventListener("click", () => {
+          const r = rows.find(x => x.id === el.dataset.ganho);
+          if (window.PricingHandoff) window.PricingHandoff.abrir(
+            Object.assign({}, r, { bitrix_id: bitrixVinculado ? bitrixVinculado.bitrix_id : null }));
+        }));
     } catch (e) {
       box.innerHTML = `<p class="pill bad">Erro ao carregar histórico: ${escapeHtml(e.message || String(e))}</p>`;
     }
@@ -498,6 +504,14 @@ Valor global: ${brl(r.global.comImposto)}`;
       <button class="tl-link" data-copylink="${r.id}" type="button">🔗 Copiar link</button>
       <button class="tl-link" data-copymail="${r.id}" type="button">✉ Copiar e-mail</button>
     </div>`;
+  }
+
+  // Zona de ganho/handoff: badge se já ganho, ou botão para iniciar o handoff.
+  function ganhoZona(r) {
+    if (r.ganho_em) {
+      return `<div class="tl-ganho">🏆 Ganho · handoff registrado em ${new Date(r.ganho_em).toLocaleDateString("pt-BR")}</div>`;
+    }
+    return `<button class="tl-win" data-ganho="${r.id}" type="button">🏆 Dar ganho &amp; handoff</button>`;
   }
 
   const MOTIVO_LABEL = { custo: "custo acima do esperado", prazo: "prazo não atende", escopo: "diferente do que pedi" };
@@ -560,6 +574,7 @@ Valor global: ${brl(r.global.comImposto)}`;
         ${diffVersao(r, anterior)}
         ${zonaCliente(r)}
         ${feedbackBlock(r)}
+        ${ganhoZona(r)}
         <button class="tl-abrir" data-abrir="${r.id}" type="button">Abrir na calculadora</button>
       </div>`;
     }).join("");
@@ -655,10 +670,21 @@ Valor global: ${brl(r.global.comImposto)}`;
       renderTabs();
       recalc();
       carregarHistorico();
+      ajustarPorPapel();
     } catch (e) {
       $("#tabela").innerHTML =
         `<p class="pill bad">Erro ao carregar tabela de preços: ${escapeHtml(e.message || String(e))}</p>`;
     }
+  }
+
+  // Mostra o botão de Handoffs para quem enxerga handoffs (onboarding/supervisor/admin).
+  let meuPerfil = null;
+  async function ajustarPorPapel() {
+    try {
+      meuPerfil = await window.PricingStore.meuPerfil();
+      const btn = $("#btnHandoffs");
+      if (btn) btn.classList.toggle("hide", !(meuPerfil && meuPerfil.ve_handoffs));
+    } catch (_) { /* silencioso: o painel é extra */ }
   }
 
   /* ---- Integração Bitrix (buscar e pré-preencher) ---- */
@@ -881,6 +907,8 @@ Valor global: ${brl(r.global.comImposto)}`;
     $("#btnAtualizar").addEventListener("click", atualizarAtual);
     $("#btnHistorico").addEventListener("click", carregarHistorico);
     $("#btnBuscarCustoms").addEventListener("click", buscarCustoms);
+    $("#btnHandoffs").addEventListener("click", () => window.PricingHandoff && window.PricingHandoff.abrirPainel());
+    if (window.PricingHandoff) window.PricingHandoff.setOnConcluir(carregarHistorico);
     atualizarBotoesVersao();
     $("#customNoMrr").addEventListener("change", recalc);
     $("#btnAddServico").addEventListener("click", addServico);

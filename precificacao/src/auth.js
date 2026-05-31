@@ -117,6 +117,57 @@
     return data || [];
   }
 
+  // Perfil do usuário logado (e-mail + papel + flags de visibilidade).
+  async function meuPerfil() {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("pricing_meu_perfil");
+    if (error) throw error;
+    return data || {};
+  }
+
+  // Pode dar ganho? (gate: negócio precisa estar GANHO no Bitrix)
+  async function podeDarGanho(propostaId) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("pricing_pode_dar_ganho", { p_proposta_id: propostaId });
+    if (error) throw error;
+    return data || {};
+  }
+
+  // Registra o handoff (dar ganho). payload = dados do formulário.
+  async function registrarHandoff(propostaId, payload) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("pricing_registrar_handoff", {
+      p_proposta_id: propostaId, p_payload: payload,
+    });
+    if (error) throw error;
+    return data || {};
+  }
+
+  async function listarHandoffs(limit) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("pricing_listar_handoffs", { p_limit: limit || 100 });
+    if (error) throw error;
+    return data || [];
+  }
+
+  // Upload do contrato para o bucket privado. Devolve o caminho (path) salvo.
+  async function uploadContrato(bitrixId, file) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const safe = (file.name || "contrato").replace(/[^\w.\-]+/g, "_");
+    const path = `${bitrixId || "sem-bitrix"}/${Date.now()}_${safe}`;
+    const { error } = await sb.storage.from("contratos").upload(path, file, { upsert: false });
+    if (error) throw error;
+    return path;
+  }
+
+  // URL assinada temporária para baixar um contrato (bucket é privado).
+  async function urlContrato(path, segundos) {
+    if (!sb || !path) return null;
+    const { data, error } = await sb.storage.from("contratos").createSignedUrl(path, segundos || 3600);
+    if (error) throw error;
+    return data ? data.signedUrl : null;
+  }
+
   // Toda a configuração de preço (tabela, packs, PA, serviços, autonomia,
   // parâmetros) — só retorna para usuário autorizado. Vem do banco, nunca
   // do código estático, para não expor custos/margens em site público.
@@ -154,5 +205,6 @@
     perfil: () => perfilCache,
     salvarProposta, atualizarProposta, historicoProposta,
     listarPropostas, carregarConfig, buscarNegocios, buscarCustoms,
+    meuPerfil, podeDarGanho, registrarHandoff, listarHandoffs, uploadContrato, urlContrato,
   };
 })(window);

@@ -137,6 +137,26 @@ comentário. Tudo sem login.
   botões **Copiar link / Copiar e-mail**, e o **feedback** recebido.
 - Nunca expõe custo, margem, piso ou autonomia — só o snapshot de venda.
 
+### Ganho & Handoff para o Onboarding
+
+Fecha o ciclo da venda. No histórico, cada versão tem **🏆 Dar ganho & handoff**:
+
+- **Gate do Bitrix:** só permite seguir se o negócio já estiver em fase de
+  **Ganho** no Bitrix (`pricing.bitrix_ganho` checa `public.negocios.fase` ~
+  `ganho|realizada`). O sistema **não move nada no Bitrix** — o closer faz isso lá.
+- **Formulário:** confirmação do que foi vendido, contrato (upload p/ bucket
+  privado `contratos` **ou** link), contatos do cliente, faturamento (CNPJ,
+  condição/forma), kickoff/urgência, critérios de ganho e sucesso, história.
+- Marca `propostas.ganho_em` e grava em `pricing.handoffs` (1 por `bitrix_id`).
+- **Painel 🏆 Handoffs** (botão no topo, visível a `onboarding`/`supervisor`/`admin`):
+  lista os negócios ganhos com todos os dados + baixar contrato + ver proposta.
+- **Notificação:** se `window.HANDOFF_WEBHOOK_URL` estiver definida (em
+  `data/supabase.js`), o app faz POST do resumo do handoff para o n8n ao concluir.
+  Sem isso, o painel é a fonte da verdade.
+
+RPCs: `pricing_pode_dar_ganho`, `pricing_registrar_handoff`,
+`pricing_listar_handoffs`, `pricing_meu_perfil`. Papel novo: **onboarding**.
+
 ### Proposta em PDF
 
 Botão **Gerar PDF** abre uma proposta comercial caprichada (marca elofy +
