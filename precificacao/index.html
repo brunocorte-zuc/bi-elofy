@@ -6,7 +6,7 @@
 <title>Formação de Preço · HR Tech</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="app.css?v=20260531">
 </head>
 <body>
 
@@ -169,10 +169,11 @@
 <!-- Conexão (chave pública). Os DADOS DE PREÇO ficam no Supabase, protegidos
      por login + RLS, e são carregados só após autenticação autorizada. -->
 <script src="data/supabase.js"></script>
-<!-- Motor + auth + PDF + UI -->
-<script src="src/engine.js"></script>
-<script src="src/auth.js"></script>
-<script src="src/pdf.js"></script>
-<script src="src/app.js"></script>
+<!-- Motor + auth + PDF + UI. O ?v= força o navegador a baixar a versão nova
+     após cada deploy (evita HTML novo rodando com JS antigo em cache). -->
+<script src="src/engine.js?v=20260531"></script>
+<script src="src/auth.js?v=20260531"></script>
+<script src="src/pdf.js?v=20260531"></script>
+<script src="src/app.js?v=20260531"></script>
 </body>
 </html>

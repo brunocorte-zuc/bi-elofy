@@ -143,22 +143,22 @@
       l.classList.toggle("on", l.querySelector("input").checked));
   }
 
-  // "Completos" e os módulos avulsos (Desempenho/Engajamento/Metas) são
-  // MUTUAMENTE EXCLUSIVOS: ou é venda completa, ou é venda modular.
-  // RV e IA são modificadores e continuam disponíveis nos dois casos.
-  const MODULARES = ["#m_desempenho", "#m_engajamento", "#m_metas"];
+  // "Completos" é COMPLETO: ao marcá-lo, nenhuma outra opção de módulo pode
+  // ser escolhida (Desempenho, Engajamento, Metas, RV e IA ficam travados).
+  // Ou é venda completa, ou é venda modular — nunca as duas.
+  const MOD_OUTROS = ["#m_desempenho", "#m_engajamento", "#m_metas", "#m_rv", "#m_ia"];
   function aplicarExclusividadeModulos(origem) {
     const completos = $("#m_completos");
-    const modulares = MODULARES.map($);
+    const outros = MOD_OUTROS.map($);
     if (origem === "completos" && completos.checked) {
-      modulares.forEach(c => { c.checked = false; });
-    } else if (origem && origem !== "completos" && modulares.some(c => c.checked)) {
+      outros.forEach(c => { c.checked = false; });
+    } else if (origem && origem !== "completos" && outros.some(c => c.checked)) {
       completos.checked = false;
     }
     const compOn = completos.checked;
-    const modOn = modulares.some(c => c.checked);
-    modulares.forEach(c => travarChk(c, compOn));
-    travarChk(completos, modOn);
+    const algumOutro = outros.some(c => c.checked);
+    outros.forEach(c => travarChk(c, compOn));
+    travarChk(completos, algumOutro);
   }
   function travarChk(input, travar) {
     input.disabled = travar;
@@ -386,6 +386,7 @@ Valor global: ${brl(r.global.comImposto)}`;
       atualizarBotoesVersao();
       carregarHistorico();
     } catch (e) {
+      console.error("[salvarNovaVersao]", e);
       setMsg(msg, "Erro ao salvar: " + (e.message || e), "bad");
     }
   }
@@ -402,6 +403,7 @@ Valor global: ${brl(r.global.comImposto)}`;
       setMsg(msg, `✓ Versão ${r && r.versao ? r.versao : ""} atualizada.`, "ok");
       carregarHistorico();
     } catch (e) {
+      console.error("[atualizarAtual]", e);
       setMsg(msg, "Erro ao atualizar: " + (e.message || e), "bad");
     }
   }
@@ -797,11 +799,11 @@ Valor global: ${brl(r.global.comImposto)}`;
     $("#btnAddServico").addEventListener("click", addServico);
     renderServicos();
     // campos genéricos → recalc
-    ["#usuarios","#desconto","#avds","#pdis","#tokenMode","#peopleAnalytics","#m_rv","#m_ia"]
+    ["#usuarios","#desconto","#avds","#pdis","#tokenMode","#peopleAnalytics"]
       .forEach(s => { const el = $(s); if (el) el.addEventListener("input", recalc); });
-    // módulos com exclusividade Completos × {Desempenho,Engajamento,Metas}
-    [["#m_completos","completos"],["#m_desempenho","desempenho"],
-     ["#m_engajamento","engajamento"],["#m_metas","metas"]].forEach(([s, origem]) => {
+    // módulos: "Completos" trava todas as outras opções (e vice-versa)
+    [["#m_completos","completos"],["#m_desempenho","outro"],["#m_engajamento","outro"],
+     ["#m_metas","outro"],["#m_rv","outro"],["#m_ia","outro"]].forEach(([s, origem]) => {
       const el = $(s);
       if (el) el.addEventListener("change", () => { aplicarExclusividadeModulos(origem); recalc(); });
     });
