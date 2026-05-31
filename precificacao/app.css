@@ -64,6 +64,9 @@ body{font-family:'Outfit',system-ui,sans-serif;background:var(--bg);color:var(--
 .chk.on{border-color:var(--accent);background:var(--accent-soft)}
 .chk.locked{opacity:.45;cursor:not-allowed}
 .chk.locked:hover{background:var(--surf);border-color:var(--border)}
+/* RV/IA inclusos no pacote completo: marcados, destacados e não editáveis */
+.chk.locked-on{border-color:var(--accent);background:var(--accent-soft);cursor:not-allowed}
+.chk.locked-on .nm::after{content:" · incluso no Completos";color:var(--accent-2);font-weight:600;font-size:11px}
 .chk input{accent-color:var(--accent);width:17px;height:17px;flex:none}
 .chk .nm{flex:1;font-weight:500}
 .chk .nm small{display:block;color:var(--txt-3);font-size:11px;font-weight:400;margin-top:1px}

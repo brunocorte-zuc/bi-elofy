@@ -143,27 +143,40 @@
       l.classList.toggle("on", l.querySelector("input").checked));
   }
 
-  // "Completos" é COMPLETO: ao marcá-lo, nenhuma outra opção de módulo pode
-  // ser escolhida (Desempenho, Engajamento, Metas, RV e IA ficam travados).
-  // Ou é venda completa, ou é venda modular — nunca as duas.
-  const MOD_OUTROS = ["#m_desempenho", "#m_engajamento", "#m_metas", "#m_rv", "#m_ia"];
+  // Regra do pacote "Completos":
+  //   - É COMPLETO: módulos avulsos (Desempenho/Engajamento/Metas) ficam
+  //     travados OFF — ou é venda completa, ou modular.
+  //   - RV e IA FAZEM PARTE do completo: entram marcados e travados ON
+  //     (aplicam +15% e +5%). A exceção são os TOKENS de IA, que continuam
+  //     opcionais (entram só se o vendedor informar AVDs/PDIs).
+  const MOD_BASE = ["#m_desempenho", "#m_engajamento", "#m_metas"]; // travam OFF
+  const MOD_INCLUSO = ["#m_rv", "#m_ia"];                            // travam ON
   function aplicarExclusividadeModulos(origem) {
     const completos = $("#m_completos");
-    const outros = MOD_OUTROS.map($);
-    if (origem === "completos" && completos.checked) {
-      outros.forEach(c => { c.checked = false; });
-    } else if (origem && origem !== "completos" && outros.some(c => c.checked)) {
+    const base = MOD_BASE.map($);
+    const inclusos = MOD_INCLUSO.map($);
+    if (origem === "completos") {
+      if (completos.checked) {
+        base.forEach(c => { c.checked = false; });
+        inclusos.forEach(c => { c.checked = true; }); // RV e IA fazem parte
+      } else {
+        inclusos.forEach(c => { c.checked = false; }); // saiu do completo → limpa
+      }
+    } else if (origem === "base" && base.some(c => c.checked)) {
       completos.checked = false;
+      inclusos.forEach(c => { c.checked = false; });
     }
     const compOn = completos.checked;
-    const algumOutro = outros.some(c => c.checked);
-    outros.forEach(c => travarChk(c, compOn));
-    travarChk(completos, algumOutro);
+    base.forEach(c => travarChk(c, compOn));     // base: travados OFF no completo
+    inclusos.forEach(c => travarChk(c, compOn)); // RV/IA: travados ON no completo
+    travarChk(completos, base.some(c => c.checked));
   }
   function travarChk(input, travar) {
     input.disabled = travar;
     const label = input.closest(".chk");
-    if (label) label.classList.toggle("locked", travar);
+    if (!label) return;
+    label.classList.toggle("locked", travar && !input.checked);    // travado e vazio → esmaecido
+    label.classList.toggle("locked-on", travar && input.checked);  // travado e incluso → destacado
   }
 
   function renderKpis(r) {
@@ -502,7 +515,8 @@ Valor global: ${brl(r.global.comImposto)}`;
     if (sel.avds != null) $("#avds").value = sel.avds;
     if (sel.pdis != null) $("#pdis").value = sel.pdis;
     if (sel.tokenMode) $("#tokenMode").value = sel.tokenMode;
-    aplicarExclusividadeModulos(null); // reaplica travas conforme módulos restaurados
+    // reaplica a regra do pacote: se completo, força RV/IA inclusos; senão, só travas
+    aplicarExclusividadeModulos($("#m_completos").checked ? "completos" : null);
     // serviços NR: formato novo (lista) ou antigo (mapa de horas)
     if (Array.isArray(e.servicos)) {
       servicosItens = e.servicos.map(s => ({ tipo: s.tipo || "Consultoria", descricao: s.descricao || "", horas: Number(s.horas) || 0 }));
@@ -801,9 +815,9 @@ Valor global: ${brl(r.global.comImposto)}`;
     // campos genéricos → recalc
     ["#usuarios","#desconto","#avds","#pdis","#tokenMode","#peopleAnalytics"]
       .forEach(s => { const el = $(s); if (el) el.addEventListener("input", recalc); });
-    // módulos: "Completos" trava todas as outras opções (e vice-versa)
-    [["#m_completos","completos"],["#m_desempenho","outro"],["#m_engajamento","outro"],
-     ["#m_metas","outro"],["#m_rv","outro"],["#m_ia","outro"]].forEach(([s, origem]) => {
+    // módulos: "Completos" trava avulsos e inclui RV/IA; avulsos travam Completos
+    [["#m_completos","completos"],["#m_desempenho","base"],["#m_engajamento","base"],
+     ["#m_metas","base"],["#m_rv","incluso"],["#m_ia","incluso"]].forEach(([s, origem]) => {
       const el = $(s);
       if (el) el.addEventListener("change", () => { aplicarExclusividadeModulos(origem); recalc(); });
     });
