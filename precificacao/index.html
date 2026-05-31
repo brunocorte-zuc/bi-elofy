@@ -112,15 +112,12 @@
     </div>
 
     <h3>Serviços não recorrentes (NR)</h3>
-    <p style="font-size:11px;color:var(--txt-3);margin-bottom:10px">Implantação é calculada automaticamente por escopo × porte. Demais serviços: informe as horas.</p>
-    <div class="row">
-      <div class="field"><label>Consultoria (h)</label><input type="number" id="s_consultoria" min="0" value="0"></div>
-      <div class="field"><label>Endomarketing (h)</label><input type="number" id="s_endomarketing" min="0" value="0"></div>
-      <div class="field"><label>Desenvolvimento (h)</label><input type="number" id="s_desenvolvimento" min="0" value="0"></div>
-    </div>
+    <p style="font-size:11px;color:var(--txt-3);margin-bottom:10px">Implantação é calculada automaticamente por escopo × porte. Adicione consultorias, endomarketing e outros serviços como linhas — cada uma vira um item na proposta. Valor = horas × valor/hora.</p>
+    <div id="servicosLista"></div>
+    <button class="btn ghost" id="btnAddServico" type="button" style="margin-top:4px;padding:6px 12px">+ Adicionar serviço</button>
 
     <h3>Customizações (Jira)</h3>
-    <p style="font-size:11px;color:var(--txt-3);margin-bottom:10px">Desenvolvimentos do projeto PDMC liberados para venda (status "Elaborar Proposta"). Valor = (horas dev + QA) × R$/hora.</p>
+    <p style="font-size:11px;color:var(--txt-3);margin-bottom:10px">Desenvolvimentos do projeto PDMC liberados para venda (status "Elaborar Proposta"). Cada custom selecionada entra como um item da proposta. Valor = (horas dev + QA) × R$/hora.</p>
     <div class="row" style="align-items:flex-end">
       <button class="btn ghost" id="btnBuscarCustoms" type="button">Buscar customs</button>
       <label class="toggle-mrr" id="toggleCustomWrap" title="Define se as customs entram na mensalidade ou como cobrança única">

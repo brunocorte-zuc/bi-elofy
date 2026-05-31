@@ -146,12 +146,26 @@
     // 4) Serviços NR — implantação (por escopo×porte)
     const impl = calcImplantacao(usuarios, sel, servicos, params);
 
-    // 4b) Serviços avulsos (horas digitadas)
-    const avulsos = (servicos.avulsos || []).map(a => {
-      const horas = Number((input.servicosAvulsosHoras || {})[a.id]) || 0;
-      const semImp = horas * servicos.valor_hora;
-      return { id: a.id, nome: a.nome, horas, semImposto: semImp, comImposto: comImposto(semImp) };
-    });
+    // 4b) Serviços não recorrentes itemizados (linhas: tipo + descrição + horas)
+    //     Valor de cada linha = horas × valor_hora. Mantém compatibilidade com
+    //     o formato antigo (servicosAvulsosHoras = mapa {id: horas}).
+    let servItens = Array.isArray(input.servicos) ? input.servicos : null;
+    if (!servItens) {
+      const mapa = input.servicosAvulsosHoras || {};
+      servItens = (servicos.avulsos || []).map(a => ({
+        tipo: a.nome, descricao: "", horas: Number(mapa[a.id]) || 0,
+      }));
+    }
+    const avulsos = servItens
+      .map(s => {
+        const horas = Number(s.horas) || 0;
+        const semImp = horas * servicos.valor_hora;
+        return {
+          tipo: s.tipo || "Serviço", descricao: s.descricao || "", horas,
+          semImposto: semImp, comImposto: comImposto(semImp),
+        };
+      })
+      .filter(s => s.horas > 0);
 
     // 4c) Customizações (Jira) — soma do grupo selecionado.
     // Podem entrar no MRR (recorrente) ou como NR (único), conforme negociação.

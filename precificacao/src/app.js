@@ -58,6 +58,9 @@
   // Customs (Jira) carregadas e selecionadas
   let customsDisponiveis = [];          // resultado da busca
   const customsSelecionadas = new Set(); // jira_key marcados
+  // Serviços NR itemizados: [{ tipo, descricao, horas }]
+  let servicosItens = [];
+  const TIPOS_SERVICO = ["Consultoria", "Endomarketing", "Desenvolvimento", "Treinamento", "Outro"];
 
   /* ---- Abas de produto ---- */
   function renderTabs() {
@@ -98,11 +101,9 @@
         pdis: Number($("#pdis").value) || 0,
         tokenMode: $("#tokenMode").value,
       },
-      servicosAvulsosHoras: {
-        consultoria:     $("#s_consultoria").value,
-        endomarketing:   $("#s_endomarketing").value,
-        desenvolvimento: $("#s_desenvolvimento").value,
-      },
+      servicos: servicosItens.map(s => ({
+        tipo: s.tipo, descricao: s.descricao, horas: Number(s.horas) || 0,
+      })),
       customs: customsDisponiveis.filter(c => customsSelecionadas.has(c.jira_key)),
       customNoMrr: $("#customNoMrr").checked,
     };
@@ -140,6 +141,29 @@
     $("#iaBox").classList.toggle("hide", !$("#m_ia").checked);
     document.querySelectorAll("[data-mod]").forEach(l =>
       l.classList.toggle("on", l.querySelector("input").checked));
+  }
+
+  // "Completos" e os módulos avulsos (Desempenho/Engajamento/Metas) são
+  // MUTUAMENTE EXCLUSIVOS: ou é venda completa, ou é venda modular.
+  // RV e IA são modificadores e continuam disponíveis nos dois casos.
+  const MODULARES = ["#m_desempenho", "#m_engajamento", "#m_metas"];
+  function aplicarExclusividadeModulos(origem) {
+    const completos = $("#m_completos");
+    const modulares = MODULARES.map($);
+    if (origem === "completos" && completos.checked) {
+      modulares.forEach(c => { c.checked = false; });
+    } else if (origem && origem !== "completos" && modulares.some(c => c.checked)) {
+      completos.checked = false;
+    }
+    const compOn = completos.checked;
+    const modOn = modulares.some(c => c.checked);
+    modulares.forEach(c => travarChk(c, compOn));
+    travarChk(completos, modOn);
+  }
+  function travarChk(input, travar) {
+    input.disabled = travar;
+    const label = input.closest(".chk");
+    if (label) label.classList.toggle("locked", travar);
   }
 
   function renderKpis(r) {
@@ -190,8 +214,10 @@
       <td>${nome}</td><td class="mono">${brl(unit)}</td><td class="mono">${brl(unit * u)}</td></tr>` : "";
 
     const cst = r.customs || { itens: [], semImposto: 0, noMrr: false };
-    const linhaCustomMrr = (cst.noMrr && cst.semImposto)
-      ? `<tr class="sub-row"><td>Customizações (${cst.itens.length})</td><td></td><td class="mono">${brl(cst.semImposto)}</td></tr>`
+    // Cada custom é uma LINHA da proposta (o cliente vê tudo que entrou no projeto).
+    const linhaCustomMrr = (cst.noMrr)
+      ? cst.itens.map(c => `<tr class="sub-row"><td>Custom · ${escapeHtml(c.summary || c.jira_key)}</td>
+          <td></td><td class="mono">${brl(c.valor_sem_imposto)}</td></tr>`).join("")
       : "";
 
     const recorrente = `
@@ -212,13 +238,19 @@
 
     const linhaNR = (nome, horas, val) => val ? `<tr class="sub-row">
       <td>${nome}</td><td class="mono">${horas}h</td><td class="mono">${brl(val)}</td></tr>` : "";
-    const customNR = (!cst.noMrr && cst.semImposto)
-      ? `<tr class="sub-row"><td>Customizações (${cst.itens.length})</td><td class="mono">—</td><td class="mono">${brl(cst.comImposto)}</td></tr>`
+    // Serviços itemizados: "Tipo — descrição"
+    const servNR = r.avulsos.map(a =>
+      linhaNR(a.descricao ? `${escapeHtml(a.tipo)} — ${escapeHtml(a.descricao)}` : escapeHtml(a.tipo),
+              a.horas, a.comImposto)).join("");
+    // Cada custom como linha de NR (com imposto), quando for cobrança única.
+    const customNR = (!cst.noMrr)
+      ? cst.itens.map(c => `<tr class="sub-row"><td>Custom · ${escapeHtml(c.summary || c.jira_key)}</td>
+          <td class="mono">—</td><td class="mono">${brl(window.PricingEngine.comImposto(c.valor_sem_imposto))}</td></tr>`).join("")
       : "";
     const nr = `
       <tr><th>Não recorrente (único)</th><th>Horas</th><th>Total c/ imp.</th></tr>
       ${linhaNR(`Implantação (${r.implantacao.porte})`, r.implantacao.horas, r.implantacao.comImposto)}
-      ${r.avulsos.map(a => linhaNR(a.nome, a.horas, a.comImposto)).join("")}
+      ${servNR}
       ${customNR}
       <tr class="tot-row"><td>Total NR c/ imposto</td><td></td><td class="mono">${brl(r.nr.comImposto)}</td></tr>`;
 
@@ -269,7 +301,7 @@ Valor global: ${brl(r.global.comImposto)}`;
     ];
     const naoRecorrente = [
       { nome: `Implantação & configuração`, valor: r.implantacao.comImposto },
-      ...r.avulsos.map(a => ({ nome: a.nome, valor: a.comImposto })),
+      ...r.avulsos.map(a => ({ nome: a.descricao ? `${a.tipo} — ${a.descricao}` : a.tipo, valor: a.comImposto })),
     ];
     const customs = (r.customs.itens || []).map(c => ({
       nome: c.summary || c.jira_key, valor: comImpostoView(c.valor_sem_imposto),
@@ -468,10 +500,19 @@ Valor global: ${brl(r.global.comImposto)}`;
     if (sel.avds != null) $("#avds").value = sel.avds;
     if (sel.pdis != null) $("#pdis").value = sel.pdis;
     if (sel.tokenMode) $("#tokenMode").value = sel.tokenMode;
-    const sa = e.servicosAvulsosHoras || {};
-    $("#s_consultoria").value = sa.consultoria || 0;
-    $("#s_endomarketing").value = sa.endomarketing || 0;
-    $("#s_desenvolvimento").value = sa.desenvolvimento || 0;
+    aplicarExclusividadeModulos(null); // reaplica travas conforme módulos restaurados
+    // serviços NR: formato novo (lista) ou antigo (mapa de horas)
+    if (Array.isArray(e.servicos)) {
+      servicosItens = e.servicos.map(s => ({ tipo: s.tipo || "Consultoria", descricao: s.descricao || "", horas: Number(s.horas) || 0 }));
+    } else {
+      const sa = e.servicosAvulsosHoras || {};
+      servicosItens = [
+        { tipo: "Consultoria", descricao: "", horas: Number(sa.consultoria) || 0 },
+        { tipo: "Endomarketing", descricao: "", horas: Number(sa.endomarketing) || 0 },
+        { tipo: "Desenvolvimento", descricao: "", horas: Number(sa.desenvolvimento) || 0 },
+      ].filter(s => s.horas > 0);
+    }
+    renderServicos();
     $("#customNoMrr").checked = !!e.customNoMrr;
     // customs salvas → repõe disponíveis/selecionadas
     customsDisponiveis = (row.customs || []).map(c => ({
@@ -686,6 +727,38 @@ Valor global: ${brl(r.global.comImposto)}`;
     });
   }
 
+  /* ---- Serviços NR itemizados ---- */
+  function addServico() { servicosItens.push({ tipo: "Consultoria", descricao: "", horas: 0 }); renderServicos(); }
+
+  function renderServicos() {
+    const box = $("#servicosLista");
+    if (!box) return;
+    const valorHora = (ctx.servicos && ctx.servicos.valor_hora) || 220;
+    box.innerHTML = servicosItens.map((s, i) => {
+      const opts = TIPOS_SERVICO.map(t =>
+        `<option value="${t}" ${t === s.tipo ? "selected" : ""}>${t}</option>`).join("");
+      const valor = (Number(s.horas) || 0) * valorHora;
+      return `<div class="serv-item" data-i="${i}">
+        <select class="serv-tipo">${opts}</select>
+        <input class="serv-desc" type="text" placeholder="Descrição (ex.: Clima organizacional)" value="${escapeHtml(s.descricao || "")}">
+        <input class="serv-horas" type="number" min="0" step="1" placeholder="h" value="${s.horas || 0}">
+        <span class="serv-val mono">${brl(valor)}</span>
+        <button class="serv-x" type="button" title="Remover">✕</button>
+      </div>`;
+    }).join("");
+    box.querySelectorAll(".serv-item").forEach(el => {
+      const i = Number(el.dataset.i);
+      el.querySelector(".serv-tipo").addEventListener("change", e => { servicosItens[i].tipo = e.target.value; recalc(); });
+      el.querySelector(".serv-desc").addEventListener("input", e => { servicosItens[i].descricao = e.target.value; });
+      el.querySelector(".serv-horas").addEventListener("input", e => {
+        servicosItens[i].horas = Number(e.target.value) || 0;
+        el.querySelector(".serv-val").textContent = brl(servicosItens[i].horas * valorHora);
+        recalc();
+      });
+      el.querySelector(".serv-x").addEventListener("click", () => { servicosItens.splice(i, 1); renderServicos(); recalc(); });
+    });
+  }
+
   function ligarLogin() {
     const store = window.PricingStore;
     if (!store) {
@@ -721,20 +794,28 @@ Valor global: ${brl(r.global.comImposto)}`;
     $("#btnBuscarCustoms").addEventListener("click", buscarCustoms);
     atualizarBotoesVersao();
     $("#customNoMrr").addEventListener("change", recalc);
-    [
-      "#usuarios","#desconto","#avds","#pdis","#tokenMode","#peopleAnalytics",
-      "#s_consultoria","#s_endomarketing","#s_desenvolvimento",
-      "#m_completos","#m_desempenho","#m_engajamento","#m_metas","#m_rv","#m_ia",
-    ].forEach(s => { const el = $(s); if (el) el.addEventListener("input", recalc); });
+    $("#btnAddServico").addEventListener("click", addServico);
+    renderServicos();
+    // campos genéricos → recalc
+    ["#usuarios","#desconto","#avds","#pdis","#tokenMode","#peopleAnalytics","#m_rv","#m_ia"]
+      .forEach(s => { const el = $(s); if (el) el.addEventListener("input", recalc); });
+    // módulos com exclusividade Completos × {Desempenho,Engajamento,Metas}
+    [["#m_completos","completos"],["#m_desempenho","desempenho"],
+     ["#m_engajamento","engajamento"],["#m_metas","metas"]].forEach(([s, origem]) => {
+      const el = $(s);
+      if (el) el.addEventListener("change", () => { aplicarExclusividadeModulos(origem); recalc(); });
+    });
     $("#btnCopiar").addEventListener("click", copiarResumo);
     $("#btnPdf").addEventListener("click", gerarPdf);
     $("#btnLimpar").addEventListener("click", () => {
       document.querySelectorAll('#painelElofy input[type=checkbox]').forEach(c => c.checked = false);
-      ["#desconto","#avds","#pdis","#s_consultoria","#s_endomarketing","#s_desenvolvimento"].forEach(s => $(s).value = 0);
+      ["#desconto","#avds","#pdis"].forEach(s => $(s).value = 0);
       $("#peopleAnalytics").value = ""; $("#cliente").value = "";
       bitrixVinculado = null; renderVinculo();
       customsDisponiveis = []; customsSelecionadas.clear();
       $("#customNoMrr").checked = false; $("#customsLista").innerHTML = "";
+      servicosItens = []; renderServicos();
+      aplicarExclusividadeModulos(null);
       propostaAtualId = null; propostaAtualVersao = null;
       atualizarBotoesVersao(); carregarHistorico();
       recalc();

@@ -48,11 +48,12 @@ body{font-family:'Outfit',system-ui,sans-serif;background:var(--bg);color:var(--
 /* Form */
 .field{margin-bottom:14px}
 .field label{display:block;font-size:12px;font-weight:500;color:var(--txt-2);margin-bottom:6px}
-.field input,.field select{width:100%;background:var(--surf);border:1px solid var(--border-md);
-  border-radius:10px;padding:10px 13px;color:var(--txt);font-family:inherit;font-size:14px;
-  transition:border-color .12s, box-shadow .12s}
-.field input:focus,.field select:focus{outline:none;border-color:var(--accent);
-  box-shadow:0 0 0 3px var(--accent-soft);background:#fff}
+.field input,.field select,.serv-item input,.serv-item select{width:100%;background:var(--surf);
+  border:1px solid var(--border-md);border-radius:10px;padding:10px 13px;color:var(--txt);
+  font-family:inherit;font-size:14px;transition:border-color .12s, box-shadow .12s}
+.serv-item input,.serv-item select{padding:8px 10px;font-size:13px}
+.field input:focus,.field select:focus,.serv-item input:focus,.serv-item select:focus{outline:none;
+  border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);background:#fff}
 .row{display:flex;gap:12px}.row>*{flex:1}
 
 /* Checkboxes módulos */
@@ -61,9 +62,21 @@ body{font-family:'Outfit',system-ui,sans-serif;background:var(--bg);color:var(--
   transition:.14s}
 .chk:hover{background:var(--hover);border-color:var(--border-md)}
 .chk.on{border-color:var(--accent);background:var(--accent-soft)}
+.chk.locked{opacity:.45;cursor:not-allowed}
+.chk.locked:hover{background:var(--surf);border-color:var(--border)}
 .chk input{accent-color:var(--accent);width:17px;height:17px;flex:none}
 .chk .nm{flex:1;font-weight:500}
 .chk .nm small{display:block;color:var(--txt-3);font-size:11px;font-weight:400;margin-top:1px}
+
+/* Serviços NR itemizados */
+.serv-item{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.serv-item .serv-tipo{flex:none;width:130px}
+.serv-item .serv-desc{flex:1;min-width:0}
+.serv-item .serv-horas{flex:none;width:64px;text-align:right}
+.serv-item .serv-val{flex:none;width:96px;text-align:right;font-size:12px;color:var(--accent-2);font-weight:600}
+.serv-item .serv-x{flex:none;border:none;background:none;color:var(--txt-3);cursor:pointer;
+  font-size:14px;font-weight:700;padding:0 4px}
+.serv-item .serv-x:hover{color:var(--red)}
 
 /* KPIs */
 .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}

@@ -81,6 +81,25 @@ Os dados de preço ficam em **tabelas do schema `pricing`** no Supabase. Edite n
 | `pricing.parametros` | impostos, % de RV/IA, tokens por AVD/PDI, R$/hora (inclui `valor_hora_custom`) |
 | `pricing.customs_status_elegivel` | status do Jira que liberam a custom (hoje: Elaborar Proposta) |
 
+### Módulos: venda completa OU modular
+
+"Completos" e os módulos avulsos (Desempenho, Engajamento, Metas) são
+**mutuamente exclusivos**: ao marcar "Completos", os avulsos ficam travados, e
+vice-versa. RV e IA são modificadores e seguem disponíveis nos dois casos.
+
+### Itens da proposta (recorrente × não recorrente)
+
+Tudo aparece **itemizado**, para o cliente ver o que compõe o projeto:
+
+- **Recorrente (mensal):** cada módulo selecionado (ou "Completos"), RV, IA,
+  tokens, People Analytics — e cada custom, quando cobrada dentro do MRR.
+- **Não recorrente (único):** implantação (automática) + **serviços itemizados**
+  e **cada customização como uma linha própria**.
+- **Serviços NR** são linhas livres (botão *+ Adicionar serviço*): tipo
+  (Consultoria/Endomarketing/Desenvolvimento/…), descrição e horas. Permite, p.ex.,
+  duas consultorias distintas ("Clima organizacional", "Acompanhamento pós-projeto").
+  Valor de cada linha = horas × valor/hora.
+
 ### Proposta em PDF
 
 Botão **Gerar PDF** abre uma proposta comercial caprichada (marca elofy +
