@@ -6,7 +6,7 @@
 <title>Formação de Preço · HR Tech</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.css?v=20260531f">
+<link rel="stylesheet" href="app.css?v=20260531g">
 </head>
 <body>
 
@@ -49,6 +49,15 @@
       <p style="font-size:11px;color:var(--txt-3);margin-top:10px">
         Digite o código do e-mail. Você também pode clicar no link — mas se usa
         <b>Outlook</b>, prefira o código (o link pode ser bloqueado).</p>
+    </div>
+
+    <div id="senhaBox" style="margin-top:16px;border-top:1px dashed var(--border-md);padding-top:14px">
+      <label style="font-size:11px;color:var(--txt-3);display:block;margin-bottom:8px">
+        ⚡ Acesso temporário por senha (enquanto configuramos o e-mail)</label>
+      <div class="field" style="margin-bottom:8px">
+        <input type="password" id="loginSenha" placeholder="Senha temporária" autocomplete="current-password">
+      </div>
+      <button class="btn ghost" id="btnSenha" style="width:100%">Entrar com senha</button>
     </div>
 
     <p id="loginMsg" style="font-size:12px;margin-top:12px"></p>
@@ -202,10 +211,10 @@
 <script src="data/supabase.js"></script>
 <!-- Motor + auth + PDF + UI. O ?v= força o navegador a baixar a versão nova
      após cada deploy (evita HTML novo rodando com JS antigo em cache). -->
-<script src="src/engine.js?v=20260531f"></script>
-<script src="src/auth.js?v=20260531f"></script>
-<script src="src/pdf.js?v=20260531f"></script>
-<script src="src/handoff.js?v=20260531f"></script>
-<script src="src/app.js?v=20260531f"></script>
+<script src="src/engine.js?v=20260531g"></script>
+<script src="src/auth.js?v=20260531g"></script>
+<script src="src/pdf.js?v=20260531g"></script>
+<script src="src/handoff.js?v=20260531g"></script>
+<script src="src/app.js?v=20260531g"></script>
 </body>
 </html>

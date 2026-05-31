@@ -71,6 +71,16 @@
     return true;
   }
 
+  // Login por SENHA (temporário, para testes enquanto o SMTP não está pronto).
+  async function loginSenha(email, senha) {
+    if (!disponivel()) throw new Error("Supabase não configurado.");
+    const { error } = await sb.auth.signInWithPassword({
+      email: (email || "").trim(), password: (senha || ""),
+    });
+    if (error) throw error;
+    return true;
+  }
+
   // Login pelo CÓDIGO de 6 dígitos enviado por e-mail. Não depende de clicar no
   // link (logo, imune ao SafeLinks do Outlook, que "consome" o link) e funciona
   // em qualquer navegador/celular.
@@ -221,7 +231,7 @@
   global.PricingStore = {
     init, estado, disponivel,
     onChange: cb => { listeners.push(cb); },
-    login, verificarCodigo, logout,
+    login, verificarCodigo, loginSenha, logout,
     perfil: () => perfilCache,
     salvarProposta, atualizarProposta, historicoProposta,
     listarPropostas, carregarConfig, buscarNegocios, buscarCustoms,

@@ -908,8 +908,20 @@ Valor global: ${brl(r.global.comImposto)}`;
         // onAuthStateChange cuida de carregar o perfil e abrir o app.
       } catch (e) { setMsg(msg, "Código inválido ou expirado. " + (e.message || ""), "bad"); }
     });
+    // Login por senha (temporário, enquanto o SMTP não está configurado).
+    $("#btnSenha").addEventListener("click", async () => {
+      const email = $("#loginEmail").value.trim();
+      const senha = $("#loginSenha").value;
+      const msg = $("#loginMsg");
+      if (!email || !senha) { setMsg(msg, "Informe e-mail e senha.", "warn"); return; }
+      try {
+        setMsg(msg, "Entrando…", "");
+        await store.loginSenha(email, senha);
+      } catch (e) { setMsg(msg, "E-mail ou senha inválidos. " + (e.message || ""), "bad"); }
+    });
     $("#loginEmail").addEventListener("keydown", e => { if (e.key === "Enter") $("#btnLogin").click(); });
     $("#loginCodigo").addEventListener("keydown", e => { if (e.key === "Enter") $("#btnCodigo").click(); });
+    $("#loginSenha").addEventListener("keydown", e => { if (e.key === "Enter") $("#btnSenha").click(); });
     $("#btnLogout").addEventListener("click", () => store.logout());
     store.init();
   }
