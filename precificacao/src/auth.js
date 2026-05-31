@@ -34,7 +34,13 @@
   async function init() {
     if (!disponivel()) { emit(); return; }
     sb = global.supabase.createClient(cfg.url, cfg.publishableKey, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+      auth: {
+        persistSession: true, autoRefreshToken: true, detectSessionInUrl: true,
+        // 'implicit': o token vem no #hash do link. Funciona quando o e-mail é
+        // aberto em OUTRO navegador/webview (caso comum no celular). O 'pkce'
+        // (padrão) exige o mesmo navegador que pediu o link e quebra no mobile.
+        flowType: "implicit",
+      },
     });
     const { data } = await sb.auth.getSession();
     if (data && data.session) await carregarPerfil();
