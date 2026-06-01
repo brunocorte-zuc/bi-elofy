@@ -127,6 +127,9 @@
             <span class="ops-etapa">${esc(etapaNome)}</span>
             <span class="pp-status ${s.cls}">${s.txt}</span>
             ${i.problemas_abertos > 0 ? `<span class="pp-status bad">⚠ ${i.problemas_abertos} problema(s) aberto(s)</span>` : ""}
+            ${i.handoff_status === "pendente" ? `<span class="pp-status warn">🤝 Aguardando aceite</span>` : ""}
+            ${(i.red_flags || []).length >= 2 ? `<span class="pp-status bad">🚩 RED ACCOUNT</span>`
+              : (i.red_flags || []).length === 1 ? `<span class="pp-status warn">🚩 1 sinal</span>` : ""}
           </div>
           <button class="pp-abrir" type="button">Abrir</button>
         </div>
@@ -165,6 +168,158 @@
       </label>`).join("") || `<p style="font-size:12px;color:var(--txt-3)">Nenhuma pessoa cadastrada ainda.</p>`;
   }
 
+  /* ---------- Playbook de Handoff (Laura/Arquitetura) ---------- */
+  const SINAIS_RED = [
+    "Baixo engajamento com o CS", "Reclamações recorrentes de suporte",
+    "Não comparecimento a reuniões", "Questionamento do valor no contrato",
+    "Mudança de decisor / patrocinador", "Queda de uso da plataforma",
+  ];
+  const ROTULO = {
+    maturidade: { inexistente: "Inexistente", inicial: "Inicial (planilhas)", estruturada: "Estruturada", avancada: "Avançada" },
+    nivel: { baixa: "Baixa", media: "Média", alta: "Alta", nenhuma: "Nenhuma", baixo: "Baixo", medio: "Médio", alto: "Alto" },
+    papel: { decisor: "Decisor", champion: "Champion", detrator: "⚠️ Detrator", operacional: "Operacional", outro: "Outro" },
+  };
+
+  // Banner de aceite: o handoff só está completo quando o OPS confirma a passagem.
+  function bannerAceite(impl) {
+    if (!impl.handoff_id || impl.handoff_status !== "pendente") return "";
+    if (!podeEditar) return `<div class="ho-gate" style="margin-bottom:14px">
+      🤝 <b>Handoff aguardando aceite do Customer OPS.</b> O time precisa ler o playbook e confirmar a passagem.</div>`;
+    return `<div class="ops-aceite" id="opsAceiteBox">
+      <div><b>🤝 Este handoff aguarda o seu aceite.</b><br>
+      <span>Leia o playbook abaixo, confirme os itens e assuma o projeto — o closer será avisado.</span></div>
+      <div class="ops-aceite-check">
+        <label class="ho-chk"><input type="checkbox" id="okPlaybook"><span>Li o playbook completo</span></label>
+        <label class="ho-chk"><input type="checkbox" id="okReuniao"><span>Tive (ou agendei) a reunião de passagem com o comercial</span></label>
+        <label class="ho-chk"><input type="checkbox" id="okRiscos"><span>Estou ciente dos riscos mapeados</span></label>
+        <label class="ho-chk"><input type="checkbox" id="okContato"><span>Primeiro contato com o cliente está agendado</span></label>
+      </div>
+      <button class="btn" id="btnAceitar" type="button">🤝 Aceitar handoff e assumir o projeto</button>
+      <p id="aceiteMsg" class="ho-msg"></p>
+    </div>`;
+  }
+
+  // Visualizador do playbook (o que o comercial passou).
+  function playbookViewer(impl) {
+    const pb = impl.handoff_playbook || {};
+    const tem = o => o && Object.values(o).some(v => v && String(v).trim());
+    if (!impl.handoff_id) return "";
+    const pf = pb.prefill || {};
+    const fb = pf.feedback_cliente;
+    const linha = (k, v) => v && String(v).trim() ? `<div class="pb-linha"><b>${k}:</b> ${esc(v)}</div>` : "";
+    const aceiteInfo = impl.handoff_status === "aceito"
+      ? `<span class="pp-status ok">🤝 Aceito por ${esc((impl.handoff_aceito_por || "").split("@")[0])}</span>`
+      : `<span class="pp-status warn">⏳ Aguardando aceite</span>`;
+
+    const stakeholders = (impl.handoff_contatos || []).map(c =>
+      `<div class="pb-linha">${ROTULO.papel[c.papel] || "Contato"}: <b>${esc(c.nome || "—")}</b>${c.cargo ? " · " + esc(c.cargo) : ""}${c.email ? " · " + esc(c.email) : ""}${c.telefone ? " · " + esc(c.telefone) : ""}</div>`).join("");
+
+    const riscos = (pb.riscos || []).map(r =>
+      `<div class="pb-linha pb-risco-${esc(r.nivel)}">⚠️ <b>${esc(r.risco)}</b> — nível ${ROTULO.nivel[r.nivel] || r.nivel}</div>`).join("");
+
+    return `
+      <details class="pb-sec" ${impl.handoff_status === "pendente" ? "open" : ""}>
+        <summary>📘 Playbook do Handoff (passado pelo Comercial) ${aceiteInfo}</summary>
+        <div class="pb-body">
+          <div class="pb-grupo"><div class="pb-grupo-titulo">⚡ Dados da venda (automático)</div>
+            ${linha("Módulos", pf.modulos ? Object.keys(pf.modulos).filter(k => pf.modulos[k] === true).join(", ") : "")}
+            ${pf.desconto_pct ? `<div class="pb-linha"><b>Desconto:</b> ${(pf.desconto_pct * 100).toFixed(1)}%</div>` : ""}
+            ${(pf.customs || []).length ? `<div class="pb-linha"><b>Customs prometidas:</b> ${esc(pf.customs.join("; "))}</div>` : ""}
+            ${fb ? `<div class="pb-linha"><b>Feedback do cliente:</b> ${esc(fb.sentimento)}${fb.comentario ? ` — “${esc(fb.comentario)}”` : ""}</div>` : ""}
+          </div>
+          ${tem(pb.contexto) ? `<div class="pb-grupo"><div class="pb-grupo-titulo">📊 Contexto da empresa</div>
+            ${linha("Setor", pb.contexto.setor)}
+            ${linha("Maturidade em gestão de pessoas", ROTULO.maturidade[pb.contexto.maturidade] || pb.contexto.maturidade)}
+            ${linha("Histórico com ferramentas", pb.contexto.historico_rh)}
+            ${linha("Cultura", pb.contexto.cultura)}</div>` : ""}
+          ${tem(pb.emocional) ? `<div class="pb-grupo"><div class="pb-grupo-titulo">🎭 Estado emocional</div>
+            ${linha("Como chegou na venda", pb.emocional.como_chegou)}
+            ${linha("Resistência interna", ROTULO.nivel[pb.emocional.resistencia] || pb.emocional.resistencia)}
+            ${linha("Urgência do cliente", ROTULO.nivel[pb.emocional.urgencia] || pb.emocional.urgencia)}</div>` : ""}
+          ${stakeholders ? `<div class="pb-grupo"><div class="pb-grupo-titulo">👥 Stakeholders</div>${stakeholders}</div>` : ""}
+          ${tem(pb.promessas) ? `<div class="pb-grupo"><div class="pb-grupo-titulo">🤝 O que foi prometido</div>
+            ${linha("Promessas", pb.promessas.feitas)}
+            ${linha("Destaques da demo", pb.promessas.demo)}
+            ${pb.promessas.em_risco ? `<div class="pb-linha pb-alerta">⚠️ <b>Expectativas em risco:</b> ${esc(pb.promessas.em_risco)}</div>` : ""}
+            ${linha("Pendências", pb.promessas.pendencias)}</div>` : ""}
+          ${tem(pb.momento_valor) ? `<div class="pb-grupo"><div class="pb-grupo-titulo">💎 Momento de valor</div>
+            ${linha("Primeiro resultado esperado", pb.momento_valor.primeiro_resultado)}
+            ${linha("Tempo esperado para ver valor", pb.momento_valor.tempo_esperado)}
+            ${linha("O que faz dizer 'valeu a pena'", pb.momento_valor.valeu_a_pena)}</div>` : ""}
+          ${riscos ? `<div class="pb-grupo"><div class="pb-grupo-titulo">⚠️ Riscos mapeados</div>${riscos}
+            ${linha("Detalhes", pb.riscos_obs)}</div>` : ""}
+          ${impl.handoff_criterios_sucesso ? `<div class="pb-grupo"><div class="pb-grupo-titulo">🎯 Critério de sucesso</div>
+            <div class="pb-linha">${esc(impl.handoff_criterios_sucesso)}</div></div>` : ""}
+          ${impl.handoff_historia ? `<div class="pb-grupo"><div class="pb-grupo-titulo">📖 História</div>
+            <div class="pb-linha">${esc(impl.handoff_historia)}</div></div>` : ""}
+        </div>
+      </details>`;
+  }
+
+  // Discovery técnico (configurações dos módulos, preenchido pelo OPS no kickoff).
+  function discoverySection(impl) {
+    const d = impl.discovery || {};
+    const ad = d.ad || {}, pq = d.pesquisas || {}, mt = d.metas || {};
+    const status = impl.discovery_em
+      ? `<span class="pp-status ok">✓ Preenchido em ${dataBR(impl.discovery_em)}</span>`
+      : `<span class="pp-status wait">Pendente</span>`;
+    if (!podeEditar) {
+      return impl.discovery_em ? `<details class="pb-sec"><summary>🔧 Discovery técnico ${status}</summary>
+        <div class="pb-body"><pre class="pb-pre">${esc(JSON.stringify(d, null, 2))}</pre></div></details>` : "";
+    }
+    const f = (id, rotulo, valor, ph) => `<label class="ho-f">${rotulo}
+      <input type="text" id="${id}" value="${esc(valor || "")}" placeholder="${ph || ""}"></label>`;
+    return `
+      <details class="pb-sec"><summary>🔧 Discovery técnico (preencher no kickoff) ${status}</summary>
+        <div class="pb-body">
+          <div class="pb-grupo-titulo">Avaliação de Desempenho (AD)</div>
+          <div class="ho-grid">
+            ${f("dcAdFreq", "Frequência da avaliação", ad.frequencia, "ex.: semestral")}
+            ${f("dcAdEtapas", "Etapas do processo", ad.etapas, "ex.: auto + gestor + calibração")}
+            ${f("dcAdRegua", "Régua de pontuação", ad.regua, "ex.: 1 a 5")}
+            ${f("dcAdAvaliadores", "Tipos de avaliadores", ad.avaliadores, "ex.: gestor, pares, subordinados")}
+          </div>
+          <div class="pb-grupo-titulo" style="margin-top:12px">Pesquisas</div>
+          <div class="ho-grid">
+            ${f("dcPqTipo", "Tipo de pesquisa", pq.tipo, "ex.: clima, pulso, eNPS")}
+            ${f("dcPqFreq", "Frequência de envio", pq.frequencia, "ex.: trimestral")}
+            ${f("dcPqEscala", "Escala utilizada", pq.escala, "ex.: 1 a 10")}
+          </div>
+          <div class="pb-grupo-titulo" style="margin-top:12px">Metas (OKR / Individuais)</div>
+          <div class="ho-grid">
+            ${f("dcMtCiclos", "Ciclos por ano", mt.ciclos_ano, "ex.: 4 (trimestral)")}
+            ${f("dcMtParticipantes", "Participantes do ciclo", mt.participantes, "ex.: liderança, todos")}
+            ${f("dcMtCascata", "Alinhamento entre metas (cascata)?", mt.cascata, "sim / não / parcial")}
+            ${f("dcMtUso", "Uso do resultado das metas", mt.uso_resultado, "ex.: bônus, PDI, RV")}
+          </div>
+          <button class="btn ghost" id="btnSalvarDiscovery" type="button" style="margin-top:12px;padding:7px 14px">Salvar discovery</button>
+        </div>
+      </details>`;
+  }
+
+  // Sinais de Red Account (semente do módulo de CS).
+  function redFlagsSection(impl) {
+    const flags = impl.red_flags || [];
+    const ativos = new Set(flags.map(f => f.sinal));
+    const badge = ativos.size >= 2
+      ? `<span class="pp-status bad">🚩 RED ACCOUNT · ${ativos.size} sinais</span>`
+      : ativos.size === 1 ? `<span class="pp-status warn">🚩 1 sinal de alerta</span>` : "";
+    return `
+      <details class="pb-sec" ${ativos.size ? "open" : ""}><summary>🚩 Sinais de alerta (Red Account) ${badge}</summary>
+        <div class="pb-body">
+          <p style="font-size:12px;color:var(--txt-3);margin-bottom:10px">
+            Marque os sinais observados. Com 2 ou mais, a conta vira <b>Red Account</b> e o time todo é alertado.</p>
+          <div class="ops-is-lista">
+            ${SINAIS_RED.map(s => `
+              <label class="ops-is-item ${ativos.has(s) ? "on" : ""} ${podeEditar ? "" : "ro"}">
+                <input type="checkbox" data-flag="${esc(s)}" ${ativos.has(s) ? "checked" : ""} ${podeEditar ? "" : "disabled"}>
+                <span>${s}</span>
+              </label>`).join("")}
+          </div>
+        </div>
+      </details>`;
+  }
+
   // Linha compacta do time da implantação (board e detalhe).
   function timeLinha(i) {
     const p = (rotulo, v) => v ? `<span><b>${rotulo}</b> ${esc(String(v).split("@")[0])}</span>` : "";
@@ -193,12 +348,17 @@
     body.innerHTML = `
       <div class="ho-head"><h2>🚀 ${esc(impl.cliente)}</h2>
         <span class="pp-status ${s.cls}">${s.txt}</span></div>
+      ${bannerAceite(impl)}
       ${stepper(impl.etapa, impl.tempos_etapas)}
       <div class="ops-meta" style="margin:10px 0 16px">
         <span>📅 início ${dataBR(impl.inicio)} · ${impl.dias_corridos}d corridos</span>
         <span>🎯 go-live previsto ${dataBR(impl.previsao_golive)}</span>
         ${impl.golive_em ? `<span>🚀 go-live em ${dataBR(impl.golive_em)}</span>` : ""}
       </div>
+
+      ${playbookViewer(impl)}
+      ${discoverySection(impl)}
+      ${redFlagsSection(impl)}
 
       <div class="ops-acoes">
         <button class="tl-link" id="opsCopiarLink" type="button">🔗 Copiar link do cliente</button>
@@ -287,6 +447,68 @@
     }
     // botões de "dar baixa" nos problemas em aberto da timeline
     ligarDarBaixa(id);
+
+    // ----- Playbook: aceite bilateral -----
+    const btnAceitar = $("#btnAceitar");
+    if (btnAceitar) {
+      btnAceitar.addEventListener("click", async () => {
+        const msg = $("#aceiteMsg");
+        const oks = ["okPlaybook", "okReuniao", "okRiscos", "okContato"];
+        const faltam = oks.filter(k => !$("#" + k).checked);
+        if (faltam.length) {
+          msg.textContent = "Confirme todos os itens do checklist antes de aceitar.";
+          msg.className = "ho-msg bad"; return;
+        }
+        try {
+          msg.textContent = "Aceitando…"; msg.className = "ho-msg";
+          await store().opsAceitarHandoff(impl.handoff_id, {
+            li_playbook: true, reuniao_passagem: true, riscos_cientes: true, primeiro_contato_agendado: true,
+          });
+          cache = await store().opsListar();
+          renderKpis(); renderLista();
+          abrirDetalhe(id);
+        } catch (e) { msg.textContent = "Erro: " + (e.message || e); msg.className = "ho-msg bad"; }
+      });
+    }
+
+    // ----- Discovery técnico -----
+    const btnDisc = $("#btnSalvarDiscovery");
+    if (btnDisc) {
+      btnDisc.addEventListener("click", async () => {
+        const v = idd => { const el = $("#" + idd); return el ? el.value.trim() : ""; };
+        const msg = $("#opsMsg");
+        try {
+          if (msg) { msg.textContent = "Salvando discovery…"; msg.className = "ho-msg"; }
+          await store().opsSalvarDiscovery(id, {
+            ad: { frequencia: v("dcAdFreq"), etapas: v("dcAdEtapas"), regua: v("dcAdRegua"), avaliadores: v("dcAdAvaliadores") },
+            pesquisas: { tipo: v("dcPqTipo"), frequencia: v("dcPqFreq"), escala: v("dcPqEscala") },
+            metas: { ciclos_ano: v("dcMtCiclos"), participantes: v("dcMtParticipantes"), cascata: v("dcMtCascata"), uso_resultado: v("dcMtUso") },
+          });
+          cache = await store().opsListar();
+          renderKpis(); renderLista();
+          abrirDetalhe(id);
+        } catch (e) { if (msg) { msg.textContent = "Erro: " + (e.message || e); msg.className = "ho-msg bad"; } }
+      });
+    }
+
+    // ----- Red flags (sinais de alerta) -----
+    document.querySelectorAll("[data-flag]").forEach(cb => {
+      if (cb.disabled) return;
+      cb.addEventListener("change", async () => {
+        const sinal = cb.dataset.flag;
+        let obs = null;
+        if (cb.checked) obs = window.prompt(`Observação sobre "${sinal}" (opcional):`) || null;
+        try {
+          await store().opsRedFlag(id, sinal, cb.checked, obs);
+          cache = await store().opsListar();
+          renderKpis(); renderLista();
+          abrirDetalhe(id);
+        } catch (e) {
+          cb.checked = !cb.checked; // desfaz visualmente
+          alert("Erro: " + (e.message || e));
+        }
+      });
+    });
   }
 
   function renderTimeline(updates) {

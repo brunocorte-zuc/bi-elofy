@@ -33,6 +33,26 @@ Botão **⚙️ Admin** no topo, exclusivo do papel `admin`:
 - RPCs (todas exigem `pricing.is_admin()`): `admin_listar_usuarios`,
   `admin_salvar_usuario`, `admin_remover_usuario`, `admin_definir_senha`.
 
+## Playbook de Handoff (Laura · Arquitetura)
+
+O handoff Comercial → Customer OPS segue o playbook oficial, em 4 mecanismos:
+
+1. **Handoff enriquecido** (closer preenche no ganho): contexto da empresa (setor,
+   maturidade, histórico, cultura), estado emocional (como chegou, resistência,
+   urgência), stakeholders com papéis (decisor/champion/**detrator**), o que foi
+   prometido na venda (incl. **expectativas em risco**), momento de valor e riscos
+   com nível. Gravado em `handoffs.playbook` (jsonb).
+2. **Pré-preenchimento automático**: módulos, desconto, customs e o feedback real
+   do cliente na proposta entram sozinhos no playbook (`playbook.prefill`).
+3. **Discovery técnico** (OPS preenche no kickoff): configurações de AD, Pesquisas
+   e Metas — `implantacoes.discovery` via `ops_salvar_discovery`.
+4. **Aceite bilateral**: o handoff nasce `pendente` e só conclui quando o OPS marca
+   o checklist (li o playbook, reunião de passagem, ciente dos riscos, 1º contato
+   agendado) — `ops_aceitar_handoff` notifica o closer dono do negócio.
+
+**Semente do Red Account**: sinais de alerta (`ops_red_flag`) na implantação;
+2+ sinais = Red Account (saúde vira atenção + notificação crítica para todos).
+
 ## Módulo Customer OPS
 
 - **Implantações nascem automaticamente do handoff** comercial (jornada contínua).

@@ -207,6 +207,33 @@
     if (error) throw error;
     return data;
   }
+  // Aceite bilateral do handoff (fase 4 do playbook)
+  async function opsAceitarHandoff(handoffId, checklist) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("ops_aceitar_handoff", {
+      p_handoff_id: handoffId, p_checklist: checklist || {},
+    });
+    if (error) throw error;
+    return data;
+  }
+  // Discovery técnico da implantação (fase 3)
+  async function opsSalvarDiscovery(implantacaoId, discovery) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("ops_salvar_discovery", {
+      p_implantacao_id: implantacaoId, p_discovery: discovery,
+    });
+    if (error) throw error;
+    return data;
+  }
+  // Sinais de Red Account (semente da fase 5)
+  async function opsRedFlag(implantacaoId, sinal, marcar, obs) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("ops_red_flag", {
+      p_implantacao_id: implantacaoId, p_sinal: sinal, p_marcar: !!marcar, p_obs: obs || null,
+    });
+    if (error) throw error;
+    return data;
+  }
 
   /* ---- Administração de usuários (somente admin) ---- */
   async function adminListarUsuarios() {
@@ -328,6 +355,7 @@
     meuPerfil, podeDarGanho, registrarHandoff, listarHandoffs, uploadContrato, urlContrato,
     painelPropostas,
     opsListar, opsUpdates, opsRegistrarUpdate, opsEditar, opsResolverProblema,
+    opsAceitarHandoff, opsSalvarDiscovery, opsRedFlag,
     equipe, notifListar, notifMarcarLida,
     adminListarUsuarios, adminSalvarUsuario, adminRemoverUsuario, adminDefinirSenha,
   };

@@ -77,6 +77,7 @@
           <div><span class="k">Implantação/único</span><span class="v">${brl(row.nr_com_imposto)}</span></div>
           <div><span class="k">Global</span><span class="v">${brl(row.global_com_imposto)}</span></div>
         </div>
+        ${prefillResumo(row)}
         <label class="ho-chk"><input type="checkbox" id="hoConfirmo">
           <span>Confirmo que estes são os itens e valores efetivamente vendidos.</span></label>
       </div>
@@ -106,10 +107,100 @@
             <select id="hoUrgencia"><option value="normal">Normal</option>
               <option value="alta">Alta</option><option value="baixa">Baixa</option></select></label>
         </div>
+        <label class="ho-chk" style="margin-top:8px"><input type="checkbox" id="hoComunicado">
+          <span>O cliente <b>já foi comunicado</b> de que passará a falar com o time de implantação (Customer OPS).</span></label>
       </div>
 
       <div class="ho-sec">
-        <h3>5. Critérios de ganho & sucesso</h3>
+        <h3>5. Playbook de Handoff <span class="ho-tag-novo">por Laura · Arquitetura</span></h3>
+        <p style="font-size:12px;color:var(--txt-3);margin-bottom:12px">Quanto mais contexto humano você passar,
+        melhor o Customer OPS atende este cliente. Abra as seções e preencha o que souber.</p>
+
+        <details class="pb-sec">
+          <summary>📊 Contexto da empresa</summary>
+          <div class="pb-body">
+            <div class="ho-grid">
+              <label class="ho-f">Setor / segmento<input type="text" id="pbSetor" placeholder="ex.: Advocacia, Indústria, Tech…"></label>
+              <label class="ho-f">Maturidade em gestão de pessoas
+                <select id="pbMaturidade"><option value="">—</option>
+                  <option value="inexistente">Inexistente (nada estruturado)</option>
+                  <option value="inicial">Inicial (planilhas, processos soltos)</option>
+                  <option value="estruturada">Estruturada (processos definidos)</option>
+                  <option value="avancada">Avançada (já usou ferramentas, cultura forte)</option></select></label>
+            </div>
+            <label class="ho-f">Histórico com ferramentas de RH
+              <textarea id="pbHistoricoRh" placeholder="já usaram algo? por que trocaram/abandonaram?"></textarea></label>
+            <label class="ho-f">Cultura da empresa (como decidem, hierarquia, ritmo)
+              <textarea id="pbCultura" placeholder="ex.: decisões centralizadas no sócio, ritmo lento, RH com pouca autonomia…"></textarea></label>
+          </div>
+        </details>
+
+        <details class="pb-sec">
+          <summary>🎭 Estado emocional do cliente</summary>
+          <div class="pb-body">
+            <label class="ho-f">Como o cliente chegou na venda?
+              <textarea id="pbComoChegou" placeholder="indicação? sofrendo com algo? trocando de concorrente? pressão da diretoria?"></textarea></label>
+            <div class="ho-grid">
+              <label class="ho-f">Resistência interna à adoção
+                <select id="pbResistencia"><option value="">—</option>
+                  <option value="nenhuma">Nenhuma percebida</option>
+                  <option value="baixa">Baixa</option><option value="media">Média</option>
+                  <option value="alta">Alta (tem gente contra)</option></select></label>
+              <label class="ho-f">Urgência percebida pelo cliente
+                <select id="pbUrgenciaCliente"><option value="">—</option>
+                  <option value="baixa">Baixa (sem pressa)</option>
+                  <option value="media">Média</option>
+                  <option value="alta">Alta (precisa rodar logo)</option></select></label>
+            </div>
+          </div>
+        </details>
+
+        <details class="pb-sec">
+          <summary>🤝 O que foi prometido na venda</summary>
+          <div class="pb-body">
+            <label class="ho-f">Promessas feitas pelo comercial
+              <textarea id="pbPromessas" placeholder="prazos, integrações, funcionalidades, condições…"></textarea></label>
+            <label class="ho-f">Funcionalidades destacadas na demo
+              <textarea id="pbDemo" placeholder="o que mais brilhou os olhos do cliente?"></textarea></label>
+            <label class="ho-f" style="background:var(--gold-bg);border-radius:9px;padding:10px">⚠️ Expectativas que podem NÃO ser cumpridas
+              <textarea id="pbEmRisco" placeholder="seja honesto — é melhor o OPS saber agora do que o cliente descobrir depois"></textarea></label>
+            <label class="ho-f">Pendências ainda não resolvidas
+              <textarea id="pbPendencias" placeholder="ex.: definição de SSO, lista de usuários, aprovação de orçamento extra…"></textarea></label>
+          </div>
+        </details>
+
+        <details class="pb-sec">
+          <summary>💎 Momento de valor (o que faz o cliente dizer "valeu a pena")</summary>
+          <div class="pb-body">
+            <label class="ho-f">Qual é o primeiro resultado que o cliente espera ver?
+              <textarea id="pbPrimeiroResultado" placeholder="ex.: primeira avaliação rodando, primeiro relatório na mão da diretoria…"></textarea></label>
+            <div class="ho-grid">
+              <label class="ho-f">Em quanto tempo ele espera ver valor?
+                <input type="text" id="pbTempoValor" placeholder="ex.: 30 dias, 60 dias, este semestre"></label>
+            </div>
+            <label class="ho-f">O que vai fazer o cliente dizer "valeu a pena"?
+              <textarea id="pbValeuAPena" placeholder="na visão DELE, não na nossa"></textarea></label>
+          </div>
+        </details>
+
+        <details class="pb-sec">
+          <summary>⚠️ Riscos mapeados na venda</summary>
+          <div class="pb-body" id="pbRiscos">
+            ${RISCOS_COMUNS.map((r, i) => `
+              <div class="pb-risco">
+                <label class="ho-chk"><input type="checkbox" data-risco="${i}"><span>${r}</span></label>
+                <select class="ops-sel pb-risco-nivel hide" data-nivel="${i}">
+                  <option value="medio">Médio</option><option value="alto">Alto</option><option value="baixo">Baixo</option>
+                </select>
+              </div>`).join("")}
+            <label class="ho-f" style="margin-top:8px">Outros riscos / detalhes
+              <textarea id="pbRiscosObs" placeholder="contexto dos riscos marcados ou outros não listados"></textarea></label>
+          </div>
+        </details>
+      </div>
+
+      <div class="ho-sec">
+        <h3>6. Critérios de ganho & sucesso</h3>
         <label class="ho-f">Por que ganhamos? (o que pesou na decisão)
           <textarea id="hoGanho" placeholder="ex.: melhor custo-benefício, suporte, módulo X…"></textarea></label>
         <label class="ho-f">O que é sucesso para o cliente? (como ele vai medir)
@@ -117,7 +208,7 @@
       </div>
 
       <div class="ho-sec">
-        <h3>6. História & observações para o Onboarding</h3>
+        <h3>7. História & observações para o Onboarding</h3>
         <label class="ho-f"><textarea id="hoHistoria" placeholder="Contexto, expectativas, sensibilidades, prazos críticos, quem decide…"></textarea></label>
       </div>
 
@@ -131,13 +222,81 @@
     $("#hoAddContato").addEventListener("click", addContato);
     $("#hoCancelar").addEventListener("click", fechar);
     $("#hoEnviar").addEventListener("click", () => enviar(row));
+    // riscos: ao marcar um risco, mostra o seletor de nível (alto/médio/baixo)
+    document.querySelectorAll("#pbRiscos [data-risco]").forEach(cb =>
+      cb.addEventListener("change", () => {
+        const nivel = document.querySelector(`#pbRiscos [data-nivel="${cb.dataset.risco}"]`);
+        if (nivel) nivel.classList.toggle("hide", !cb.checked);
+      }));
   }
+
+  // Riscos comuns mapeados pelo playbook (Laura/Arquitetura)
+  const RISCOS_COMUNS = [
+    "Resistência interna à adoção",
+    "Falta de patrocínio da liderança",
+    "Expectativa desalinhada com o produto",
+    "Histórico negativo com ferramentas anteriores",
+    "Prazo comprimido / go-live acelerado",
+    "Detrator com poder de decisão",
+  ];
+
+  // PRÉ-PREENCHIMENTO AUTOMÁTICO: o que o sistema já sabe da proposta
+  // (módulos, desconto, customs e o feedback real do cliente) entra sozinho
+  // no playbook — o closer só preenche o que é humano.
+  function prefillResumo(row) {
+    const e = row.entrada || {};
+    const sel = e.sel || {};
+    const modulos = [];
+    if (sel.completos) modulos.push("Pacote Completo (inclui RV + IA)");
+    else {
+      if (sel.desempenho) modulos.push("Desempenho");
+      if (sel.engajamento) modulos.push("Engajamento");
+      if (sel.metas) modulos.push("Metas");
+      if (sel.rv) modulos.push("RV");
+      if (sel.ia) modulos.push("IA");
+    }
+    if (sel.peopleAnalytics) modulos.push("People Analytics " + sel.peopleAnalytics);
+    const customs = (row.customs || []).map(c => c.summary || c.jira_key);
+    const desconto = Number(row.desconto_pct) || 0;
+    const fb = row.fb_sentimento
+      ? { aprovado: "✅ aprovou a proposta", ajustes: "✏️ pediu ajustes", recusado: "❌ disse que não atende" }[row.fb_sentimento]
+      : null;
+    return `<div class="ho-prefill">
+      <div class="ho-prefill-titulo">⚡ Preenchido automaticamente pelo sistema</div>
+      <div><b>Módulos vendidos:</b> ${esc(modulos.join(", ") || "—")}</div>
+      ${desconto > 0 ? `<div><b>Desconto concedido:</b> ${(desconto * 100).toFixed(1).replace(".", ",")}%</div>` : ""}
+      ${customs.length ? `<div><b>Customizações prometidas:</b> ${esc(customs.join("; "))}</div>` : ""}
+      ${fb ? `<div><b>Feedback do cliente na proposta:</b> ${fb}${row.fb_comentario ? ` — “${esc(row.fb_comentario)}”` : ""}</div>` : "<div><b>Feedback do cliente na proposta:</b> não respondeu pela plataforma</div>"}
+    </div>`;
+  }
+
+  // Monta o objeto prefill que vai gravado dentro do playbook.
+  function montarPrefill(row) {
+    const e = row.entrada || {};
+    return {
+      modulos: e.sel || {},
+      desconto_pct: Number(row.desconto_pct) || 0,
+      customs: (row.customs || []).map(c => c.summary || c.jira_key),
+      feedback_cliente: row.fb_sentimento
+        ? { sentimento: row.fb_sentimento, comentario: row.fb_comentario || null, em: row.fb_em || null }
+        : null,
+      valores: { mrr: row.mrr_com_imposto, nr: row.nr_com_imposto, global: row.global_com_imposto },
+    };
+  }
+
+  // Contatos agora têm PAPEL (stakeholder mapping do playbook)
+  const PAPEIS_CONTATO = [
+    ["operacional", "Contato operacional"], ["decisor", "Decisor / Patrocinador"],
+    ["champion", "Defensor interno (champion)"], ["detrator", "Detrator / Resistência"],
+    ["outro", "Outro"],
+  ];
 
   function addContato() {
     const box = $("#hoContatos");
     const div = document.createElement("div");
     div.className = "ho-contato";
     div.innerHTML = `
+      <select class="c-papel">${PAPEIS_CONTATO.map(([v, n]) => `<option value="${v}">${n}</option>`).join("")}</select>
       <input type="text" class="c-nome" placeholder="Nome">
       <input type="text" class="c-cargo" placeholder="Cargo">
       <input type="email" class="c-email" placeholder="E-mail">
@@ -149,11 +308,38 @@
 
   function lerContatos() {
     return Array.from(document.querySelectorAll("#hoContatos .ho-contato")).map(d => ({
+      papel: d.querySelector(".c-papel").value,
       nome: d.querySelector(".c-nome").value.trim(),
       cargo: d.querySelector(".c-cargo").value.trim(),
       email: d.querySelector(".c-email").value.trim(),
       telefone: d.querySelector(".c-tel").value.trim(),
     })).filter(c => c.nome || c.email || c.telefone);
+  }
+
+  // Coleta todas as respostas do playbook do formulário.
+  function lerPlaybook(row) {
+    const v = id => { const el = $("#" + id); return el ? el.value.trim() : ""; };
+    const riscos = [];
+    document.querySelectorAll("#pbRiscos [data-risco]").forEach(cb => {
+      if (cb.checked) {
+        const i = cb.dataset.risco;
+        const nivelSel = document.querySelector(`#pbRiscos [data-nivel="${i}"]`);
+        riscos.push({ risco: RISCOS_COMUNS[Number(i)], nivel: nivelSel ? nivelSel.value : "medio" });
+      }
+    });
+    return {
+      contexto: { setor: v("pbSetor"), maturidade: v("pbMaturidade"),
+        historico_rh: v("pbHistoricoRh"), cultura: v("pbCultura") },
+      emocional: { como_chegou: v("pbComoChegou"), resistencia: v("pbResistencia"),
+        urgencia: v("pbUrgenciaCliente") },
+      promessas: { feitas: v("pbPromessas"), demo: v("pbDemo"),
+        em_risco: v("pbEmRisco"), pendencias: v("pbPendencias") },
+      momento_valor: { primeiro_resultado: v("pbPrimeiroResultado"),
+        tempo_esperado: v("pbTempoValor"), valeu_a_pena: v("pbValeuAPena") },
+      riscos, riscos_obs: v("pbRiscosObs"),
+      cliente_comunicado: !!($("#hoComunicado") && $("#hoComunicado").checked),
+      prefill: montarPrefill(row),
+    };
   }
 
   async function enviar(row) {
@@ -195,6 +381,8 @@
           // registro de como foi o aceite: pelo sistema ou fechamento direto pelo closer
           ok_cliente_na_plataforma: row.fb_sentimento === "aprovado",
         },
+        // Playbook de Handoff (Laura/Arquitetura): contexto humano + prefill do sistema
+        playbook: lerPlaybook(row),
       };
       setMsg(msg, "Registrando ganho…", "");
       await store().registrarHandoff(row.id, payload);
