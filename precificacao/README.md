@@ -8,6 +8,19 @@ Plataforma interna da **jornada do cliente** Elofy, organizada por etapas:
 | 2. **Customer OPS** | implantações: kickoff → configuração → treinamento → go-live → acompanhamento → concluído | ✅ no ar (v1) |
 | 3. próximas áreas | CS, suporte, expansão… | 🔜 |
 
+## Área de Administração (⚙️ Admin)
+
+Botão **⚙️ Admin** no topo, exclusivo do papel `admin`:
+
+- **Criar usuários** (e-mail + papel) e **trocar papéis** direto na tela.
+- **Definir senha temporária** (cria a conta de login na hora — útil enquanto o
+  SMTP não está configurado). Mínimo 8 caracteres.
+- **Remover acesso** (com proteções: não remove a si mesmo nem o último admin).
+- Papéis: closer · supervisor (liderança) · onboarding (Analista de Projetos) ·
+  admin · gestor · diretor.
+- RPCs (todas exigem `pricing.is_admin()`): `admin_listar_usuarios`,
+  `admin_salvar_usuario`, `admin_remover_usuario`, `admin_definir_senha`.
+
 ## Módulo Customer OPS
 
 - **Implantações nascem automaticamente do handoff** comercial (jornada contínua).

@@ -299,6 +299,7 @@ tbody tr:hover{background:var(--surf)}
 /* ===== Jornada: navegação entre módulos ===== */
 .jornada-nav{display:flex;gap:6px;background:var(--surf);border:1px solid var(--border);
   border-radius:99px;padding:4px}
+.jornada-nav.hide{display:none}
 .jn-tab{font-family:inherit;font-size:12px;font-weight:600;color:var(--txt-2);background:transparent;
   border:none;border-radius:99px;padding:7px 14px;cursor:pointer;transition:.14s}
 .jn-tab:hover{color:var(--accent-2)}
@@ -337,6 +338,20 @@ tbody tr:hover{background:var(--surf)}
 .ops-up.etapa{border-left-color:var(--gold);background:var(--gold-bg)}
 .ops-up-head{display:flex;justify-content:space-between;gap:10px;font-size:11px;color:var(--txt-3)}
 .ops-up-txt{font-size:13px;color:var(--txt-2);margin-top:4px}
+
+/* ===== Administração de usuários ===== */
+.adm-row{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;
+  border:1px solid var(--border);border-radius:11px;padding:13px 16px;margin-bottom:10px;background:var(--card)}
+.adm-email{font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.adm-sub{font-size:11px;color:var(--txt-3);margin-top:4px}
+.adm-tag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;color:var(--txt-3);background:var(--surf)}
+.adm-tag.ok{color:var(--green);background:var(--green-bg)}
+.adm-tag.info{color:var(--accent-2);background:var(--accent-soft)}
+.adm-acoes{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.adm-x{color:var(--red)!important}
+.adm-x:hover{background:var(--red-bg)!important}
+.adm-novo{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.adm-novo .ops-sel{min-width:160px}
 
 /* Stepper de etapas */
 .stepper{display:flex;align-items:flex-start;margin:14px 0 6px}

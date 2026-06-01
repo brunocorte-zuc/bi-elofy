@@ -182,6 +182,32 @@
     return data || [];
   }
 
+  /* ---- Administração de usuários (somente admin) ---- */
+  async function adminListarUsuarios() {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("admin_listar_usuarios");
+    if (error) throw error;
+    return data || [];
+  }
+  async function adminSalvarUsuario(email, papel) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("admin_salvar_usuario", { p_email: email, p_papel: papel });
+    if (error) throw error;
+    return data;
+  }
+  async function adminRemoverUsuario(email) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("admin_remover_usuario", { p_email: email });
+    if (error) throw error;
+    return data;
+  }
+  async function adminDefinirSenha(email, senha) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("admin_definir_senha", { p_email: email, p_senha: senha });
+    if (error) throw error;
+    return data;
+  }
+
   /* ---- Customer OPS (implantações) ---- */
   async function opsListar() {
     if (!sb) throw new Error("Sessão não iniciada.");
@@ -276,5 +302,6 @@
     meuPerfil, podeDarGanho, registrarHandoff, listarHandoffs, uploadContrato, urlContrato,
     painelPropostas,
     opsListar, opsUpdates, opsRegistrarUpdate, opsEditar,
+    adminListarUsuarios, adminSalvarUsuario, adminRemoverUsuario, adminDefinirSenha,
   };
 })(window);

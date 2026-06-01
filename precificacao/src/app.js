@@ -139,7 +139,8 @@
 
   function sincronizaUI() {
     $("#iaBox").classList.toggle("hide", !$("#m_ia").checked);
-    document.querySelectorAll("[data-mod]").forEach(l =>
+    // escopo restrito aos labels de módulo (.chk) — outros elementos podem usar data-*
+    document.querySelectorAll("label.chk[data-mod]").forEach(l =>
       l.classList.toggle("on", l.querySelector("input").checked));
   }
 
@@ -744,6 +745,9 @@ Valor global: ${brl(r.global.comImposto)}`;
       meuPerfil = await window.PricingStore.meuPerfil();
       const btn = $("#btnHandoffs");
       if (btn) btn.classList.toggle("hide", !(meuPerfil && meuPerfil.ve_handoffs));
+      // área de administração: só para o papel admin
+      const btnAdm = $("#btnAdmin");
+      if (btnAdm) btnAdm.classList.toggle("hide", !(meuPerfil && meuPerfil.papel === "admin"));
       // navegação da jornada (Comercial | Customer OPS) aparece após o login
       $("#jornadaNav").classList.remove("hide");
     } catch (_) { /* silencioso: o painel é extra */ }
@@ -753,7 +757,7 @@ Valor global: ${brl(r.global.comImposto)}`;
   function trocarModulo(mod) {
     $("#moduloComercial").classList.toggle("hide", mod !== "comercial");
     $("#moduloOps").classList.toggle("hide", mod !== "ops");
-    document.querySelectorAll(".jn-tab").forEach(t => t.classList.toggle("on", t.dataset.mod === mod));
+    document.querySelectorAll(".jn-tab").forEach(t => t.classList.toggle("on", t.dataset.jornada === mod));
     if (mod === "ops" && window.JornadaOps) window.JornadaOps.montar(meuPerfil);
   }
 
@@ -1008,7 +1012,9 @@ Valor global: ${brl(r.global.comImposto)}`;
     if (window.PricingHandoff) window.PricingHandoff.setOnConcluir(carregarHistorico);
     // navegação entre módulos da jornada
     document.querySelectorAll(".jn-tab").forEach(t =>
-      t.addEventListener("click", () => trocarModulo(t.dataset.mod)));
+      t.addEventListener("click", () => trocarModulo(t.dataset.jornada)));
+    // administração de usuários (só admin)
+    $("#btnAdmin").addEventListener("click", () => window.JornadaAdmin && window.JornadaAdmin.abrir());
     // painel de acompanhamento de propostas
     $("#btnPropostas").addEventListener("click", abrirPainelPropostas);
     $("#propostasFechar").addEventListener("click", () => $("#propostasOverlay").classList.add("hide"));
