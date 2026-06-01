@@ -1,0 +1,58 @@
+/* ============================================================================
+ *  ELOFY · CAMADA DE MARCA OFICIAL
+ *  ----------------------------------------------------------------------------
+ *  Fonte: Manual de Marca Elofy (identidadevisual/Manual de Marca Elofy.pdf)
+ *
+ *  PALETA OFICIAL (p.14 do manual):
+ *    ELOFY BLUE 2.0  #001BA6  (Pantone 2736 C)  — institucional, principal
+ *    SOFT GRAY       #F1EDEC  (Pantone 663 C)   — institucional, fundos
+ *    NEW MAGENTA     #E66CF7  (Pantone 252 C)   — apoio vibrante
+ *    AMARELOFY       #FFF98B  (Pantone 601 C)   — apoio vibrante
+ *
+ *  TIPOGRAFIA (p.15-18):
+ *    Títulos: Gotham Condensed, SEMPRE EM CAIXA ALTA (alternativa: League Gothic)
+ *    Textos:  Gellix (alternativa: Poppins)
+ * ========================================================================== */
+
+/* ---- Fontes oficiais (servidas localmente em woff2) ---- */
+@font-face { font-family: "Gotham Cond"; src: url("fonts/gotham-cond-medium.woff2") format("woff2");
+  font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: "Gotham Cond"; src: url("fonts/gotham-cond-bold.woff2") format("woff2");
+  font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "Gellix"; src: url("fonts/gellix-regular.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Gellix"; src: url("fonts/gellix-medium.woff2") format("woff2");
+  font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: "Gellix"; src: url("fonts/gellix-semibold.woff2") format("woff2");
+  font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: "Gellix"; src: url("fonts/gellix-bold.woff2") format("woff2");
+  font-weight: 700; font-style: normal; font-display: swap; }
+
+/* ---- Variáveis da marca ---- */
+:root {
+  /* cores oficiais */
+  --elofy-blue: #001BA6;
+  --soft-gray: #F1EDEC;
+  --magenta: #E66CF7;
+  --amarelofy: #FFF98B;
+
+  /* derivadas (tons utilitários a partir das oficiais) */
+  --elofy-blue-dark: #001480;       /* hover/pressionado */
+  --elofy-blue-08: #EBEDF9;         /* lavagem 8% para fundos suaves */
+  --elofy-blue-15: #D6DAF4;         /* bordas/realces */
+  --magenta-soft: #FBE9FE;
+  --amarelofy-soft: #FFFDE0;
+
+  /* texto sobre fundos claros */
+  --brand-ink: #0E1038;             /* quase-preto azulado */
+  --brand-ink-2: #4B4E6D;
+  --brand-ink-3: #9496AE;
+
+  /* tipografia oficial com fallbacks gratuitos do manual */
+  --font-titulo: "Gotham Cond", "League Gothic", "Arial Narrow", sans-serif;
+  --font-texto: "Gellix", "Poppins", system-ui, sans-serif;
+}
+
+/* ---- Utilitários de marca ---- */
+.t-titulo { font-family: var(--font-titulo); text-transform: uppercase; letter-spacing: .02em; }
+.t-texto  { font-family: var(--font-texto); }

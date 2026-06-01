@@ -4,55 +4,74 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Sua implantação · Elofy</title>
+<!-- Marca oficial Elofy: paleta + fontes (Gotham Cond / Gellix) -->
+<link rel="stylesheet" href="brand/elofy.css?v=20260601f">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=League+Gothic&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{--accent:#7C6FFF;--accent2:#6457E6;--ink:#1C2030;--ink2:#5A6178;--ink3:#9AA0B4;
-    --line:#E6E8F0;--soft:#F0EEFF;--surf:#F8F9FC;--green:#15803D;--greenbg:#E9F8EF;
-    --gold:#9a6b00;--goldbg:#FEF6E7;--red:#DC2626;--redbg:#FDECEC}
+  :root{--ink:var(--brand-ink);--ink2:var(--brand-ink-2);--ink3:var(--brand-ink-3);
+    --line:#E3E0DE;--soft:var(--elofy-blue-08);--surf:#FAF8F7;
+    --green:#15803D;--greenbg:#E9F8EF;--gold:#9a6b00;--goldbg:#FEF6E7;--red:#DC2626;--redbg:#FDECEC}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Outfit',system-ui,sans-serif;color:var(--ink);font-size:14px;line-height:1.55;
-    background:#EEF0F6;padding:24px 14px}
+  body{font-family:var(--font-texto);color:var(--ink);font-size:14px;line-height:1.55;
+    background:var(--soft-gray);padding:24px 14px}
   .wrap{max-width:720px;margin:0 auto}
-  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;
-    box-shadow:0 4px 24px rgba(30,32,48,.06);margin-bottom:18px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:28px;
+    box-shadow:0 4px 24px rgba(0,27,166,.07);margin-bottom:18px}
   .top{display:flex;justify-content:space-between;align-items:flex-start;
-    border-bottom:2px solid var(--accent);padding-bottom:16px;margin-bottom:20px}
-  .brand .tag{font-size:11px;color:var(--ink3);letter-spacing:.18em;text-transform:uppercase;margin-top:4px}
+    border-bottom:3px solid var(--elofy-blue);padding-bottom:18px;margin-bottom:22px}
+  .brand img{height:44px;display:block}
+  .brand .tag{font-family:var(--font-titulo);text-transform:uppercase;font-size:12px;
+    color:var(--ink3);letter-spacing:.18em;margin-top:8px}
   .doc{text-align:right;font-size:11px;color:var(--ink2)}
-  .doc .big{font-size:15px;font-weight:600;color:var(--ink)}
-  h1{font-size:22px;font-weight:700;letter-spacing:-.5px}
-  h1 span{color:var(--accent)}
-  .sub{color:var(--ink2);margin-top:6px}
-  /* Stepper */
-  .stepper{display:flex;align-items:flex-start;margin:26px 0;gap:0}
+  .doc .big{font-family:var(--font-titulo);text-transform:uppercase;font-size:16px;
+    letter-spacing:.05em;color:var(--elofy-blue)}
+  h1{font-family:var(--font-titulo);text-transform:uppercase;font-size:28px;font-weight:700;
+    letter-spacing:.01em;line-height:1.15;color:var(--elofy-blue)}
+  h1 span{background:var(--amarelofy);padding:0 6px}
+  .sub{color:var(--ink2);margin-top:8px}
+  /* Stepper de etapas */
+  .stepper{display:flex;align-items:flex-start;margin:28px 0;gap:0}
   .step{display:flex;flex-direction:column;align-items:center;gap:6px;flex:none;width:90px;text-align:center}
-  .step .dot{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  .step .dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
     font-weight:700;font-size:13px;background:var(--surf);border:2px solid var(--line);color:var(--ink3)}
   .step.done .dot{background:var(--green);border-color:var(--green);color:#fff}
-  .step.now .dot{background:var(--accent);border-color:var(--accent);color:#fff;
-    box-shadow:0 0 0 5px var(--soft)}
-  .step .lbl{font-size:10px;color:var(--ink3);font-weight:600}
-  .step.now .lbl{color:var(--accent2)}
+  .step.now .dot{background:var(--elofy-blue);border-color:var(--elofy-blue);color:var(--amarelofy);
+    box-shadow:0 0 0 5px var(--elofy-blue-15)}
+  .step .lbl{font-family:var(--font-titulo);text-transform:uppercase;font-size:9px;
+    color:var(--ink3);font-weight:500;letter-spacing:.04em}
+  .step.now .lbl{color:var(--elofy-blue);font-weight:700}
   .step.done .lbl{color:var(--green)}
-  .lin{flex:1;height:2px;background:var(--line);margin-top:17px;min-width:8px}
+  .step .dias{font-size:10px;font-weight:700;color:var(--ink2);background:var(--surf);
+    border:1px solid var(--line);border-radius:99px;padding:1px 8px;margin-top:2px}
+  .step.done .dias{color:var(--green);background:var(--greenbg);border-color:#C9EDD6}
+  .step.now .dias{color:var(--elofy-blue);background:var(--amarelofy);border-color:var(--amarelofy)}
+  .lin{flex:1;height:2px;background:var(--line);margin-top:18px;min-width:8px}
   .lin.done{background:var(--green)}
   /* Meta */
   .meta{display:flex;gap:26px;flex-wrap:wrap;background:var(--surf);border:1px solid var(--line);
-    border-radius:12px;padding:15px 18px;margin:14px 0}
-  .meta .k{font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.07em}
+    border-radius:14px;padding:16px 20px;margin:14px 0}
+  .meta .k{font-family:var(--font-titulo);text-transform:uppercase;font-size:10px;
+    color:var(--ink3);letter-spacing:.08em}
   .meta .val{font-weight:600;font-size:14px;margin-top:2px}
+  /* Time Elofy */
+  .time-box{display:flex;gap:20px;flex-wrap:wrap;background:var(--elofy-blue);border-radius:14px;
+    padding:18px 22px;margin:16px 0}
+  .time-box .tb-titulo{font-family:var(--font-titulo);text-transform:uppercase;width:100%;
+    color:var(--amarelofy);font-size:13px;letter-spacing:.08em;margin-bottom:2px}
+  .time-box .tb-item .k{font-size:10px;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.05em}
+  .time-box .tb-item .v{color:#fff;font-weight:600;font-size:13px;margin-top:2px}
   /* Timeline */
-  h2.sec{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);
-    margin:24px 0 12px;font-weight:700}
-  .up{border-left:3px solid var(--accent);background:var(--surf);border-radius:0 10px 10px 0;
-    padding:12px 16px;margin-bottom:10px}
+  h2.sec{font-family:var(--font-titulo);text-transform:uppercase;font-size:15px;
+    letter-spacing:.06em;color:var(--elofy-blue);margin:26px 0 12px;font-weight:700}
+  .up{border-left:4px solid var(--elofy-blue);background:var(--surf);border-radius:0 12px 12px 0;
+    padding:13px 17px;margin-bottom:10px}
   .up.etapa{border-left-color:var(--green);background:var(--greenbg)}
   .up .quando{font-size:11px;color:var(--ink3);margin-bottom:3px}
   .up .txt{color:var(--ink2)}
   .center{text-align:center;padding:40px 20px;color:var(--ink2)}
-  .pitch{background:var(--soft);border-radius:12px;padding:14px 18px;margin-top:18px;
-    color:var(--accent2);font-size:13px;text-align:center}
+  .pitch{background:var(--magenta-soft);border-radius:14px;padding:16px 20px;margin-top:20px;
+    color:var(--ink);font-size:13px;text-align:center}
   .foot{text-align:center;font-size:11px;color:var(--ink3);margin-top:6px}
 </style>
 </head>
@@ -63,7 +82,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="data/supabase.js"></script>
-<script src="src/pdf.js?v=20260601e"></script>
-<script src="src/acompanhamento.js?v=20260601e"></script>
+<script src="src/pdf.js?v=20260601f"></script>
+<script src="src/acompanhamento.js?v=20260601f"></script>
 </body>
 </html>

@@ -54,13 +54,13 @@
   function timeBox(time) {
     if (!time) return "";
     const item = (rotulo, v) => v
-      ? `<div><div class="k">${rotulo}</div><div class="val">${esc(String(v).split("@")[0])}</div></div>` : "";
+      ? `<div class="tb-item"><div class="k">${rotulo}</div><div class="v">${esc(String(v).split("@")[0])}</div></div>` : "";
     const itens = [
       item("CS da sua conta", time.cs), item("Resp. pelo projeto", time.projeto),
       item("Arquitetura", time.arquitetura), item("Time de implantação", time.is),
     ].filter(Boolean).join("");
     if (!itens) return "";
-    return `<h2 class="sec">Seu time Elofy</h2><div class="meta">${itens}</div>`;
+    return `<div class="time-box"><div class="tb-titulo">Seu time Elofy 💙</div>${itens}</div>`;
   }
 
   function stepper(etapa, tempos) {

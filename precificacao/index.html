@@ -4,16 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Jornada Elofy · HR Tech</title>
+<link rel="icon" type="image/svg+xml" href="brand/icone.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.css?v=20260601e">
+<link href="https://fonts.googleapis.com/css2?family=League+Gothic&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="brand/elofy.css?v=20260601f">
+<link rel="stylesheet" href="app.css?v=20260601f">
 </head>
 <body>
 
 <header class="hdr">
-  <div>
-    <h1>Jornada Elofy</h1>
-    <p>A jornada do cliente, do comercial ao sucesso · HR Tech</p>
+  <div class="hdr-brand">
+    <img src="brand/logo-blue.png" alt="elofy" class="hdr-logo">
+    <div>
+      <h1>Jornada</h1>
+      <p>A jornada do cliente, do comercial ao sucesso</p>
+    </div>
   </div>
   <div style="display:flex;align-items:center;gap:12px">
     <nav class="jornada-nav hide" id="jornadaNav">
@@ -272,12 +277,12 @@
 <script src="data/supabase.js"></script>
 <!-- Motor + auth + PDF + UI. O ?v= força o navegador a baixar a versão nova
      após cada deploy (evita HTML novo rodando com JS antigo em cache). -->
-<script src="src/engine.js?v=20260601e"></script>
-<script src="src/auth.js?v=20260601e"></script>
-<script src="src/pdf.js?v=20260601e"></script>
-<script src="src/handoff.js?v=20260601e"></script>
-<script src="src/ops.js?v=20260601e"></script>
-<script src="src/admin.js?v=20260601e"></script>
-<script src="src/app.js?v=20260601e"></script>
+<script src="src/engine.js?v=20260601f"></script>
+<script src="src/auth.js?v=20260601f"></script>
+<script src="src/pdf.js?v=20260601f"></script>
+<script src="src/handoff.js?v=20260601f"></script>
+<script src="src/ops.js?v=20260601f"></script>
+<script src="src/admin.js?v=20260601f"></script>
+<script src="src/app.js?v=20260601f"></script>
 </body>
 </html>

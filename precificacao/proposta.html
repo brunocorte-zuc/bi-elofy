@@ -4,85 +4,104 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Sua proposta · Elofy</title>
+<!-- Marca oficial Elofy: paleta + fontes (Gotham Cond / Gellix) -->
+<link rel="stylesheet" href="brand/elofy.css?v=20260601f">
+<!-- Alternativas gratuitas do manual (fallback): League Gothic + Poppins -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=League+Gothic&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{--accent:#7C6FFF;--accent2:#6457E6;--ink:#1C2030;--ink2:#5A6178;--ink3:#9AA0B4;
-    --line:#E6E8F0;--soft:#F0EEFF;--surf:#F8F9FC;--green:#15803D;--greenbg:#E9F8EF;
-    --gold:#9a6b00;--goldbg:#FEF6E7;--red:#DC2626;--redbg:#FDECEC}
+  /* Paleta oficial Elofy (ver brand/elofy.css) */
+  :root{--accent:var(--elofy-blue);--accent2:var(--elofy-blue-dark);
+    --ink:var(--brand-ink);--ink2:var(--brand-ink-2);--ink3:var(--brand-ink-3);
+    --line:#E3E0DE;--soft:var(--elofy-blue-08);--surf:#FAF8F7;
+    --green:#15803D;--greenbg:#E9F8EF;--gold:#9a6b00;--goldbg:#FEF6E7;--red:#DC2626;--redbg:#FDECEC}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Outfit',system-ui,sans-serif;color:var(--ink);font-size:14px;line-height:1.55;
-    background:#EEF0F6;padding:24px 14px}
-  .mono{font-family:'JetBrains Mono',monospace}
+  body{font-family:var(--font-texto);color:var(--ink);font-size:14px;line-height:1.55;
+    background:var(--soft-gray);padding:24px 14px}
+  .mono{font-family:var(--font-texto);font-weight:600}
   .wrap{max-width:780px;margin:0 auto}
-  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;
-    box-shadow:0 4px 24px rgba(30,32,48,.06);margin-bottom:18px}
-  /* Cabeçalho */
+  .card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:28px;
+    box-shadow:0 4px 24px rgba(0,27,166,.07);margin-bottom:18px}
+  /* Cabeçalho com logo oficial */
   .top{display:flex;justify-content:space-between;align-items:flex-start;
-    border-bottom:2px solid var(--accent);padding-bottom:16px}
-  .brand .tag{font-size:11px;color:var(--ink3);letter-spacing:.18em;text-transform:uppercase;margin-top:4px}
+    border-bottom:3px solid var(--elofy-blue);padding-bottom:18px}
+  .brand img{height:44px;display:block}
+  .brand .tag{font-family:var(--font-titulo);text-transform:uppercase;font-size:12px;
+    color:var(--ink3);letter-spacing:.18em;margin-top:8px}
   .doc{text-align:right;font-size:11px;color:var(--ink2)}
-  .doc .big{font-size:15px;font-weight:600;color:var(--ink)}
-  .doc .v{display:inline-block;margin-top:5px;background:var(--soft);color:var(--accent2);
-    font-weight:600;padding:3px 10px;border-radius:99px;font-size:11px}
-  .hero{margin:22px 0 6px}
-  .hero h1{font-size:23px;font-weight:700;letter-spacing:-.5px}
-  .hero h1 span{color:var(--accent)}
-  .hero p{color:var(--ink2);margin-top:8px}
+  .doc .big{font-family:var(--font-titulo);text-transform:uppercase;font-size:18px;
+    letter-spacing:.05em;color:var(--elofy-blue)}
+  .doc .v{display:inline-block;margin-top:5px;background:var(--amarelofy);color:var(--ink);
+    font-weight:700;padding:3px 10px;border-radius:99px;font-size:11px}
+  /* Hero — título em Gotham Cond CAIXA ALTA (regra do manual) */
+  .hero{margin:24px 0 8px}
+  .hero h1{font-family:var(--font-titulo);text-transform:uppercase;font-size:32px;font-weight:700;
+    letter-spacing:.01em;line-height:1.12;color:var(--elofy-blue)}
+  .hero h1 span{background:var(--amarelofy);padding:0 6px}
+  .hero p{color:var(--ink2);margin-top:10px}
   .meta{display:flex;gap:26px;flex-wrap:wrap;background:var(--surf);border:1px solid var(--line);
-    border-radius:12px;padding:15px 18px;margin:18px 0}
-  .meta .k{font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.07em}
+    border-radius:14px;padding:16px 20px;margin:18px 0}
+  .meta .k{font-family:var(--font-titulo);text-transform:uppercase;font-size:10px;
+    color:var(--ink3);letter-spacing:.08em}
   .meta .val{font-weight:600;font-size:14px;margin-top:2px}
-  h2.sec{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);
-    margin:22px 0 10px;font-weight:700}
+  h2.sec{font-family:var(--font-titulo);text-transform:uppercase;font-size:15px;
+    letter-spacing:.06em;color:var(--elofy-blue);margin:24px 0 10px;font-weight:700}
   table.items{width:100%;border-collapse:collapse;margin-bottom:6px}
-  table.items th{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);
-    text-align:left;padding:8px 10px;border-bottom:2px solid var(--line);font-weight:700}
+  table.items th{font-family:var(--font-titulo);text-transform:uppercase;font-size:11px;
+    letter-spacing:.06em;color:var(--ink3);text-align:left;padding:8px 10px;
+    border-bottom:2px solid var(--elofy-blue);font-weight:500}
   table.items th.r,table.items td.r{text-align:right}
-  table.items td{padding:9px 10px;border-bottom:1px solid var(--line)}
-  table.items tr.sub td{font-weight:700;color:var(--ink);border-top:1px solid var(--line);background:var(--surf)}
+  table.items td{padding:10px;border-bottom:1px solid var(--line)}
+  table.items tr.sub td{font-weight:700;color:var(--elofy-blue);border-top:1px solid var(--line);background:var(--soft)}
+  /* Resumo do investimento — destaque no azul oficial com valor em Amarelofy */
   .invest{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0 4px}
-  .invest .c{flex:1;min-width:150px;border:1px solid var(--line);border-radius:12px;padding:15px}
-  .invest .c .k{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3)}
-  .invest .c .v{font-size:19px;font-weight:700;margin-top:6px}
+  .invest .c{flex:1;min-width:150px;border:1px solid var(--line);border-radius:14px;padding:16px;background:#fff}
+  .invest .c .k{font-family:var(--font-titulo);text-transform:uppercase;font-size:10px;
+    letter-spacing:.06em;color:var(--ink3)}
+  .invest .c .v{font-size:20px;font-weight:700;margin-top:6px;color:var(--ink)}
   .invest .c .s{font-size:10px;color:var(--ink3);margin-top:3px}
-  .invest .c.dest{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none}
-  .invest .c.dest .k{color:rgba(255,255,255,.85)}.invest .c.dest .v{color:#fff}
-  .pitch{background:var(--surf);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;
-    padding:13px 16px;margin:20px 0 0;color:var(--ink2);font-size:13px}
-  .pitch b{color:var(--ink)}
+  .invest .c.dest{background:var(--elofy-blue);border:none}
+  .invest .c.dest .k{color:rgba(255,255,255,.8)}
+  .invest .c.dest .v{color:var(--amarelofy)}
+  .invest .c.dest .s{color:rgba(255,255,255,.65)}
+  .pitch{background:var(--surf);border-left:4px solid var(--magenta);border-radius:0 12px 12px 0;
+    padding:14px 18px;margin:22px 0 0;color:var(--ink2);font-size:13px}
+  .pitch b{color:var(--elofy-blue)}
   /* Feedback */
-  .fb h2{font-size:18px;font-weight:700}
-  .fb .sub{color:var(--ink2);margin:6px 0 16px}
+  .fb h2{font-family:var(--font-titulo);text-transform:uppercase;font-size:24px;
+    font-weight:700;color:var(--elofy-blue);letter-spacing:.01em}
+  .fb .sub{color:var(--ink2);margin:8px 0 18px}
   .sent{display:flex;gap:10px;flex-wrap:wrap}
-  .sent button{flex:1;min-width:150px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;
-    border:2px solid var(--line);background:#fff;border-radius:12px;padding:16px 12px;transition:.15s;color:var(--ink)}
-  .sent button .emo{font-size:24px;display:block;margin-bottom:6px}
-  .sent button:hover{border-color:var(--accent);background:var(--soft)}
-  .sent button.on{border-color:var(--accent);background:var(--soft);box-shadow:0 0 0 3px var(--soft)}
+  .sent button{flex:1;min-width:150px;font-family:var(--font-texto);font-size:14px;font-weight:600;cursor:pointer;
+    border:2px solid var(--line);background:#fff;border-radius:14px;padding:18px 12px;transition:.15s;color:var(--ink)}
+  .sent button .emo{font-size:26px;display:block;margin-bottom:6px}
+  .sent button:hover{border-color:var(--elofy-blue);background:var(--soft)}
+  .sent button.on{border-color:var(--elofy-blue);background:var(--soft);box-shadow:0 0 0 3px var(--elofy-blue-15)}
   .sent button.on.ok{border-color:var(--green);background:var(--greenbg);box-shadow:0 0 0 3px var(--greenbg)}
   .sent button.on.bad{border-color:var(--red);background:var(--redbg);box-shadow:0 0 0 3px var(--redbg)}
   .extra{margin-top:18px;display:none}
   .extra.show{display:block}
   .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-  .chip{font-family:inherit;font-size:13px;cursor:pointer;border:1px solid var(--line);background:var(--surf);
-    border-radius:99px;padding:8px 14px;color:var(--ink2);transition:.12s}
-  .chip.on{border-color:var(--accent);background:var(--soft);color:var(--accent2);font-weight:600}
-  label.fld{display:block;font-size:12px;color:var(--ink2);margin:12px 0 5px;font-weight:600}
-  textarea,input.txt{width:100%;font-family:inherit;font-size:14px;border:1px solid var(--line);
-    border-radius:10px;padding:11px 13px;background:var(--surf);color:var(--ink)}
-  textarea:focus,input.txt:focus{outline:none;border-color:var(--accent);background:#fff;
-    box-shadow:0 0 0 3px var(--soft)}
+  .chip{font-family:var(--font-texto);font-size:13px;cursor:pointer;border:1px solid var(--line);background:var(--surf);
+    border-radius:99px;padding:8px 16px;color:var(--ink2);transition:.12s}
+  .chip.on{border-color:var(--magenta);background:var(--magenta-soft);color:var(--ink);font-weight:600}
+  label.fld{display:block;font-size:12px;color:var(--ink2);margin:14px 0 5px;font-weight:600}
+  textarea,input.txt{width:100%;font-family:var(--font-texto);font-size:14px;border:1px solid var(--line);
+    border-radius:12px;padding:12px 14px;background:var(--surf);color:var(--ink)}
+  textarea:focus,input.txt:focus{outline:none;border-color:var(--elofy-blue);background:#fff;
+    box-shadow:0 0 0 3px var(--elofy-blue-15)}
   textarea{min-height:90px;resize:vertical}
-  .send{margin-top:16px;width:100%;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;
-    color:#fff;background:var(--accent);border:none;border-radius:12px;padding:14px}
-  .send:hover{background:var(--accent2)}
+  .send{margin-top:18px;width:100%;font-family:var(--font-titulo);text-transform:uppercase;
+    letter-spacing:.06em;font-size:16px;font-weight:700;cursor:pointer;
+    color:#fff;background:var(--elofy-blue);border:none;border-radius:14px;padding:16px}
+  .send:hover{background:var(--elofy-blue-dark)}
   .send:disabled{opacity:.5;cursor:default}
   .msg{margin-top:12px;font-size:13px;text-align:center}
   .center{text-align:center;padding:40px 20px;color:var(--ink2)}
-  .thanks{text-align:center;padding:26px 10px}
-  .thanks .big{font-size:40px}
-  .thanks h2{margin:10px 0 6px;font-size:20px}
+  .thanks{text-align:center;padding:28px 10px}
+  .thanks .big{font-size:42px}
+  .thanks h2{font-family:var(--font-titulo);text-transform:uppercase;color:var(--elofy-blue);
+    margin:12px 0 8px;font-size:26px}
   .foot{text-align:center;font-size:11px;color:var(--ink3);margin-top:6px}
 </style>
 </head>
@@ -93,7 +112,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="data/supabase.js"></script>
-<script src="src/pdf.js?v=20260601e"></script>
-<script src="src/publica.js?v=20260601e"></script>
+<script src="src/pdf.js?v=20260601f"></script>
+<script src="src/publica.js?v=20260601f"></script>
 </body>
 </html>

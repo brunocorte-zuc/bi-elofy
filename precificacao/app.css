@@ -1,28 +1,32 @@
 /* ============================================================================
- *  Formação de Preço · Elofy — estilos (tema claro, leve)
+ *  Jornada Elofy — estilos (paleta e tipografia OFICIAIS do Manual de Marca)
+ *  Blue 2.0 #001BA6 · Soft Gray #F1EDEC · New Magenta #E66CF7 · Amarelofy #FFF98B
  * ========================================================================== */
 :root{
-  --bg:#F6F7FB; --bg-2:#EEF0F7;
-  --card:#FFFFFF; --surf:#F8F9FC; --hover:#F1F2F9;
-  --border:#E6E8F0; --border-md:#D7DAE8;
-  --accent:#7C6FFF; --accent-2:#6457E6; --accent-soft:#F0EEFF;
+  --bg:#F1EDEC; --bg-2:#EAE5E3;
+  --card:#FFFFFF; --surf:#FAF8F7; --hover:#F3F0EF;
+  --border:#E5E1DF; --border-md:#D5D0CD;
+  --accent:#001BA6; --accent-2:#001480; --accent-soft:#EBEDF9;
+  --magenta:#E66CF7; --magenta-soft:#FBE9FE; --amarelofy:#FFF98B; --amarelofy-soft:#FFFDE0;
   --gold:#B45309; --gold-bg:#FEF6E7;
   --green:#15803D; --green-bg:#E9F8EF;
   --red:#DC2626; --red-bg:#FDECEC;
-  --txt:#1C2030; --txt-2:#5A6178; --txt-3:#9AA0B4;
-  --shadow:0 1px 2px rgba(20,24,40,.04), 0 4px 16px rgba(20,24,40,.05);
+  --txt:#0E1038; --txt-2:#4B4E6D; --txt-3:#9496AE;
+  --shadow:0 1px 2px rgba(0,27,166,.04), 0 4px 16px rgba(0,27,166,.06);
   --shadow-sm:0 1px 2px rgba(20,24,40,.06);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Outfit',system-ui,sans-serif;background:var(--bg);color:var(--txt);
+body{font-family:'Gellix','Poppins',system-ui,sans-serif;background:var(--bg);color:var(--txt);
   font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
-.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.mono{font-family:'Gellix','Poppins',sans-serif;font-weight:600;letter-spacing:-.01em}
 
 /* Header */
 .hdr{background:var(--card);border-bottom:1px solid var(--border);
   padding:16px 28px;display:flex;justify-content:space-between;align-items:center;
   flex-wrap:wrap;gap:12px}
-.hdr h1{font-size:17px;font-weight:600;letter-spacing:-.01em}
+.hdr h1{font-family:'Gotham Cond','League Gothic',sans-serif;text-transform:uppercase;font-size:19px;font-weight:700;letter-spacing:.03em;color:var(--accent)}
+.hdr .hdr-logo{height:34px;display:block}
+.hdr .hdr-brand{display:flex;align-items:center;gap:14px}
 .hdr p{font-size:13px;color:var(--txt-3);margin-top:2px}
 .badge{font-size:11px;font-weight:600;color:var(--accent-2);border:1px solid var(--border-md);
   background:var(--accent-soft);padding:5px 12px;border-radius:99px}
@@ -40,9 +44,9 @@ body{font-family:'Outfit',system-ui,sans-serif;background:var(--bg);color:var(--
 
 .card{background:var(--card);border:1px solid var(--border);border-radius:16px;
   padding:22px;box-shadow:var(--shadow)}
-.card h2{font-size:12px;font-weight:700;color:var(--txt-3);text-transform:uppercase;
+.card h2{font-family:'Gotham Cond','League Gothic',sans-serif;text-transform:uppercase;letter-spacing:.05em;font-size:12px;font-weight:700;color:var(--txt-3);text-transform:uppercase;
   letter-spacing:.07em;margin-bottom:16px}
-.card h3{font-size:11px;font-weight:700;color:var(--txt-3);text-transform:uppercase;
+.card h3{font-family:'Gotham Cond','League Gothic',sans-serif;text-transform:uppercase;letter-spacing:.05em;font-size:11px;font-weight:700;color:var(--txt-3);text-transform:uppercase;
   letter-spacing:.06em;margin:20px 0 10px}
 
 /* Form */
@@ -89,7 +93,8 @@ body{font-family:'Outfit',system-ui,sans-serif;background:var(--bg);color:var(--
 .kpi .lbl{font-size:10px;font-weight:600;color:var(--txt-3);text-transform:uppercase;letter-spacing:.05em}
 .kpi .val{font-size:21px;font-weight:700;margin-top:5px;letter-spacing:-.02em}
 .kpi .sub{font-size:11px;color:var(--txt-3);margin-top:3px}
-.kpi:first-child{background:linear-gradient(135deg,#7C6FFF,#6457E6);border:none}
+.kpi:first-child{background:var(--accent);border:none}
+.kpi:first-child .val{color:var(--amarelofy)!important}
 .kpi:first-child .lbl{color:rgba(255,255,255,.8)}
 .kpi:first-child .val{color:#fff}
 .kpi:first-child .sub{color:rgba(255,255,255,.7)}

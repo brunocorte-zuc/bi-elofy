@@ -1,3 +1,15 @@
+## Identidade Visual Oficial
+
+Todo o sistema usa a marca oficial Elofy (fonte: `identidadevisual/Manual de Marca Elofy.pdf`):
+
+- **Cores** (p.14): Blue 2.0 `#001BA6` · Soft Gray `#F1EDEC` · New Magenta `#E66CF7` · Amarelofy `#FFF98B`
+- **Tipografia** (p.15-18): Gotham Condensed (títulos, caixa alta) + Gellix (textos),
+  com fallback nas alternativas gratuitas oficiais (League Gothic + Poppins, Google Fonts)
+- **Logo oficial** em `precificacao/brand/` (otimizado p/ web) + fontes em woff2
+- Camada de marca compartilhada: `precificacao/brand/elofy.css`
+- ⚠️ Gotham e Gellix são fontes licenciadas — confirmar direito de uso web com o
+  responsável pela marca; trocar pelos fallbacks gratuitos é 1 linha de CSS.
+
 # Jornada Elofy · HR Tech
 
 Plataforma interna da **jornada do cliente** Elofy, organizada por etapas:
