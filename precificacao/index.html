@@ -6,7 +6,7 @@
 <title>Jornada Elofy · HR Tech</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.css?v=20260601d">
+<link rel="stylesheet" href="app.css?v=20260601e">
 </head>
 <body>
 
@@ -22,6 +22,8 @@
     </nav>
     <span id="userBox" class="hide" style="font-size:12px;color:var(--txt-2)">
       <span id="userEmail" class="mono"></span>
+      <button class="btn ghost notif-sino" id="btnNotif" type="button" title="Notificações">
+        🔔<span class="notif-badge hide" id="notifBadge">0</span></button>
       <button class="btn ghost" id="btnPropostas" style="padding:5px 10px;margin-left:8px">📋 Propostas</button>
       <button class="btn ghost hide" id="btnHandoffs" style="padding:5px 10px;margin-left:8px">🏆 Handoffs</button>
       <button class="btn ghost hide" id="btnAdmin" style="padding:5px 10px;margin-left:8px">⚙️ Admin</button>
@@ -214,6 +216,18 @@
   </div>
 </div>
 
+<!-- ====== PAINEL: CENTRAL DE NOTIFICAÇÕES ====== -->
+<div id="notifOverlay" class="ho-overlay hide">
+  <div class="ho-modal">
+    <button class="ho-x" id="notifFechar" type="button">✕</button>
+    <div class="ho-head" style="justify-content:space-between">
+      <h2>🔔 Notificações</h2>
+      <button class="tl-link" id="notifTodasLidas" type="button">Marcar todas como lidas</button>
+    </div>
+    <div id="notifBody"><p style="color:var(--txt-3)">Carregando…</p></div>
+  </div>
+</div>
+
 <!-- ====== PAINEL: ADMINISTRAÇÃO DE USUÁRIOS ====== -->
 <div id="adminOverlay" class="ho-overlay hide">
   <div class="ho-modal wide">
@@ -258,12 +272,12 @@
 <script src="data/supabase.js"></script>
 <!-- Motor + auth + PDF + UI. O ?v= força o navegador a baixar a versão nova
      após cada deploy (evita HTML novo rodando com JS antigo em cache). -->
-<script src="src/engine.js?v=20260601d"></script>
-<script src="src/auth.js?v=20260601d"></script>
-<script src="src/pdf.js?v=20260601d"></script>
-<script src="src/handoff.js?v=20260601d"></script>
-<script src="src/ops.js?v=20260601d"></script>
-<script src="src/admin.js?v=20260601d"></script>
-<script src="src/app.js?v=20260601d"></script>
+<script src="src/engine.js?v=20260601e"></script>
+<script src="src/auth.js?v=20260601e"></script>
+<script src="src/pdf.js?v=20260601e"></script>
+<script src="src/handoff.js?v=20260601e"></script>
+<script src="src/ops.js?v=20260601e"></script>
+<script src="src/admin.js?v=20260601e"></script>
+<script src="src/app.js?v=20260601e"></script>
 </body>
 </html>

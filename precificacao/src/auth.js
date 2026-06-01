@@ -182,6 +182,32 @@
     return data || [];
   }
 
+  /* ---- Equipe (pessoas cadastradas) e notificações ---- */
+  async function equipe() {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("pricing_equipe");
+    if (error) throw error;
+    return data || [];
+  }
+  async function notifListar(limit) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("notif_listar", { p_limit: limit || 50 });
+    if (error) throw error;
+    return data || [];
+  }
+  async function notifMarcarLida(id) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("notif_marcar_lida", { p_id: id || null });
+    if (error) throw error;
+    return data;
+  }
+  async function opsResolverProblema(updateId, texto) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("ops_resolver_problema", { p_update_id: updateId, p_texto: texto });
+    if (error) throw error;
+    return data;
+  }
+
   /* ---- Administração de usuários (somente admin) ---- */
   async function adminListarUsuarios() {
     if (!sb) throw new Error("Sessão não iniciada.");
@@ -301,7 +327,8 @@
     listarPropostas, carregarConfig, buscarNegocios, buscarCustoms,
     meuPerfil, podeDarGanho, registrarHandoff, listarHandoffs, uploadContrato, urlContrato,
     painelPropostas,
-    opsListar, opsUpdates, opsRegistrarUpdate, opsEditar,
+    opsListar, opsUpdates, opsRegistrarUpdate, opsEditar, opsResolverProblema,
+    equipe, notifListar, notifMarcarLida,
     adminListarUsuarios, adminSalvarUsuario, adminRemoverUsuario, adminDefinirSenha,
   };
 })(window);

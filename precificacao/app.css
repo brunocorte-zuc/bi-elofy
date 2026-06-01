@@ -345,6 +345,42 @@ tbody tr:hover{background:var(--surf)}
 .ops-up-head{display:flex;justify-content:space-between;gap:10px;font-size:11px;color:var(--txt-3)}
 .ops-up-txt{font-size:13px;color:var(--txt-2);margin-top:4px}
 
+/* ===== Central de notificações ===== */
+.notif-sino{position:relative;padding:5px 10px!important;margin-left:8px}
+.notif-badge{position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;font-size:10px;
+  font-weight:700;border-radius:99px;padding:1px 6px;min-width:18px;text-align:center}
+.notif-badge.hide{display:none}
+.notif-item{border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:10px;
+  padding:12px 15px;margin-bottom:10px;background:var(--card)}
+.notif-item.lida{opacity:.55;border-left-color:var(--border-md)}
+.notif-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.notif-quando{font-size:11px;color:var(--txt-3)}
+.notif-titulo{font-weight:700;font-size:14px;margin-top:7px}
+.notif-msg{font-size:12px;color:var(--txt-2);margin-top:4px}
+.notif-ler{margin-top:8px}
+.pp-status.info{color:var(--txt-2);background:var(--surf)}
+
+/* ===== Dar baixa em problema (timeline OPS) ===== */
+.ops-baixa{display:flex;gap:8px;margin-top:9px}
+.ops-baixa-txt{flex:1;font-family:inherit;font-size:12px;background:#fff;border:1px solid var(--border-md);
+  border-radius:8px;padding:8px 11px;color:var(--txt)}
+.ops-baixa-txt:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px var(--green-bg)}
+.ops-baixa-btn{font-family:inherit;font-size:12px;font-weight:700;color:#fff;cursor:pointer;
+  background:var(--green);border:none;border-radius:8px;padding:8px 14px;white-space:nowrap}
+.ops-baixa-btn:hover{filter:brightness(1.08)}
+.ops-resolvido{margin-top:9px;font-size:12px;color:var(--green);background:var(--green-bg);
+  border-radius:8px;padding:8px 12px}
+.ops-resolvido.pendente{color:var(--gold);background:var(--gold-bg)}
+.ops-resolvido-txt{margin-top:4px;font-style:italic;color:var(--txt-2)}
+.ops-up.problema.resolvido{opacity:.75}
+
+/* ===== Time de IS (checkboxes de pessoas cadastradas) ===== */
+.ops-is-lista{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.ops-is-item{display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;
+  border:1px solid var(--border-md);border-radius:99px;padding:6px 12px;background:var(--surf);color:var(--txt-2)}
+.ops-is-item.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-2);font-weight:600}
+.ops-is-item input{accent-color:var(--accent)}
+
 /* ===== Administração de usuários ===== */
 .adm-row{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;
   border:1px solid var(--border);border-radius:11px;padding:13px 16px;margin-bottom:10px;background:var(--card)}

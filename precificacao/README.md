@@ -37,6 +37,29 @@ Botão **⚙️ Admin** no topo, exclusivo do papel `admin`:
 - Problema/resolução mudam a saúde automaticamente; mudança de etapa registra na timeline.
 - **Cliente acompanha por link público**: `acompanhamento.html?t=<token>` (stepper +
   atualizações marcadas como visíveis). RPC pública `implantacao_publica(token)`.
+- **Time = pessoas cadastradas**: CS/Projeto/Arquitetura são selects e o Time de IS
+  são checkboxes, todos a partir de `pricing_equipe()` (usuários do sistema).
+- **Problemas com baixa**: cada problema da timeline pode ser resolvido individualmente
+  (`ops_resolver_problema`) com texto de como foi resolvido; a saúde volta ao verde
+  quando não restam problemas abertos.
+
+## Central de Notificações (🔔)
+
+Sino no topo com contador de não lidas. Notificações com **escala de prioridade**
+(🔴 crítica · 🟠 alta · 🟣 normal · ⚪ info), criadas automaticamente:
+
+| Evento | Prioridade | Quem recebe |
+|---|---|---|
+| Problema registrado em implantação | 🔴 crítica | todos |
+| Novo projeto (handoff concluído) | 🟠 alta | todos |
+| Cliente pediu ajustes / recusou proposta | 🟠 alta | o closer dono |
+| Cliente aprovou proposta | 🟣 normal | o closer dono |
+| Problema resolvido | 🟣 normal | todos |
+| Mudança de etapa | ⚪ info | todos |
+
+Tabelas `pricing.notificacoes` / `notificacoes_lidas`; RPCs `notif_listar`,
+`notif_marcar_lida`. Helper interno `pricing.notificar()`.
+
 - Tabelas: `pricing.implantacoes`, `pricing.implantacao_updates`. RPCs: `ops_listar_implantacoes`,
   `ops_updates`, `ops_registrar_update`, `ops_editar_implantacao`.
 

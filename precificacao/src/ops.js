@@ -34,6 +34,7 @@
   let cache = [];          // implantações carregadas
   let filtro = "ativas";   // ativas | problemas | concluidas | todas
   let podeEditar = false;
+  let equipe = [];         // pessoas cadastradas (para os selects do time)
 
   /* ---------- Board ---------- */
   async function montar(perfil) {
@@ -45,7 +46,13 @@
     const lista = $("#opsLista");
     lista.innerHTML = `<p style="color:var(--txt-3)">Carregando…</p>`;
     try {
-      cache = await store().opsListar();
+      // equipe cadastrada → selects do time (carrega junto, em paralelo)
+      const [implantacoes, pessoas] = await Promise.all([
+        store().opsListar(),
+        store().equipe().catch(() => []),
+      ]);
+      cache = implantacoes;
+      equipe = pessoas;
       renderKpis();
       renderFiltros();
       renderLista();
@@ -137,6 +144,27 @@
       el.querySelector(".pp-abrir").addEventListener("click", () => abrirDetalhe(el.dataset.ops)));
   }
 
+  // Select de pessoa cadastrada (CS / Projeto / Arquitetura).
+  function selectPessoa(id, atual) {
+    const opcoes = equipe.map(p =>
+      `<option value="${esc(p.email)}" ${p.email === atual ? "selected" : ""}>${esc(p.email.split("@")[0])} (${esc(p.papel)})</option>`).join("");
+    // valor atual fora da lista (legado em texto livre) → mantém como opção
+    const legado = atual && !equipe.some(p => p.email === atual)
+      ? `<option value="${esc(atual)}" selected>${esc(atual)}</option>` : "";
+    return `<select id="${id}" class="ops-sel" style="width:100%">
+      <option value="">— sem atribuição —</option>${legado}${opcoes}</select>`;
+  }
+
+  // Checkboxes do Time de IS (vários selecionáveis), a partir das pessoas cadastradas.
+  function checkboxesIS(atual) {
+    const marcados = new Set(String(atual || "").split(",").map(s => s.trim()).filter(Boolean));
+    return equipe.map(p => `
+      <label class="ops-is-item ${marcados.has(p.email) ? "on" : ""}">
+        <input type="checkbox" value="${esc(p.email)}" ${marcados.has(p.email) ? "checked" : ""}>
+        <span>${esc(p.email.split("@")[0])}</span>
+      </label>`).join("") || `<p style="font-size:12px;color:var(--txt-3)">Nenhuma pessoa cadastrada ainda.</p>`;
+  }
+
   // Linha compacta do time da implantação (board e detalhe).
   function timeLinha(i) {
     const p = (rotulo, v) => v ? `<span><b>${rotulo}</b> ${esc(String(v).split("@")[0])}</span>` : "";
@@ -184,17 +212,16 @@
       <div class="ho-sec">
         <h3>👥 Time da implantação</h3>
         ${podeEditar ? `
+        <p style="font-size:11px;color:var(--txt-3);margin-bottom:10px">Somente pessoas cadastradas no sistema
+        (⚙️ Admin → adicionar usuário) podem ser atribuídas.</p>
         <div class="ops-time-grid">
-          <label class="ho-f">CS responsável pela conta
-            <input type="text" id="opsCs" value="${esc(impl.cs_email || "")}" placeholder="email ou nome"></label>
-          <label class="ho-f">Responsável pelo projeto
-            <input type="text" id="opsProjeto" value="${esc(impl.responsavel_email || "")}" placeholder="email ou nome"></label>
-          <label class="ho-f">Responsável pela arquitetura
-            <input type="text" id="opsArq" value="${esc(impl.arquitetura_email || "")}" placeholder="email ou nome"></label>
-          <label class="ho-f">Time de IS (implantação)
-            <input type="text" id="opsIs" value="${esc(impl.time_is || "")}" placeholder="ex.: João, Maria, Pedro"></label>
+          <label class="ho-f">CS responsável pela conta${selectPessoa("opsCs", impl.cs_email)}</label>
+          <label class="ho-f">Responsável pelo projeto${selectPessoa("opsProjeto", impl.responsavel_email)}</label>
+          <label class="ho-f">Responsável pela arquitetura${selectPessoa("opsArq", impl.arquitetura_email)}</label>
         </div>
-        <button class="btn ghost" id="opsSalvarTime" type="button" style="padding:7px 14px">Salvar time</button>
+        <label class="ho-f" style="margin-top:4px">Time de IS (implantação) — marque um ou mais</label>
+        <div class="ops-is-lista">${checkboxesIS(impl.time_is)}</div>
+        <button class="btn ghost" id="opsSalvarTime" type="button" style="padding:7px 14px;margin-top:10px">Salvar time</button>
         ` : timeLinha(impl)}
       </div>
 
@@ -207,7 +234,6 @@
             <span>Visível para o cliente na página de acompanhamento</span></label>
           <div class="ops-reg-btns">
             <button class="btn ghost" id="opsBtnProblema" type="button">⚠ Registrar problema</button>
-            <button class="btn ghost" id="opsBtnResolucao" type="button">✓ Problema resolvido</button>
             <button class="btn" id="opsBtnUpdate" type="button">Registrar atualização</button>
           </div>
         </div>
@@ -233,16 +259,18 @@
         if (!nova) return;
         await registrar(id, "etapa", `Etapa alterada para ${(ETAPAS.find(x => x.id === nova) || {}).nome}.`, true, nova);
       });
-      // salvar o time da implantação
+      // salvar o time da implantação (pessoas cadastradas)
       $("#opsSalvarTime").addEventListener("click", async () => {
         const msg = $("#opsMsg");
+        const isMarcados = Array.from(document.querySelectorAll(".ops-is-lista input:checked"))
+          .map(c => c.value).join(", ");
         try {
           if (msg) { msg.textContent = "Salvando time…"; msg.className = "ho-msg"; }
           await store().opsEditar(id, {
-            cs_email: $("#opsCs").value.trim() || null,
-            responsavel_email: $("#opsProjeto").value.trim() || null,
-            arquitetura_email: $("#opsArq").value.trim() || null,
-            time_is: $("#opsIs").value.trim() || null,
+            cs_email: $("#opsCs").value || null,
+            responsavel_email: $("#opsProjeto").value || null,
+            arquitetura_email: $("#opsArq").value || null,
+            time_is: isMarcados || null,
           });
           cache = await store().opsListar();
           renderKpis(); renderLista();
@@ -251,23 +279,70 @@
           if (msg) { msg.textContent = "Erro: " + (e2.message || e2); msg.className = "ho-msg bad"; }
         }
       });
+      // marca visual dos checkboxes do time de IS
+      document.querySelectorAll(".ops-is-lista input").forEach(cb =>
+        cb.addEventListener("change", () => cb.closest(".ops-is-item").classList.toggle("on", cb.checked)));
       $("#opsBtnUpdate").addEventListener("click", () => registrarDoForm(id, "atualizacao"));
       $("#opsBtnProblema").addEventListener("click", () => registrarDoForm(id, "problema"));
-      $("#opsBtnResolucao").addEventListener("click", () => registrarDoForm(id, "resolucao"));
     }
+    // botões de "dar baixa" nos problemas em aberto da timeline
+    ligarDarBaixa(id);
   }
 
   function renderTimeline(updates) {
     if (!updates.length) return `<p style="color:var(--txt-3);font-size:13px">Sem atualizações ainda.</p>`;
     const ICONE = { atualizacao: "💬", problema: "⚠️", resolucao: "✅", etapa: "➡️" };
-    return updates.map(u => `
-      <div class="ops-up ${u.tipo}">
+    return updates.map(u => {
+      // problema: mostra status de resolução ou o botão de dar baixa
+      let blocoProblema = "";
+      if (u.tipo === "problema") {
+        if (u.resolvido_em) {
+          blocoProblema = `<div class="ops-resolvido">✅ <b>Resolvido</b> por ${esc((u.resolvido_por || "—").split("@")[0])}
+            em ${new Date(u.resolvido_em).toLocaleDateString("pt-BR")}
+            ${u.resolucao_texto ? `<div class="ops-resolvido-txt">“${esc(u.resolucao_texto)}”</div>` : ""}</div>`;
+        } else if (podeEditar) {
+          blocoProblema = `<div class="ops-baixa" data-prob="${u.id}">
+            <input type="text" class="ops-baixa-txt" placeholder="Como foi resolvido? (breve descrição)">
+            <button class="ops-baixa-btn" type="button">✓ Dar baixa</button>
+          </div>`;
+        } else {
+          blocoProblema = `<div class="ops-resolvido pendente">⏳ Problema em aberto</div>`;
+        }
+      }
+      return `
+      <div class="ops-up ${u.tipo} ${u.tipo === "problema" && u.resolvido_em ? "resolvido" : ""}">
         <div class="ops-up-head">
           <span>${ICONE[u.tipo] || "💬"} <b>${esc((u.autor_email || "sistema").split("@")[0])}</b></span>
           <span>${u.visivel_cliente ? "" : "🔒 interno"} · ${new Date(u.criado_em).toLocaleString("pt-BR")}</span>
         </div>
         ${u.texto ? `<div class="ops-up-txt">${esc(u.texto)}</div>` : ""}
-      </div>`).join("");
+        ${blocoProblema}
+      </div>`;
+    }).join("");
+  }
+
+  // Liga os botões de "dar baixa" da timeline (chamado após renderizar o detalhe).
+  function ligarDarBaixa(implantacaoId) {
+    document.querySelectorAll(".ops-baixa").forEach(box => {
+      box.querySelector(".ops-baixa-btn").addEventListener("click", async () => {
+        const texto = box.querySelector(".ops-baixa-txt").value.trim();
+        const msg = $("#opsMsg");
+        if (!texto) {
+          box.querySelector(".ops-baixa-txt").focus();
+          if (msg) { msg.textContent = "Descreva brevemente como o problema foi resolvido."; msg.className = "ho-msg bad"; }
+          return;
+        }
+        try {
+          if (msg) { msg.textContent = "Dando baixa…"; msg.className = "ho-msg"; }
+          await store().opsResolverProblema(box.dataset.prob, texto);
+          cache = await store().opsListar();
+          renderKpis(); renderLista();
+          abrirDetalhe(implantacaoId);
+        } catch (e) {
+          if (msg) { msg.textContent = "Erro: " + (e.message || e); msg.className = "ho-msg bad"; }
+        }
+      });
+    });
   }
 
   async function registrarDoForm(id, tipo) {

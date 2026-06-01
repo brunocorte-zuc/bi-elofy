@@ -750,7 +750,64 @@ Valor global: ${brl(r.global.comImposto)}`;
       if (btnAdm) btnAdm.classList.toggle("hide", !(meuPerfil && meuPerfil.papel === "admin"));
       // navegação da jornada (Comercial | Customer OPS) aparece após o login
       $("#jornadaNav").classList.remove("hide");
+      // central de notificações (sino com contador)
+      carregarNotificacoes();
     } catch (_) { /* silencioso: o painel é extra */ }
+  }
+
+  /* ---- Central de notificações ---- */
+  const PRIORIDADE = {
+    critica: { cls: "bad",  rotulo: "🔴 Crítica" },
+    alta:    { cls: "warn", rotulo: "🟠 Alta" },
+    normal:  { cls: "ok",   rotulo: "🟣 Normal" },
+    info:    { cls: "info", rotulo: "⚪ Info" },
+  };
+  let notifCache = [];
+
+  // Carrega e atualiza o contador do sino (chamado após o login e ao fechar o painel).
+  async function carregarNotificacoes() {
+    try {
+      notifCache = await window.PricingStore.notifListar(50);
+      const naoLidas = notifCache.filter(n => !n.lida).length;
+      const badge = $("#notifBadge");
+      badge.textContent = naoLidas > 99 ? "99+" : String(naoLidas);
+      badge.classList.toggle("hide", naoLidas === 0);
+    } catch (_) { /* sem notificações não é erro fatal */ }
+  }
+
+  function abrirNotificacoes() {
+    $("#notifOverlay").classList.remove("hide");
+    const body = $("#notifBody");
+    if (!notifCache.length) {
+      body.innerHTML = `<p style="color:var(--txt-3);font-size:13px">Nenhuma notificação ainda.
+        Você será avisado sobre novos projetos, problemas e respostas de clientes.</p>`;
+      return;
+    }
+    // ordena: não lidas primeiro, depois por prioridade, depois por data
+    const peso = { critica: 0, alta: 1, normal: 2, info: 3 };
+    const rows = [...notifCache].sort((a, b) =>
+      (a.lida - b.lida) || (peso[a.prioridade] - peso[b.prioridade]) ||
+      (new Date(b.criado_em) - new Date(a.criado_em)));
+    body.innerHTML = rows.map(n => {
+      const p = PRIORIDADE[n.prioridade] || PRIORIDADE.info;
+      return `<div class="notif-item ${n.lida ? "lida" : ""}" data-notif="${n.id}">
+        <div class="notif-head">
+          <span class="pp-status ${p.cls}">${p.rotulo}</span>
+          <span class="notif-quando">${new Date(n.criado_em).toLocaleString("pt-BR")}</span>
+        </div>
+        <div class="notif-titulo">${escapeHtml(n.titulo)}</div>
+        ${n.mensagem ? `<div class="notif-msg">${escapeHtml(n.mensagem)}</div>` : ""}
+        ${n.lida ? "" : `<button class="tl-link notif-ler" type="button">✓ Marcar como lida</button>`}
+      </div>`;
+    }).join("");
+    // marcar individual como lida
+    body.querySelectorAll(".notif-ler").forEach(btn =>
+      btn.addEventListener("click", async () => {
+        const id = btn.closest(".notif-item").dataset.notif;
+        try { await window.PricingStore.notifMarcarLida(id); } catch (_) {}
+        await carregarNotificacoes();
+        abrirNotificacoes();
+      }));
   }
 
   /* ---- Navegação da Jornada (módulos por etapa do cliente) ---- */
@@ -1013,6 +1070,17 @@ Valor global: ${brl(r.global.comImposto)}`;
     // navegação entre módulos da jornada
     document.querySelectorAll(".jn-tab").forEach(t =>
       t.addEventListener("click", () => trocarModulo(t.dataset.jornada)));
+    // central de notificações
+    $("#btnNotif").addEventListener("click", abrirNotificacoes);
+    $("#notifFechar").addEventListener("click", () => { $("#notifOverlay").classList.add("hide"); carregarNotificacoes(); });
+    $("#notifOverlay").addEventListener("click", e => {
+      if (e.target === $("#notifOverlay")) { $("#notifOverlay").classList.add("hide"); carregarNotificacoes(); }
+    });
+    $("#notifTodasLidas").addEventListener("click", async () => {
+      try { await window.PricingStore.notifMarcarLida(null); } catch (_) {}
+      await carregarNotificacoes();
+      abrirNotificacoes();
+    });
     // administração de usuários (só admin)
     $("#btnAdmin").addEventListener("click", () => window.JornadaAdmin && window.JornadaAdmin.abrir());
     // painel de acompanhamento de propostas
