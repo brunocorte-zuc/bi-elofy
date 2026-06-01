@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Sua implantação · Elofy</title>
 <!-- Marca oficial Elofy: paleta + fontes (Gotham Cond / Gellix) -->
-<link rel="stylesheet" href="brand/elofy.css?v=20260602a">
+<link rel="stylesheet" href="brand/elofy.css?v=20260602b">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=League+Gothic&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -54,13 +54,61 @@
   .meta .k{font-family:var(--font-titulo);text-transform:uppercase;font-size:10px;
     color:var(--ink3);letter-spacing:.08em}
   .meta .val{font-weight:600;font-size:14px;margin-top:2px}
-  /* Time Elofy */
-  .time-box{display:flex;gap:20px;flex-wrap:wrap;background:var(--elofy-blue);border-radius:14px;
-    padding:18px 22px;margin:16px 0}
-  .time-box .tb-titulo{font-family:var(--font-titulo);text-transform:uppercase;width:100%;
-    color:var(--amarelofy);font-size:13px;letter-spacing:.08em;margin-bottom:2px}
-  .time-box .tb-item .k{font-size:10px;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.05em}
-  .time-box .tb-item .v{color:#fff;font-weight:600;font-size:13px;margin-top:2px}
+  /* Time Elofy — cards com foto, contato e CTA */
+  .tm-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+  @media(max-width:560px){.tm-grid{grid-template-columns:1fr}}
+  .tm-card{display:flex;gap:14px;align-items:flex-start;background:var(--elofy-blue);
+    border-radius:16px;padding:16px 18px}
+  .tm-foto{width:64px;height:64px;border-radius:50%;object-fit:cover;flex:none;
+    border:3px solid var(--amarelofy);background:#fff}
+  .tm-iniciais{display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-titulo);font-size:22px;font-weight:700;color:var(--elofy-blue);
+    background:var(--amarelofy)}
+  .tm-rotulo{font-family:var(--font-titulo);text-transform:uppercase;font-size:10px;
+    color:var(--amarelofy);letter-spacing:.08em}
+  .tm-nome{color:#fff;font-weight:700;font-size:16px;margin-top:2px}
+  .tm-cargo{color:rgba(255,255,255,.75);font-size:11px;margin-top:1px}
+  .tm-ctas{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .tm-cta{font-size:11px;font-weight:700;text-decoration:none;border-radius:99px;
+    padding:6px 14px;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)}
+  .tm-cta:hover{background:rgba(255,255,255,.28)}
+  .tm-cta.zap{background:#25D366;border-color:#25D366;color:#fff}
+  /* Customizações com status */
+  .cu-item{border:1px solid var(--line);border-left:4px solid var(--magenta);border-radius:0 12px 12px 0;
+    padding:13px 17px;margin-bottom:10px;background:var(--surf)}
+  .cu-nome{font-weight:600;font-size:14px}
+  .cu-meta{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:7px}
+  .cu-status{font-size:11px;font-weight:700;padding:3px 11px;border-radius:99px}
+  .cu-status.wait{color:var(--ink3);background:#EDEAE8}
+  .cu-status.info{color:var(--elofy-blue);background:var(--elofy-blue-08)}
+  .cu-status.warn{color:var(--gold);background:var(--goldbg)}
+  .cu-status.ok{color:var(--green);background:var(--greenbg)}
+  .cu-prev{font-size:12px;color:var(--ink2);font-weight:600}
+  .cu-prev.sem{color:var(--ink3);font-weight:400;font-style:italic}
+  .cu-obs{font-size:12px;color:var(--ink3);margin-top:6px;font-style:italic}
+  /* Escalonamento */
+  .esc-box{border:2px dashed var(--line);border-radius:16px;padding:20px 22px;margin-top:24px;text-align:center}
+  .esc-box b{font-family:var(--font-titulo);text-transform:uppercase;font-size:16px;
+    letter-spacing:.03em;color:var(--ink)}
+  .esc-box p{color:var(--ink2);font-size:13px;margin:8px auto 14px;max-width:480px}
+  .esc-box.escalado{border-style:solid;border-color:var(--red);background:var(--redbg)}
+  .esc-box.escalado b{color:var(--red)}
+  .esc-btn{font-family:var(--font-titulo);text-transform:uppercase;letter-spacing:.05em;
+    font-size:14px;font-weight:700;cursor:pointer;color:var(--red);background:#fff;
+    border:2px solid var(--red);border-radius:12px;padding:12px 26px}
+  .esc-btn:hover{background:var(--redbg)}
+  .esc-btn.enviar{background:var(--red);color:#fff;width:100%;margin-top:10px}
+  .esc-form{margin-top:16px;text-align:left}
+  .esc-form.hide{display:none}
+  .esc-form textarea,.esc-form input{width:100%;font-family:var(--font-texto);font-size:14px;
+    border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff;
+    color:var(--ink);margin-bottom:10px}
+  .esc-form textarea{min-height:90px;resize:vertical}
+  .esc-form textarea:focus,.esc-form input:focus{outline:none;border-color:var(--red)}
+  .esc-msg{font-size:12px;color:var(--red);text-align:center;margin-top:8px}
+  .esc-ok{background:var(--greenbg);border-radius:12px;padding:16px;color:var(--green);
+    font-size:14px;text-align:center}
+  .hide{display:none}
   /* Timeline */
   h2.sec{font-family:var(--font-titulo);text-transform:uppercase;font-size:15px;
     letter-spacing:.06em;color:var(--elofy-blue);margin:26px 0 12px;font-weight:700}
@@ -82,7 +130,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="data/supabase.js"></script>
-<script src="src/pdf.js?v=20260602a"></script>
-<script src="src/acompanhamento.js?v=20260602a"></script>
+<script src="src/pdf.js?v=20260602b"></script>
+<script src="src/acompanhamento.js?v=20260602b"></script>
 </body>
 </html>

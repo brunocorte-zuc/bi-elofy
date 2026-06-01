@@ -234,6 +234,25 @@
     if (error) throw error;
     return data;
   }
+  // Customs da implantação: status e previsão de entrega (visíveis ao cliente)
+  async function opsAtualizarCustoms(implantacaoId, customs) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("ops_atualizar_customs", {
+      p_implantacao_id: implantacaoId, p_customs: customs || [],
+    });
+    if (error) throw error;
+    return data;
+  }
+  // Upload de foto de perfil (bucket público 'fotos') → devolve a URL pública.
+  async function uploadFoto(email, file) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const ext = (file.name || "foto.jpg").split(".").pop().toLowerCase();
+    const path = `${email.replace(/[^\w]/g, "_")}_${Date.now()}.${ext}`;
+    const { error } = await sb.storage.from("fotos").upload(path, file, { upsert: true });
+    if (error) throw error;
+    const { data } = sb.storage.from("fotos").getPublicUrl(path);
+    return data.publicUrl;
+  }
 
   /* ---- Administração de usuários (somente admin) ---- */
   async function adminListarUsuarios() {
@@ -242,9 +261,14 @@
     if (error) throw error;
     return data || [];
   }
-  async function adminSalvarUsuario(email, papel) {
+  async function adminSalvarUsuario(email, papel, perfil) {
     if (!sb) throw new Error("Sessão não iniciada.");
-    const { data, error } = await sb.rpc("admin_salvar_usuario", { p_email: email, p_papel: papel });
+    const p = perfil || {};
+    const { data, error } = await sb.rpc("admin_salvar_usuario", {
+      p_email: email, p_papel: papel,
+      p_nome: p.nome || null, p_cargo: p.cargo || null,
+      p_telefone: p.telefone || null, p_foto_url: p.foto_url || null,
+    });
     if (error) throw error;
     return data;
   }
@@ -355,7 +379,7 @@
     meuPerfil, podeDarGanho, registrarHandoff, listarHandoffs, uploadContrato, urlContrato,
     painelPropostas,
     opsListar, opsUpdates, opsRegistrarUpdate, opsEditar, opsResolverProblema,
-    opsAceitarHandoff, opsSalvarDiscovery, opsRedFlag,
+    opsAceitarHandoff, opsSalvarDiscovery, opsRedFlag, opsAtualizarCustoms, uploadFoto,
     equipe, notifListar, notifMarcarLida,
     adminListarUsuarios, adminSalvarUsuario, adminRemoverUsuario, adminDefinirSenha,
   };

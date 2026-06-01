@@ -49,6 +49,36 @@
     </select>`;
   }
 
+  // Foto da pessoa (ou as iniciais, quando não tem foto cadastrada).
+  function fotoOuIniciais(u) {
+    const base = u.nome || u.email;
+    const iniciais = base.split(/[\s@.]+/).filter(Boolean).map(s => s[0]).slice(0, 2).join("").toUpperCase();
+    return u.foto_url
+      ? `<img class="adm-foto" src="${esc(u.foto_url)}" alt="">`
+      : `<div class="adm-foto adm-iniciais">${esc(iniciais)}</div>`;
+  }
+
+  // Formulário de perfil: o que o CLIENTE vê na página de acompanhamento
+  // (foto, nome, cargo e botões de contato — WhatsApp / e-mail).
+  function perfilForm(u, i) {
+    return `<div class="adm-perfil hide" id="admPerfil${i}">
+      <p style="font-size:11px;color:var(--txt-3);margin-bottom:10px">
+        👁 Esses dados aparecem para o <b>cliente</b> na página de acompanhamento quando esta pessoa
+        é atribuída a uma implantação (foto, nome, cargo e botões de WhatsApp/e-mail).</p>
+      <div class="adm-perfil-grid">
+        <label class="ho-f">Nome completo
+          <input type="text" id="admNome${i}" class="ops-sel" value="${esc(u.nome || "")}" placeholder="ex.: Laura Martins"></label>
+        <label class="ho-f">Cargo
+          <input type="text" id="admCargo${i}" class="ops-sel" value="${esc(u.cargo || "")}" placeholder="ex.: Customer Success"></label>
+        <label class="ho-f">Telefone (WhatsApp, com DDI)
+          <input type="text" id="admTel${i}" class="ops-sel" value="${esc(u.telefone || "")}" placeholder="ex.: 5511999998888"></label>
+        <label class="ho-f">Foto (jpg/png)
+          <input type="file" id="admFoto${i}" class="ops-sel" accept="image/*"></label>
+      </div>
+      <button class="btn ghost" data-salvarperfil="${i}" type="button" style="padding:7px 14px;margin-top:10px">Salvar perfil</button>
+    </div>`;
+  }
+
   function render() {
     const body = $("#adminBody");
     body.innerHTML = `
@@ -59,19 +89,23 @@
       <div class="adm-lista">
         ${usuarios.map((u, i) => `
         <div class="adm-row" data-i="${i}">
+          ${fotoOuIniciais(u)}
           <div class="adm-info">
-            <div class="adm-email">${esc(u.email)}
+            <div class="adm-email">${esc(u.nome || u.email)}
+              ${u.nome ? `<span class="adm-tag">${esc(u.email)}</span>` : ""}
               ${u.tem_conta ? `<span class="adm-tag ok">conta ativa</span>` : `<span class="adm-tag">nunca entrou</span>`}
               ${u.tem_senha ? `<span class="adm-tag info">tem senha</span>` : ""}
             </div>
-            <div class="adm-sub">${esc((PAPEIS.find(p => p.id === u.papel) || {}).desc || "")}
+            <div class="adm-sub">${esc(u.cargo || (PAPEIS.find(p => p.id === u.papel) || {}).desc || "")}
               ${u.ultimo_login ? ` · último acesso ${new Date(u.ultimo_login).toLocaleDateString("pt-BR")}` : ""}</div>
           </div>
           <div class="adm-acoes">
             ${selectPapel(u.papel, `data-papel="${i}"`)}
+            <button class="tl-link" data-perfil="${i}" type="button">👤 Perfil</button>
             <button class="tl-link" data-senha="${i}" type="button">🔑 Senha</button>
             <button class="tl-link adm-x" data-remover="${i}" type="button">✕ Remover</button>
           </div>
+          ${perfilForm(u, i)}
         </div>`).join("")}
       </div>
 
@@ -79,13 +113,15 @@
         <h3>+ Adicionar usuário</h3>
         <div class="adm-novo">
           <input type="email" id="admNovoEmail" placeholder="email@elofy.com.br" class="ops-sel" style="flex:2">
+          <input type="text" id="admNovoNome" placeholder="Nome completo" class="ops-sel" style="flex:2">
           ${selectPapel("closer", 'id="admNovoPapel" style="flex:1"')}
           <input type="text" id="admNovaSenha" placeholder="Senha temporária (opcional, mín. 8)" class="ops-sel" style="flex:2">
           <button class="btn" id="admCriar" type="button">Criar</button>
         </div>
         <p style="font-size:11px;color:var(--txt-3);margin-top:8px">
           Com senha definida, a pessoa entra na hora por "Entrar com senha". Sem senha, ela
-          precisará usar o código por e-mail (requer SMTP configurado).</p>
+          precisará usar o código por e-mail (requer SMTP configurado). Depois de criar,
+          use 👤 Perfil para cadastrar cargo, telefone e foto — o cliente vê esses dados.</p>
       </div>
       <p id="admMsg" class="ho-msg"></p>`;
 
@@ -95,6 +131,27 @@
         const u = usuarios[Number(sel.dataset.papel)];
         await acao(() => store().adminSalvarUsuario(u.email, sel.value),
           `Papel de ${u.email} atualizado.`);
+      }));
+    // mostrar/esconder o formulário de perfil
+    body.querySelectorAll("[data-perfil]").forEach(btn =>
+      btn.addEventListener("click", () =>
+        $("#admPerfil" + btn.dataset.perfil).classList.toggle("hide")));
+    // salvar perfil (nome, cargo, telefone e foto — visíveis para o cliente)
+    body.querySelectorAll("[data-salvarperfil]").forEach(btn =>
+      btn.addEventListener("click", async () => {
+        const i = Number(btn.dataset.salvarperfil);
+        const u = usuarios[i];
+        const arquivo = $("#admFoto" + i).files[0];
+        await acao(async () => {
+          let fotoUrl = null; // null = mantém a foto atual (o banco preserva com coalesce)
+          if (arquivo) fotoUrl = await store().uploadFoto(u.email, arquivo);
+          await store().adminSalvarUsuario(u.email, u.papel, {
+            nome: $("#admNome" + i).value.trim() || null,
+            cargo: $("#admCargo" + i).value.trim() || null,
+            telefone: $("#admTel" + i).value.trim() || null,
+            foto_url: fotoUrl,
+          });
+        }, `Perfil de ${u.nome || u.email} atualizado.`);
       }));
     // senha temporária
     body.querySelectorAll("[data-senha]").forEach(btn =>
@@ -115,11 +172,12 @@
     // criar
     $("#admCriar").addEventListener("click", async () => {
       const email = $("#admNovoEmail").value.trim();
+      const nome = $("#admNovoNome").value.trim();
       const papel = $("#admNovoPapel").value;
       const senha = $("#admNovaSenha").value;
       if (!email) { msg("Informe o e-mail.", "bad"); return; }
       await acao(async () => {
-        await store().adminSalvarUsuario(email, papel);
+        await store().adminSalvarUsuario(email, papel, nome ? { nome } : null);
         if (senha) await store().adminDefinirSenha(email, senha);
       }, `${email} criado${senha ? " com senha temporária" : ""}.`);
     });

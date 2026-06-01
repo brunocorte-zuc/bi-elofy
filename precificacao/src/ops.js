@@ -30,6 +30,13 @@
     atencao:  { cls: "warn", txt: "🟡 Atenção" },
     problema: { cls: "bad",  txt: "🔴 Problema" },
   };
+  // Status possíveis de uma custom (mesmos rótulos que o cliente vê na página pública).
+  const STATUS_CUSTOM = [
+    ["nao_iniciada",       "Não iniciada"],
+    ["em_desenvolvimento", "Em desenvolvimento"],
+    ["em_homologacao",     "Em homologação"],
+    ["entregue",           "✓ Entregue"],
+  ];
 
   let cache = [];          // implantações carregadas
   let filtro = "ativas";   // ativas | problemas | concluidas | todas
@@ -127,6 +134,7 @@
             <span class="ops-etapa">${esc(etapaNome)}</span>
             <span class="pp-status ${s.cls}">${s.txt}</span>
             ${i.problemas_abertos > 0 ? `<span class="pp-status bad">⚠ ${i.problemas_abertos} problema(s) aberto(s)</span>` : ""}
+            ${i.escalonado_em ? `<span class="pp-status bad">🆘 Escalonado pelo cliente</span>` : ""}
             ${i.handoff_status === "pendente" ? `<span class="pp-status warn">🤝 Aguardando aceite</span>` : ""}
             ${(i.red_flags || []).length >= 2 ? `<span class="pp-status bad">🚩 RED ACCOUNT</span>`
               : (i.red_flags || []).length === 1 ? `<span class="pp-status warn">🚩 1 sinal</span>` : ""}
@@ -147,10 +155,13 @@
       el.querySelector(".pp-abrir").addEventListener("click", () => abrirDetalhe(el.dataset.ops)));
   }
 
+  // Nome de exibição de uma pessoa cadastrada (perfil > prefixo do e-mail).
+  const nomePessoa = p => p.nome || p.email.split("@")[0];
+
   // Select de pessoa cadastrada (CS / Projeto / Arquitetura).
   function selectPessoa(id, atual) {
     const opcoes = equipe.map(p =>
-      `<option value="${esc(p.email)}" ${p.email === atual ? "selected" : ""}>${esc(p.email.split("@")[0])} (${esc(p.papel)})</option>`).join("");
+      `<option value="${esc(p.email)}" ${p.email === atual ? "selected" : ""}>${esc(nomePessoa(p))} (${esc(p.papel)})</option>`).join("");
     // valor atual fora da lista (legado em texto livre) → mantém como opção
     const legado = atual && !equipe.some(p => p.email === atual)
       ? `<option value="${esc(atual)}" selected>${esc(atual)}</option>` : "";
@@ -164,7 +175,7 @@
     return equipe.map(p => `
       <label class="ops-is-item ${marcados.has(p.email) ? "on" : ""}">
         <input type="checkbox" value="${esc(p.email)}" ${marcados.has(p.email) ? "checked" : ""}>
-        <span>${esc(p.email.split("@")[0])}</span>
+        <span>${esc(nomePessoa(p))}</span>
       </label>`).join("") || `<p style="font-size:12px;color:var(--txt-3)">Nenhuma pessoa cadastrada ainda.</p>`;
   }
 
@@ -320,6 +331,67 @@
       </details>`;
   }
 
+  // Alerta de escalonamento: o cliente acionou a liderança pela página pública.
+  function escalonamentoAlerta(impl) {
+    if (!impl.escalonado_em) return "";
+    return `<div class="ops-escalado">
+      <b>🆘 O CLIENTE PEDIU ESCALONAMENTO</b>
+      <span class="ops-escalado-quando">em ${new Date(impl.escalonado_em).toLocaleString("pt-BR")}</span>
+      ${impl.escalonado_motivo ? `<div class="ops-escalado-motivo">“${esc(impl.escalonado_motivo)}”</div>` : ""}
+      <div class="ops-escalado-dica">Entre em contato com o cliente o quanto antes e registre a tratativa
+      na linha do tempo. Quando o problema for resolvido, dê baixa nele para encerrar o escalonamento.</div>
+    </div>`;
+  }
+
+  // Customizações vendidas: status e previsão de entrega.
+  // O que for salvo aqui aparece para o CLIENTE na página pública de acompanhamento.
+  function customsSection(impl) {
+    const customs = impl.customs_status || [];
+    if (!customs.length && !podeEditar) return "";
+    const entregues = customs.filter(c => c.status === "entregue").length;
+    const badge = customs.length
+      ? `<span class="pp-status ${entregues === customs.length ? "ok" : "info"}">${entregues}/${customs.length} entregue(s)</span>` : "";
+    const abrir = customs.some(c => c.status !== "entregue");
+    return `
+      <details class="pb-sec" ${abrir ? "open" : ""}>
+        <summary>🧩 Customizações ${badge}</summary>
+        <div class="pb-body">
+          <p style="font-size:12px;color:var(--txt-3);margin-bottom:10px">
+            O cliente vê o status e a previsão de entrega de cada custom na página de acompanhamento dele.
+            Mantenha sempre atualizado.</p>
+          <div id="opsCustomsLista">
+            ${customs.map(c => customRow(c)).join("")}
+            ${!customs.length ? `<p class="ops-cu-vazio" style="font-size:12px;color:var(--txt-3)">Nenhuma customização registrada.</p>` : ""}
+          </div>
+          ${podeEditar ? `
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">
+            <button class="tl-link" id="opsAddCustom" type="button">+ Adicionar custom</button>
+            <button class="btn ghost" id="opsSalvarCustoms" type="button" style="padding:7px 14px">Salvar customs</button>
+          </div>` : ""}
+        </div>
+      </details>`;
+  }
+
+  // Uma custom: leitura (todos) ou edição (Customer OPS / admin / liderança).
+  function customRow(c) {
+    c = c || {};
+    if (!podeEditar) {
+      const st = STATUS_CUSTOM.find(s => s[0] === c.status) || STATUS_CUSTOM[0];
+      return `<div class="pb-linha">🧩 <b>${esc(c.nome || c.jira_key || "Customização")}</b> — ${st[1]}
+        ${c.previsao ? ` · 📅 previsão ${dataBR(c.previsao)}` : " · previsão a definir"}
+        ${c.obs ? `<br><i>${esc(c.obs)}</i>` : ""}</div>`;
+    }
+    const sel = STATUS_CUSTOM.map(([id, nome]) =>
+      `<option value="${id}" ${c.status === id ? "selected" : ""}>${nome}</option>`).join("");
+    return `<div class="ops-cu-row" data-jira="${esc(c.jira_key || "")}">
+      <input type="text" class="ops-sel cu-nome" value="${esc(c.nome || "")}" placeholder="Nome da customização">
+      <select class="ops-sel cu-status">${sel}</select>
+      <input type="date" class="ops-sel cu-prev" value="${esc(c.previsao || "")}" title="Previsão de entrega">
+      <input type="text" class="ops-sel cu-obs" value="${esc(c.obs || "")}" placeholder="Observação para o cliente (opcional)">
+      <button class="tl-link adm-x cu-rm" type="button" title="Remover">✕</button>
+    </div>`;
+  }
+
   // Linha compacta do time da implantação (board e detalhe).
   function timeLinha(i) {
     const p = (rotulo, v) => v ? `<span><b>${rotulo}</b> ${esc(String(v).split("@")[0])}</span>` : "";
@@ -348,6 +420,7 @@
     body.innerHTML = `
       <div class="ho-head"><h2>🚀 ${esc(impl.cliente)}</h2>
         <span class="pp-status ${s.cls}">${s.txt}</span></div>
+      ${escalonamentoAlerta(impl)}
       ${bannerAceite(impl)}
       ${stepper(impl.etapa, impl.tempos_etapas)}
       <div class="ops-meta" style="margin:10px 0 16px">
@@ -358,6 +431,7 @@
 
       ${playbookViewer(impl)}
       ${discoverySection(impl)}
+      ${customsSection(impl)}
       ${redFlagsSection(impl)}
 
       <div class="ops-acoes">
@@ -509,6 +583,43 @@
         }
       });
     });
+
+    // ----- Customs: status e previsão de entrega (visíveis para o cliente) -----
+    const btnAddCustom = $("#opsAddCustom");
+    if (btnAddCustom) {
+      const ligarRemover = () => document.querySelectorAll(".cu-rm").forEach(b => {
+        if (b.dataset.ligado) return;
+        b.dataset.ligado = "1";
+        b.addEventListener("click", () => b.closest(".ops-cu-row").remove());
+      });
+      ligarRemover();
+      btnAddCustom.addEventListener("click", () => {
+        const lista = $("#opsCustomsLista");
+        const vazio = lista.querySelector(".ops-cu-vazio");
+        if (vazio) vazio.remove();
+        lista.insertAdjacentHTML("beforeend", customRow({ status: "nao_iniciada" }));
+        ligarRemover();
+      });
+      $("#opsSalvarCustoms").addEventListener("click", async () => {
+        const msg = $("#opsMsg");
+        const customs = Array.from(document.querySelectorAll(".ops-cu-row")).map(r => ({
+          nome: r.querySelector(".cu-nome").value.trim(),
+          jira_key: r.dataset.jira || null,
+          status: r.querySelector(".cu-status").value,
+          previsao: r.querySelector(".cu-prev").value || null,
+          obs: r.querySelector(".cu-obs").value.trim() || null,
+        })).filter(c => c.nome || c.jira_key);
+        try {
+          if (msg) { msg.textContent = "Salvando customs…"; msg.className = "ho-msg"; }
+          await store().opsAtualizarCustoms(id, customs);
+          cache = await store().opsListar();
+          renderKpis(); renderLista();
+          abrirDetalhe(id);
+        } catch (e) {
+          if (msg) { msg.textContent = "Erro: " + (e.message || e); msg.className = "ho-msg bad"; }
+        }
+      });
+    }
   }
 
   function renderTimeline(updates) {
