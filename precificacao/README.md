@@ -26,6 +26,12 @@ Botão **⚙️ Admin** no topo, exclusivo do papel `admin`:
 - **Implantações nascem automaticamente do handoff** comercial (jornada contínua).
 - Board com KPIs (em andamento / com problema / go-lives no mês), filtros, stepper
   de etapas, saúde (🟢🟡🔴) e linha do tempo de atualizações.
+- **Lead time por etapa**: dias gastos em cada fase (kickoff, configuração, treinamento…),
+  contando desde o handoff. Calculado por `pricing.tempos_etapas()` a partir das
+  transições registradas; aparece no stepper (interno e na página do cliente).
+- **Time da implantação** por conta: CS responsável, Responsável pelo Projeto
+  (`responsavel_email`), Responsável pela Arquitetura e Time de IS — editável no
+  detalhe (quem pode editar OPS) e visível para o cliente ("Seu time Elofy").
 - **Todos os autorizados veem tudo** (a dor é visibilidade). **Editam**: analista de
   projetos (papel `onboarding`), admin e supervisor — via `pricing.pode_editar_ops()`.
 - Problema/resolução mudam a saúde automaticamente; mudança de etapa registra na timeline.

@@ -50,11 +50,27 @@
     $("#root").innerHTML = `<div class="card"><div class="center">${esc(msg)}</div></div>`;
   }
 
-  function stepper(etapa) {
+  // "Seu time Elofy" — quem cuida da implantação do cliente.
+  function timeBox(time) {
+    if (!time) return "";
+    const item = (rotulo, v) => v
+      ? `<div><div class="k">${rotulo}</div><div class="val">${esc(String(v).split("@")[0])}</div></div>` : "";
+    const itens = [
+      item("CS da sua conta", time.cs), item("Resp. pelo projeto", time.projeto),
+      item("Arquitetura", time.arquitetura), item("Time de implantação", time.is),
+    ].filter(Boolean).join("");
+    if (!itens) return "";
+    return `<h2 class="sec">Seu time Elofy</h2><div class="meta">${itens}</div>`;
+  }
+
+  function stepper(etapa, tempos) {
     const idx = ETAPAS.findIndex(e => e.id === etapa);
+    const t = tempos || {};
+    const fmtDias = d => { const n = Number(d) || 0; return n < 1 ? "<1 dia" : Math.round(n) + " dias"; };
     return `<div class="stepper">${ETAPAS.map((e, i) => `
       <div class="step ${i < idx ? "done" : ""} ${i === idx ? "now" : ""}">
         <span class="dot">${i < idx ? "✓" : i + 1}</span><span class="lbl">${e.nome}</span>
+        ${t[e.id] != null ? `<span class="dias">${fmtDias(t[e.id])}</span>` : ""}
       </div>${i < ETAPAS.length - 1 ? `<div class="lin${i < idx ? " done" : ""}"></div>` : ""}`).join("")}
     </div>`;
   }
@@ -70,13 +86,14 @@
         </div>
         <h1>Olá, ${esc(d.cliente)}! Sua implantação está em <span>${esc(etapaNome)}</span>.</h1>
         <p class="sub">Acompanhe por aqui cada passo do seu projeto com a Elofy — sempre atualizado pelo nosso time.</p>
-        ${stepper(d.etapa)}
+        ${stepper(d.etapa, d.tempos_etapas)}
         <div class="meta">
           <div><div class="k">Início do projeto</div><div class="val">${dataBR(d.inicio)}</div></div>
           <div><div class="k">${d.golive_em ? "Go-live realizado" : "Go-live previsto"}</div>
             <div class="val">${dataBR(d.golive_em || d.previsao_golive)}</div></div>
           <div><div class="k">Etapa atual</div><div class="val">${esc(etapaNome)}</div></div>
         </div>
+        ${timeBox(d.time)}
 
         <h2 class="sec">Últimas atualizações</h2>
         ${updates.length ? updates.map(u => `

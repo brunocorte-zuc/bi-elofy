@@ -322,6 +322,12 @@ tbody tr:hover{background:var(--surf)}
 .ops-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--txt-2);margin-top:10px}
 .ops-ultimo{margin-top:10px;font-size:12px;color:var(--txt-3);font-style:italic;background:var(--surf);
   border-radius:8px;padding:8px 12px}
+/* Time da implantação */
+.ops-time{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--txt-2);margin-top:10px;
+  background:var(--accent-soft);border-radius:8px;padding:8px 12px}
+.ops-time b{color:var(--accent-2);font-weight:600}
+.ops-time.vazio{background:var(--surf);color:var(--txt-3);font-style:italic}
+.ops-time-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
 .ops-acoes{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0}
 .ops-sel{font-family:inherit;font-size:12px;background:var(--surf);border:1px solid var(--border-md);
   border-radius:8px;padding:7px 10px;color:var(--txt)}
@@ -363,6 +369,11 @@ tbody tr:hover{background:var(--surf)}
 .stepper .step .lbl{font-size:9px;color:var(--txt-3);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
 .stepper .step.now .lbl{color:var(--accent-2)}
 .stepper .step.done .lbl{color:var(--green)}
+/* dias gastos em cada etapa (lead time) */
+.stepper .step .dias{font-size:10px;font-weight:700;color:var(--txt-2);background:var(--surf);
+  border:1px solid var(--border);border-radius:99px;padding:1px 7px;margin-top:2px}
+.stepper .step.done .dias{color:var(--green);background:var(--green-bg);border-color:#C9EDD6}
+.stepper .step.now .dias{color:var(--accent-2);background:var(--accent-soft);border-color:var(--accent)}
 .stepper .lin{flex:1;height:2px;background:var(--border-md);margin-top:13px;min-width:6px}
 .stepper .lin.done{background:var(--green)}
 .soon-box b{color:var(--txt-2)}
