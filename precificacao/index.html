@@ -3,20 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Formação de Preço · HR Tech</title>
+<title>Jornada Elofy · HR Tech</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.css?v=20260531h">
+<link rel="stylesheet" href="app.css?v=20260601a">
 </head>
 <body>
 
 <header class="hdr">
   <div>
-    <h1>Formação de Preço · HR Tech</h1>
-    <p>Calculadora comercial · base: Política Comercial Elofy 2025 v5</p>
+    <h1>Jornada Elofy</h1>
+    <p>A jornada do cliente, do comercial ao sucesso · HR Tech</p>
   </div>
   <div style="display:flex;align-items:center;gap:12px">
-    <span class="badge" id="produtoBadge">Elofy</span>
+    <nav class="jornada-nav hide" id="jornadaNav">
+      <button class="jn-tab on" data-mod="comercial" type="button">💼 Comercial</button>
+      <button class="jn-tab" data-mod="ops" type="button">🚀 Customer OPS</button>
+    </nav>
     <span id="userBox" class="hide" style="font-size:12px;color:var(--txt-2)">
       <span id="userEmail" class="mono"></span>
       <button class="btn ghost" id="btnPropostas" style="padding:5px 10px;margin-left:8px">📋 Propostas</button>
@@ -67,6 +70,21 @@
 
 <!-- ====== APP (visível só após login autorizado) ====== -->
 <div id="appRoot" class="hide">
+
+<!-- ============ MÓDULO: CUSTOMER OPS (implantações) ============ -->
+<main class="wrap hide" id="moduloOps" style="grid-template-columns:1fr">
+  <section class="card" style="grid-column:1/-1">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+      <h2 style="margin:0">🚀 Customer OPS — implantações</h2>
+      <div class="ops-kpis" id="opsKpis"></div>
+    </div>
+    <div class="ops-filtros" id="opsFiltros" style="margin-top:14px"></div>
+    <div id="opsLista" style="margin-top:14px"><p style="color:var(--txt-3)">Carregando…</p></div>
+  </section>
+</main>
+
+<!-- ============ MÓDULO: COMERCIAL ============ -->
+<div id="moduloComercial">
 <nav class="tabs" id="tabs"></nav>
 
 <!-- ====== ELOFY ====== -->
@@ -184,9 +202,18 @@
     </div>
   </section>
 </main>
+</div><!-- /moduloComercial -->
 </div><!-- /appRoot -->
 
-<p class="foot">HR Tech · Formação de Preço · uso interno · base Política Comercial Elofy 2025 v5</p>
+<!-- ====== MODAL: DETALHE DA IMPLANTAÇÃO (Customer OPS) ====== -->
+<div id="opsOverlay" class="ho-overlay hide">
+  <div class="ho-modal wide">
+    <button class="ho-x" id="opsFechar" type="button">✕</button>
+    <div id="opsBody"></div>
+  </div>
+</div>
+
+<p class="foot">Jornada Elofy · HR Tech · uso interno</p>
 
 <!-- ====== MODAL: DAR GANHO & HANDOFF ====== -->
 <div id="handoffOverlay" class="ho-overlay hide">
@@ -221,10 +248,11 @@
 <script src="data/supabase.js"></script>
 <!-- Motor + auth + PDF + UI. O ?v= força o navegador a baixar a versão nova
      após cada deploy (evita HTML novo rodando com JS antigo em cache). -->
-<script src="src/engine.js?v=20260531h"></script>
-<script src="src/auth.js?v=20260531h"></script>
-<script src="src/pdf.js?v=20260531h"></script>
-<script src="src/handoff.js?v=20260531h"></script>
-<script src="src/app.js?v=20260531h"></script>
+<script src="src/engine.js?v=20260601a"></script>
+<script src="src/auth.js?v=20260601a"></script>
+<script src="src/pdf.js?v=20260601a"></script>
+<script src="src/handoff.js?v=20260601a"></script>
+<script src="src/ops.js?v=20260601a"></script>
+<script src="src/app.js?v=20260601a"></script>
 </body>
 </html>

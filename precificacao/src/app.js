@@ -744,7 +744,17 @@ Valor global: ${brl(r.global.comImposto)}`;
       meuPerfil = await window.PricingStore.meuPerfil();
       const btn = $("#btnHandoffs");
       if (btn) btn.classList.toggle("hide", !(meuPerfil && meuPerfil.ve_handoffs));
+      // navegação da jornada (Comercial | Customer OPS) aparece após o login
+      $("#jornadaNav").classList.remove("hide");
     } catch (_) { /* silencioso: o painel é extra */ }
+  }
+
+  /* ---- Navegação da Jornada (módulos por etapa do cliente) ---- */
+  function trocarModulo(mod) {
+    $("#moduloComercial").classList.toggle("hide", mod !== "comercial");
+    $("#moduloOps").classList.toggle("hide", mod !== "ops");
+    document.querySelectorAll(".jn-tab").forEach(t => t.classList.toggle("on", t.dataset.mod === mod));
+    if (mod === "ops" && window.JornadaOps) window.JornadaOps.montar(meuPerfil);
   }
 
   /* ---- Integração Bitrix (buscar e pré-preencher) ---- */
@@ -996,6 +1006,9 @@ Valor global: ${brl(r.global.comImposto)}`;
     $("#btnBuscarCustoms").addEventListener("click", buscarCustoms);
     $("#btnHandoffs").addEventListener("click", () => window.PricingHandoff && window.PricingHandoff.abrirPainel());
     if (window.PricingHandoff) window.PricingHandoff.setOnConcluir(carregarHistorico);
+    // navegação entre módulos da jornada
+    document.querySelectorAll(".jn-tab").forEach(t =>
+      t.addEventListener("click", () => trocarModulo(t.dataset.mod)));
     // painel de acompanhamento de propostas
     $("#btnPropostas").addEventListener("click", abrirPainelPropostas);
     $("#propostasFechar").addEventListener("click", () => $("#propostasOverlay").classList.add("hide"));

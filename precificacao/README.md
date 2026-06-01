@@ -1,4 +1,29 @@
-# Formação de Preço · HR Tech
+# Jornada Elofy · HR Tech
+
+Plataforma interna da **jornada do cliente** Elofy, organizada por etapas:
+
+| Etapa | Módulo | Status |
+|---|---|---|
+| 1. **Comercial** | precificação, orçamentos, proposta ao cliente, PDF, ganho & handoff | ✅ no ar |
+| 2. **Customer OPS** | implantações: kickoff → configuração → treinamento → go-live → acompanhamento → concluído | ✅ no ar (v1) |
+| 3. próximas áreas | CS, suporte, expansão… | 🔜 |
+
+## Módulo Customer OPS
+
+- **Implantações nascem automaticamente do handoff** comercial (jornada contínua).
+- Board com KPIs (em andamento / com problema / go-lives no mês), filtros, stepper
+  de etapas, saúde (🟢🟡🔴) e linha do tempo de atualizações.
+- **Todos os autorizados veem tudo** (a dor é visibilidade). **Editam**: analista de
+  projetos (papel `onboarding`), admin e supervisor — via `pricing.pode_editar_ops()`.
+- Problema/resolução mudam a saúde automaticamente; mudança de etapa registra na timeline.
+- **Cliente acompanha por link público**: `acompanhamento.html?t=<token>` (stepper +
+  atualizações marcadas como visíveis). RPC pública `implantacao_publica(token)`.
+- Tabelas: `pricing.implantacoes`, `pricing.implantacao_updates`. RPCs: `ops_listar_implantacoes`,
+  `ops_updates`, `ops_registrar_update`, `ops_editar_implantacao`.
+
+---
+
+# Módulo Comercial (Formação de Preço)
 
 Aplicativo interno de **formação de preço** da HR Tech. Replica a calculadora da
 **Política Comercial Elofy 2025 v5** (módulos, IA, People Analytics, serviços e

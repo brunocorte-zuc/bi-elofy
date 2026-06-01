@@ -182,6 +182,35 @@
     return data || [];
   }
 
+  /* ---- Customer OPS (implantações) ---- */
+  async function opsListar() {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("ops_listar_implantacoes");
+    if (error) throw error;
+    return data || [];
+  }
+  async function opsUpdates(implantacaoId) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("ops_updates", { p_implantacao_id: implantacaoId });
+    if (error) throw error;
+    return data || [];
+  }
+  async function opsRegistrarUpdate(implantacaoId, tipo, texto, visivelCliente, etapaNova) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("ops_registrar_update", {
+      p_implantacao_id: implantacaoId, p_tipo: tipo, p_texto: texto,
+      p_visivel_cliente: visivelCliente !== false, p_etapa_nova: etapaNova || null,
+    });
+    if (error) throw error;
+    return data;
+  }
+  async function opsEditar(implantacaoId, payload) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("ops_editar_implantacao", { p_id: implantacaoId, p_payload: payload });
+    if (error) throw error;
+    return data;
+  }
+
   async function listarHandoffs(limit) {
     if (!sb) throw new Error("Sessão não iniciada.");
     const { data, error } = await sb.rpc("pricing_listar_handoffs", { p_limit: limit || 100 });
@@ -246,5 +275,6 @@
     listarPropostas, carregarConfig, buscarNegocios, buscarCustoms,
     meuPerfil, podeDarGanho, registrarHandoff, listarHandoffs, uploadContrato, urlContrato,
     painelPropostas,
+    opsListar, opsUpdates, opsRegistrarUpdate, opsEditar,
   };
 })(window);

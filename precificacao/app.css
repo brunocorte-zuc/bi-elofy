@@ -295,4 +295,59 @@ tbody tr:hover{background:var(--surf)}
 .pp-abrir{margin-top:6px;font-family:inherit;font-size:11px;font-weight:600;color:var(--accent-2);
   background:transparent;border:1px solid var(--border-md);border-radius:7px;padding:4px 12px;cursor:pointer}
 .pp-abrir:hover{background:var(--accent-soft)}
+
+/* ===== Jornada: navegação entre módulos ===== */
+.jornada-nav{display:flex;gap:6px;background:var(--surf);border:1px solid var(--border);
+  border-radius:99px;padding:4px}
+.jn-tab{font-family:inherit;font-size:12px;font-weight:600;color:var(--txt-2);background:transparent;
+  border:none;border-radius:99px;padding:7px 14px;cursor:pointer;transition:.14s}
+.jn-tab:hover{color:var(--accent-2)}
+.jn-tab.on{background:var(--accent);color:#fff}
+
+/* ===== Customer OPS ===== */
+.ops-kpis{display:flex;gap:10px;flex-wrap:wrap}
+.ops-kpi{font-size:16px;font-weight:700;background:var(--surf);border:1px solid var(--border);
+  border-radius:10px;padding:8px 14px}
+.ops-kpi small{display:block;font-size:10px;font-weight:500;color:var(--txt-3);text-transform:uppercase;letter-spacing:.04em}
+.ops-kpi.bad{color:var(--red);background:var(--red-bg);border-color:#F5C9C9}
+.ops-filtros{display:flex;gap:8px;flex-wrap:wrap}
+.ops-filtro{font-family:inherit;font-size:12px;font-weight:600;color:var(--txt-2);background:var(--surf);
+  border:1px solid var(--border);border-radius:99px;padding:6px 14px;cursor:pointer}
+.ops-filtro.on{background:var(--accent-soft);color:var(--accent-2);border-color:var(--accent)}
+.ops-card{border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:12px;background:var(--card)}
+.ops-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.ops-nome{font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ops-etapa{font-size:11px;color:var(--accent-2);background:var(--accent-soft);padding:2px 10px;border-radius:99px;font-weight:600}
+.ops-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--txt-2);margin-top:10px}
+.ops-ultimo{margin-top:10px;font-size:12px;color:var(--txt-3);font-style:italic;background:var(--surf);
+  border-radius:8px;padding:8px 12px}
+.ops-acoes{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0}
+.ops-sel{font-family:inherit;font-size:12px;background:var(--surf);border:1px solid var(--border-md);
+  border-radius:8px;padding:7px 10px;color:var(--txt)}
+.ops-textarea{width:100%;font-family:inherit;font-size:13px;background:var(--surf);
+  border:1px solid var(--border-md);border-radius:10px;padding:10px 12px;min-height:70px;resize:vertical;color:var(--txt)}
+.ops-textarea:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px var(--accent-soft)}
+.ops-reg-opts{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}
+.ops-reg-btns{display:flex;gap:8px;flex-wrap:wrap}
+.ops-timeline{max-height:380px;overflow-y:auto}
+.ops-up{border-left:3px solid var(--accent);background:var(--surf);border-radius:0 9px 9px 0;
+  padding:10px 14px;margin-bottom:9px}
+.ops-up.problema{border-left-color:var(--red);background:var(--red-bg)}
+.ops-up.resolucao{border-left-color:var(--green);background:var(--green-bg)}
+.ops-up.etapa{border-left-color:var(--gold);background:var(--gold-bg)}
+.ops-up-head{display:flex;justify-content:space-between;gap:10px;font-size:11px;color:var(--txt-3)}
+.ops-up-txt{font-size:13px;color:var(--txt-2);margin-top:4px}
+
+/* Stepper de etapas */
+.stepper{display:flex;align-items:flex-start;margin:14px 0 6px}
+.stepper .step{display:flex;flex-direction:column;align-items:center;gap:5px;flex:none;width:78px;text-align:center}
+.stepper .step .dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:12px;background:var(--surf);border:2px solid var(--border-md);color:var(--txt-3)}
+.stepper .step.done .dot{background:var(--green);border-color:var(--green);color:#fff}
+.stepper .step.now .dot{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 0 0 4px var(--accent-soft)}
+.stepper .step .lbl{font-size:9px;color:var(--txt-3);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.stepper .step.now .lbl{color:var(--accent-2)}
+.stepper .step.done .lbl{color:var(--green)}
+.stepper .lin{flex:1;height:2px;background:var(--border-md);margin-top:13px;min-width:6px}
+.stepper .lin.done{background:var(--green)}
 .soon-box b{color:var(--txt-2)}
