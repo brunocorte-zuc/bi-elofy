@@ -137,6 +137,14 @@ comentário. Tudo sem login.
   botões **Copiar link / Copiar e-mail**, e o **feedback** recebido.
 - Nunca expõe custo, margem, piso ou autonomia — só o snapshot de venda.
 
+### Painel de Propostas (acompanhamento)
+
+Botão **📋 Propostas** no topo: lista a última versão de cada oportunidade com
+o **status do cliente** (aguardando / visualizada / aprovou / pediu ajustes /
+não atende / 🏆 ganho), a fase do Bitrix, o valor e quem é o closer. Closer vê
+só as suas; supervisor/admin veem as de todos (`pricing_painel_propostas`).
+"Abrir" carrega a oportunidade na calculadora.
+
 ### Ganho & Handoff para o Onboarding
 
 Fecha o ciclo da venda. No histórico, cada versão tem **🏆 Dar ganho & handoff**:
@@ -148,6 +156,10 @@ Fecha o ciclo da venda. No histórico, cada versão tem **🏆 Dar ganho & hando
   privado `contratos` **ou** link), contatos do cliente, faturamento (CNPJ,
   condição/forma), kickoff/urgência, critérios de ganho e sucesso, história.
 - Marca `propostas.ganho_em` e grava em `pricing.handoffs` (1 por `bitrix_id`).
+- **Fechamento sem o OK do cliente é permitido**, mas exige marcar a caixa de
+  ciência ("estou ciente de que o cliente não deu o OK formal"). O registro
+  guarda `ok_cliente_na_plataforma` e a página do cliente segue aceitando
+  resposta tardia.
 - **Painel 🏆 Handoffs** (botão no topo, visível a `onboarding`/`supervisor`/`admin`):
   lista os negócios ganhos com todos os dados + baixar contrato + ver proposta.
 - **Notificação:** se `window.HANDOFF_WEBHOOK_URL` estiver definida (em

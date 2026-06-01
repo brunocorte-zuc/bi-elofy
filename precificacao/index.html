@@ -6,7 +6,7 @@
 <title>Formação de Preço · HR Tech</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app.css?v=20260531g">
+<link rel="stylesheet" href="app.css?v=20260531h">
 </head>
 <body>
 
@@ -19,6 +19,7 @@
     <span class="badge" id="produtoBadge">Elofy</span>
     <span id="userBox" class="hide" style="font-size:12px;color:var(--txt-2)">
       <span id="userEmail" class="mono"></span>
+      <button class="btn ghost" id="btnPropostas" style="padding:5px 10px;margin-left:8px">📋 Propostas</button>
       <button class="btn ghost hide" id="btnHandoffs" style="padding:5px 10px;margin-left:8px">🏆 Handoffs</button>
       <button class="btn ghost" id="btnLogout" style="padding:5px 10px;margin-left:8px">Sair</button>
     </span>
@@ -195,6 +196,15 @@
   </div>
 </div>
 
+<!-- ====== PAINEL: MINHAS PROPOSTAS / ACOMPANHAMENTO ====== -->
+<div id="propostasOverlay" class="ho-overlay hide">
+  <div class="ho-modal wide">
+    <button class="ho-x" id="propostasFechar" type="button">✕</button>
+    <div class="ho-head"><h2>📋 Propostas — acompanhamento</h2></div>
+    <div id="propostasBody"><p style="color:var(--txt-3)">Carregando…</p></div>
+  </div>
+</div>
+
 <!-- ====== PAINEL: HANDOFFS (ONBOARDING) ====== -->
 <div id="painelOverlay" class="ho-overlay hide">
   <div class="ho-modal wide">
@@ -211,10 +221,10 @@
 <script src="data/supabase.js"></script>
 <!-- Motor + auth + PDF + UI. O ?v= força o navegador a baixar a versão nova
      após cada deploy (evita HTML novo rodando com JS antigo em cache). -->
-<script src="src/engine.js?v=20260531g"></script>
-<script src="src/auth.js?v=20260531g"></script>
-<script src="src/pdf.js?v=20260531g"></script>
-<script src="src/handoff.js?v=20260531g"></script>
-<script src="src/app.js?v=20260531g"></script>
+<script src="src/engine.js?v=20260531h"></script>
+<script src="src/auth.js?v=20260531h"></script>
+<script src="src/pdf.js?v=20260531h"></script>
+<script src="src/handoff.js?v=20260531h"></script>
+<script src="src/app.js?v=20260531h"></script>
 </body>
 </html>

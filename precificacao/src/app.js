@@ -677,6 +677,66 @@ Valor global: ${brl(r.global.comImposto)}`;
     }
   }
 
+  /* ---- Painel de Propostas (acompanhamento da demanda) ---- */
+  // Status do cliente para cada oportunidade, em ordem de prioridade.
+  function statusProposta(p) {
+    if (p.ganho_em) return { cls: "ok", txt: "🏆 Ganho" };
+    if (p.fb_sentimento === "aprovado") return { cls: "ok", txt: "✓ Cliente aprovou" };
+    if (p.fb_sentimento === "ajustes") return { cls: "warn", txt: "✏️ Pediu ajustes" };
+    if (p.fb_sentimento === "recusado") return { cls: "bad", txt: "✕ Não atende" };
+    if (p.visualizada_em) return { cls: "info", txt: `👁 Visualizada ${p.visualizacoes || 1}×` };
+    return { cls: "wait", txt: "⏳ Aguardando cliente" };
+  }
+
+  async function abrirPainelPropostas() {
+    const ov = $("#propostasOverlay");
+    ov.classList.remove("hide");
+    const body = $("#propostasBody");
+    body.innerHTML = `<p style="color:var(--txt-3)">Carregando…</p>`;
+    try {
+      const rows = await window.PricingStore.painelPropostas();
+      if (!rows.length) { body.innerHTML = `<p style="color:var(--txt-3)">Nenhuma proposta salva ainda.</p>`; return; }
+      const veTudo = !!(meuPerfil && meuPerfil.ve_tudo);
+      body.innerHTML = `
+        <p style="font-size:12px;color:var(--txt-3);margin-bottom:12px">
+          ${veTudo ? "Você enxerga as propostas de <b>todo o time</b>." : "Estas são as <b>suas</b> propostas."}</p>
+        ${rows.map((p, i) => {
+          const st = statusProposta(p);
+          const closer = veTudo ? `<span class="pp-closer">${escapeHtml((p.criado_por_email || "—").split("@")[0])}</span>` : "";
+          const fb_quando = p.fb_em ? ` · ${new Date(p.fb_em).toLocaleDateString("pt-BR")}` : "";
+          return `<div class="pp-row">
+            <div class="pp-main">
+              <div class="pp-nome">${escapeHtml(p.cliente || "—")}
+                <span class="pp-v">v${p.versao}${p.versoes > 1 ? ` · ${p.versoes} versões` : ""}</span>
+                ${p.fase_bitrix ? faseBadge(p.fase_bitrix, null) : ""}</div>
+              <div class="pp-meta">
+                <span class="pp-status ${st.cls}">${st.txt}${fb_quando}</span>
+                ${closer}
+                <span>${new Date(p.criado_em).toLocaleDateString("pt-BR")}</span>
+              </div>
+            </div>
+            <div class="pp-right">
+              <div class="pp-val mono">${brl(p.global_com_imposto)}</div>
+              ${p.bitrix_id ? `<button class="pp-abrir" data-pp="${i}" type="button">Abrir</button>` : ""}
+            </div>
+          </div>`;
+        }).join("")}`;
+      // "Abrir": vincula a oportunidade na calculadora e carrega o histórico
+      body.querySelectorAll("[data-pp]").forEach(el =>
+        el.addEventListener("click", async () => {
+          const p = rows[Number(el.dataset.pp)];
+          ov.classList.add("hide");
+          const negs = await window.PricingStore.buscarNegocios(p.bitrix_id, 5).catch(() => []);
+          const neg = negs.find(n => n.bitrix_id === p.bitrix_id)
+            || { bitrix_id: p.bitrix_id, nome: p.cliente, empresa_nome: p.cliente, fase: p.fase_bitrix };
+          selecionarNegocio(neg);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }));
+    } catch (e) {
+      body.innerHTML = `<p class="pill bad">Erro ao carregar: ${escapeHtml(e.message || String(e))}</p>`;
+    }
+  }
+
   // Mostra o botão de Handoffs para quem enxerga handoffs (onboarding/supervisor/admin).
   let meuPerfil = null;
   async function ajustarPorPapel() {
@@ -936,6 +996,12 @@ Valor global: ${brl(r.global.comImposto)}`;
     $("#btnBuscarCustoms").addEventListener("click", buscarCustoms);
     $("#btnHandoffs").addEventListener("click", () => window.PricingHandoff && window.PricingHandoff.abrirPainel());
     if (window.PricingHandoff) window.PricingHandoff.setOnConcluir(carregarHistorico);
+    // painel de acompanhamento de propostas
+    $("#btnPropostas").addEventListener("click", abrirPainelPropostas);
+    $("#propostasFechar").addEventListener("click", () => $("#propostasOverlay").classList.add("hide"));
+    $("#propostasOverlay").addEventListener("click", e => {
+      if (e.target === $("#propostasOverlay")) $("#propostasOverlay").classList.add("hide");
+    });
     atualizarBotoesVersao();
     $("#customNoMrr").addEventListener("change", recalc);
     $("#btnAddServico").addEventListener("click", addServico);

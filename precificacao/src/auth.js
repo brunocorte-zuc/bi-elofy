@@ -173,6 +173,15 @@
     return data || {};
   }
 
+  // Painel de acompanhamento: última versão de cada oportunidade + status do
+  // cliente. Closer vê só as suas; supervisor/admin veem todas (regra no banco).
+  async function painelPropostas() {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("pricing_painel_propostas");
+    if (error) throw error;
+    return data || [];
+  }
+
   async function listarHandoffs(limit) {
     if (!sb) throw new Error("Sessão não iniciada.");
     const { data, error } = await sb.rpc("pricing_listar_handoffs", { p_limit: limit || 100 });
@@ -236,5 +245,6 @@
     salvarProposta, atualizarProposta, historicoProposta,
     listarPropostas, carregarConfig, buscarNegocios, buscarCustoms,
     meuPerfil, podeDarGanho, registrarHandoff, listarHandoffs, uploadContrato, urlContrato,
+    painelPropostas,
   };
 })(window);

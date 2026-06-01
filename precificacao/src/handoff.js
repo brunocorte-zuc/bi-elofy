@@ -50,10 +50,23 @@
   }
 
   function renderForm(row, gate) {
+    // O cliente já aprovou pela página da proposta? Se não, o fechamento é
+    // "forçado" e exige ciência explícita do closer (mas é permitido — o ok
+    // pode ter vindo por e-mail/telefone, ou nem ter vindo ainda).
+    const clienteAprovou = row.fb_sentimento === "aprovado";
+    const avisoSemOk = clienteAprovou ? "" : `
+      <div class="ho-gate" style="margin-bottom:14px">
+        <p><b>⚠️ O cliente ainda não deu o OK final por aqui.</b></p>
+        <p class="ho-gate-sub">Você pode fechar mesmo assim (ex.: o aceite veio por e-mail ou telefone).
+        A página da proposta continua aberta e o cliente ainda poderá responder depois.</p>
+        <label class="ho-chk" style="margin-top:10px"><input type="checkbox" id="hoCiente">
+          <span><b>Estou ciente</b> de que estou marcando como ganho sem o OK formal do cliente nesta plataforma.</span></label>
+      </div>`;
+
     $("#hoBody").innerHTML = `
       <div class="ho-head"><h2>🏆 Dar ganho & Handoff</h2>
         <span class="ho-fase">Bitrix: ${esc(gate.fase || "Ganho")}</span></div>
-
+      ${avisoSemOk}
       <div class="ho-sec">
         <h3>1. Confirmação do que foi vendido</h3>
         <div class="ho-vendido">
@@ -146,6 +159,12 @@
   async function enviar(row) {
     const msg = $("#hoMsg");
     if (!$("#hoConfirmo").checked) { setMsg(msg, "Confirme os itens vendidos para continuar.", "bad"); return; }
+    // Fechamento sem o OK formal do cliente exige ciência explícita.
+    const ciente = $("#hoCiente");
+    if (ciente && !ciente.checked) {
+      setMsg(msg, "Marque a caixa de ciência: o cliente ainda não deu o OK formal por aqui.", "bad");
+      return;
+    }
     const btn = $("#hoEnviar"); btn.disabled = true;
     try {
       setMsg(msg, "Enviando handoff…", "");
@@ -173,6 +192,8 @@
         vendido_confirmado: {
           cliente: row.cliente, versao: row.versao, usuarios: row.usuarios,
           mrr: row.mrr_com_imposto, nr: row.nr_com_imposto, global: row.global_com_imposto,
+          // registro de como foi o aceite: pelo sistema ou fechamento direto pelo closer
+          ok_cliente_na_plataforma: row.fb_sentimento === "aprovado",
         },
       };
       setMsg(msg, "Registrando ganho…", "");
