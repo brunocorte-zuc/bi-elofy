@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Sua implantação · Elofy</title>
 <!-- Marca oficial Elofy: paleta + fontes (Gotham Cond / Gellix) -->
-<link rel="stylesheet" href="brand/elofy.css?v=20260602c">
+<link rel="stylesheet" href="brand/elofy.css?v=20260602d">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=League+Gothic&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -157,6 +157,41 @@
     border-radius:99px;padding:6px 14px;color:var(--ink2)}
   .up.resolucao{border-left-color:var(--green);background:var(--greenbg)}
   .hide{display:none}
+  /* ===== Mobile: topo empilhado, stepper rolável, botões maiores ===== */
+  @media(max-width:600px){
+    body{padding:12px 8px}
+    .card{padding:18px 14px;border-radius:14px}
+    .top{flex-direction:column;align-items:flex-start;gap:10px;padding-bottom:14px;margin-bottom:16px}
+    .brand img{height:24px}
+    .brand .tag{font-size:10px;margin-top:5px}
+    .doc{text-align:left}
+    .doc .big{font-size:13px}
+    h1{font-size:21px}
+    h2.sec{font-size:13px}
+    /* stepper rola na horizontal em vez de estourar a tela */
+    .stepper{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px;margin:20px 0}
+    .step{width:66px;flex:none}
+    .step .dot{width:30px;height:30px;font-size:12px}
+    .step .lbl{font-size:8px}
+    .lin{min-width:10px;margin-top:15px}
+    .meta{gap:12px;padding:13px 15px}
+    .meta .val{font-size:13px}
+    /* time / agendas / avaliações */
+    .tm-card{padding:13px 14px;gap:11px}
+    .tm-foto{width:52px;height:52px}
+    .tm-nome{font-size:14px}
+    .ag-item{padding:13px 14px}
+    .ag-okbtns{flex-direction:column}
+    .nps-escala{gap:4px}
+    .nps-n{width:29px;height:36px;font-size:13px}
+    .csat-emojis{gap:6px}
+    .csat-emo{width:48px;height:48px;font-size:24px}
+    .esc-box{padding:16px 13px}
+    .esc-box b{font-size:14px}
+    .esc-btn{width:100%;padding:13px 16px}
+    .cu-item{padding:11px 13px}
+    .pitch{padding:13px 15px;font-size:12px}
+  }
   /* Timeline */
   h2.sec{font-family:var(--font-titulo);text-transform:uppercase;font-size:15px;
     letter-spacing:.06em;color:var(--elofy-blue);margin:26px 0 12px;font-weight:700}
@@ -178,7 +213,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="data/supabase.js"></script>
-<script src="src/pdf.js?v=20260602c"></script>
-<script src="src/acompanhamento.js?v=20260602c"></script>
+<script src="src/pdf.js?v=20260602d"></script>
+<script src="src/acompanhamento.js?v=20260602d"></script>
 </body>
 </html>

@@ -28,6 +28,11 @@ body{font-family:'Gellix','Poppins',system-ui,sans-serif;background:var(--bg);co
 .hdr .hdr-logo{height:28px;display:block}
 .hdr .hdr-brand{display:flex;align-items:center;gap:14px}
 .hdr p{font-size:13px;color:var(--txt-3);margin-top:2px}
+/* ações do header (nav da jornada + botões do usuário) */
+.hdr-acoes{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+#userBox{font-size:12px;color:var(--txt-2);display:inline-flex;align-items:center;flex-wrap:wrap;gap:8px}
+#userBox.hide{display:none}
+#userBox .btn{padding:5px 10px}
 .badge{font-size:11px;font-weight:600;color:var(--accent-2);border:1px solid var(--border-md);
   background:var(--accent-soft);padding:5px 12px;border-radius:99px}
 
@@ -40,6 +45,7 @@ body{font-family:'Gellix','Poppins',system-ui,sans-serif;background:var(--bg);co
 
 .wrap{max-width:1240px;margin:0 auto;padding:24px 28px;display:grid;
   grid-template-columns:400px 1fr;gap:24px;align-items:start}
+.wrap>*{min-width:0} /* permite o conteúdo encolher (essencial p/ mobile) */
 @media(max-width:920px){.wrap{grid-template-columns:1fr}}
 
 .card{background:var(--card);border:1px solid var(--border);border-radius:16px;
@@ -351,7 +357,7 @@ tbody tr:hover{background:var(--surf)}
 .ops-up-txt{font-size:13px;color:var(--txt-2);margin-top:4px}
 
 /* ===== Central de notificações ===== */
-.notif-sino{position:relative;padding:5px 10px!important;margin-left:8px}
+.notif-sino{position:relative;padding:5px 10px!important}
 .notif-badge{position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;font-size:10px;
   font-weight:700;border-radius:99px;padding:1px 6px;min-width:18px;text-align:center}
 .notif-badge.hide{display:none}
@@ -566,3 +572,120 @@ tbody tr:hover{background:var(--surf)}
 .stepper .lin{flex:1;height:2px;background:var(--border-md);margin-top:13px;min-width:6px}
 .stepper .lin.done{background:var(--green)}
 .soon-box b{color:var(--txt-2)}
+
+/* ============================================================================
+   MOBILE (até 768px) — header compacto, modais em tela cheia,
+   steppers roláveis e formulários em coluna única
+   ========================================================================== */
+@media(max-width:768px){
+  /* ---- contenção: nada pode estourar a largura da tela ---- */
+  body{overflow-x:hidden}
+  .ho-modal{overflow-x:hidden}
+  .critico-modal{overflow-x:hidden}
+
+  /* ---- header: logo menor, sem subtítulo, botões em linha compacta ---- */
+  .hdr{padding:10px 14px;gap:10px}
+  .hdr .hdr-logo{height:18px}
+  .hdr .hdr-brand{gap:10px}
+  .hdr h1{font-size:14px}
+  .hdr p{display:none}
+  .hdr-acoes{width:100%;gap:8px}
+  .jornada-nav{width:100%}
+  .jn-tab{flex:1;text-align:center;padding:8px 6px}
+  #userBox{width:100%;gap:6px}
+  #userBox.hide{display:none}
+  #userEmail{display:none}              /* e-mail completo só no desktop */
+  #userBox .btn{padding:7px 10px;font-size:12px;flex:1;white-space:nowrap}
+  #userBox .btn.hide{display:none}
+  .notif-sino{flex:none!important}
+
+  /* ---- layout geral ---- */
+  .wrap{padding:14px 10px;gap:14px}
+  .card{padding:16px 14px;border-radius:14px}
+  .tabs{padding:10px 12px 0}
+  .kpis{grid-template-columns:1fr 1fr;gap:8px}
+  .kpi{padding:12px}
+  .kpi .val{font-size:17px}
+  .toolbar{gap:8px}
+  .toolbar .btn{flex:1 1 45%;padding:10px 8px;font-size:12px}
+  table{font-size:12px}
+  th,td{padding:7px 6px}
+
+  /* ---- modais / overlays ---- */
+  .ho-overlay{padding:8px 6px}
+  .ho-modal{padding:18px 14px;border-radius:14px}
+  .ho-modal.wide{max-width:100%}
+  .ho-head{padding-right:24px}
+  .ho-head h2{font-size:16px}
+  .ho-grid{grid-template-columns:1fr}
+  .ho-vendido{grid-template-columns:1fr}
+  .ho-contato{grid-template-columns:1fr 1fr}
+  .ops-time-grid{grid-template-columns:1fr}
+  .ops-cu-row{grid-template-columns:1fr}
+  .csat-grid{grid-template-columns:1fr 1fr}
+  .ops-aceite-check{grid-template-columns:1fr}
+  .adm-perfil-grid{grid-template-columns:1fr}
+
+  /* ---- stepper: rola na horizontal sem estourar a tela ---- */
+  .stepper{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:6px}
+  .stepper .step{width:60px;flex:none}
+  .stepper .step .lbl{font-size:8px}
+  .stepper .lin{min-width:10px}
+
+  /* ---- board Customer OPS ---- */
+  .ops-kpis{width:100%;gap:6px}
+  .ops-kpi{flex:1;min-width:0;font-size:14px;padding:8px 6px;text-align:center}
+  .ops-kpi small{white-space:normal;font-size:9px}
+  .ops-filtros{gap:6px}
+  .ops-filtro{flex:1;min-width:0;text-align:center;padding:8px 4px;font-size:11px}
+  .ops-top{flex-wrap:wrap}
+  .ops-nome{width:100%}
+  .ops-top .pp-abrir{width:100%;text-align:center;padding:10px;order:2;
+    border:1px solid var(--accent);border-radius:10px}
+  .ops-meta{gap:8px;font-size:11px}
+  .ops-time{font-size:11px;gap:8px}
+  .ops-acoes{gap:8px}
+  .ops-acoes .tl-link,.ops-acoes .ops-sel{flex:1;text-align:center}
+  .ops-reg-opts{flex-direction:column;align-items:stretch}
+  .ops-reg-btns{width:100%}
+  .ops-reg-btns .btn{flex:1;padding:10px 8px;font-size:12px}
+  .ops-baixa{flex-direction:column}
+  .ops-baixa-btn{padding:10px}
+
+  /* ---- agendas ---- */
+  .pp-status{white-space:normal}
+  .ag-resumo{gap:10px;font-size:11px}
+  .ag-head{flex-direction:column;align-items:flex-start;gap:6px}
+  .ag-acoes{gap:6px}
+  .ag-acoes .btn{flex:1 1 100%;text-align:center}
+  .ag-acoes .tl-link{flex:1;text-align:center;padding:8px 6px;
+    border:1px solid var(--border-md);border-radius:9px}
+
+  /* ---- admin ---- */
+  .adm-row{padding:12px 14px;gap:10px}
+  .adm-acoes{width:100%;gap:6px}
+  .adm-acoes .ops-sel{flex:1 1 100%}
+  .adm-acoes .tl-link{flex:1;text-align:center;padding:8px 6px;
+    border:1px solid var(--border-md);border-radius:9px}
+  .adm-novo{flex-direction:column;align-items:stretch}
+  .adm-novo>*{width:100%}
+  .adm-novo .btn{padding:12px}
+
+  /* ---- notificações ---- */
+  .notif-item{padding:12px}
+  .notif-head{flex-wrap:wrap;gap:6px}
+
+  /* ---- alerta crítico ---- */
+  .critico-overlay{padding:14px 10px}
+  .critico-modal{padding:20px 16px}
+  .critico-titulo{font-size:20px}
+  .critico-acoes{flex-direction:column}
+
+  /* ---- cropper de foto ---- */
+  .crop-modal{max-width:100%}
+  .crop-area{max-width:100%}
+  #cropCanvas{max-width:100%;height:auto}
+
+  /* ---- painéis de propostas / handoffs ---- */
+  .pp-row{flex-direction:column;align-items:stretch;gap:8px}
+}

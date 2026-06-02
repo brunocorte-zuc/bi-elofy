@@ -7,8 +7,8 @@
 <link rel="icon" type="image/svg+xml" href="brand/icone.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=League+Gothic&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="brand/elofy.css?v=20260602c">
-<link rel="stylesheet" href="app.css?v=20260602c">
+<link rel="stylesheet" href="brand/elofy.css?v=20260602d">
+<link rel="stylesheet" href="app.css?v=20260602d">
 </head>
 <body>
 
@@ -20,21 +20,21 @@
       <p>A jornada do cliente, do comercial ao sucesso</p>
     </div>
   </div>
-  <div style="display:flex;align-items:center;gap:12px">
+  <div class="hdr-acoes">
     <nav class="jornada-nav hide" id="jornadaNav">
       <button class="jn-tab on" data-jornada="comercial" type="button">💼 Comercial</button>
       <button class="jn-tab" data-jornada="ops" type="button">🚀 Customer OPS</button>
     </nav>
-    <span id="userBox" class="hide" style="font-size:12px;color:var(--txt-2)">
+    <span id="userBox" class="hide">
       <span id="userEmail" class="mono"></span>
       <button class="btn ghost notif-sino" id="btnNotif" type="button" title="Notificações">
         🔔<span class="notif-badge hide" id="notifBadge">0</span></button>
-      <button class="btn ghost notif-sino" id="btnAgendas" type="button" title="Minhas agendas" style="margin-left:8px">
+      <button class="btn ghost notif-sino" id="btnAgendas" type="button" title="Minhas agendas">
         📅<span class="notif-badge hide" id="agendasBadge">0</span></button>
-      <button class="btn ghost" id="btnPropostas" style="padding:5px 10px;margin-left:8px">📋 Propostas</button>
-      <button class="btn ghost hide" id="btnHandoffs" style="padding:5px 10px;margin-left:8px">🏆 Handoffs</button>
-      <button class="btn ghost hide" id="btnAdmin" style="padding:5px 10px;margin-left:8px">⚙️ Admin</button>
-      <button class="btn ghost" id="btnLogout" style="padding:5px 10px;margin-left:8px">Sair</button>
+      <button class="btn ghost" id="btnPropostas">📋 Propostas</button>
+      <button class="btn ghost hide" id="btnHandoffs">🏆 Handoffs</button>
+      <button class="btn ghost hide" id="btnAdmin">⚙️ Admin</button>
+      <button class="btn ghost" id="btnLogout">Sair</button>
     </span>
   </div>
 </header>
@@ -300,12 +300,12 @@
 <script src="data/supabase.js"></script>
 <!-- Motor + auth + PDF + UI. O ?v= força o navegador a baixar a versão nova
      após cada deploy (evita HTML novo rodando com JS antigo em cache). -->
-<script src="src/engine.js?v=20260602c"></script>
-<script src="src/auth.js?v=20260602c"></script>
-<script src="src/pdf.js?v=20260602c"></script>
-<script src="src/handoff.js?v=20260602c"></script>
-<script src="src/ops.js?v=20260602c"></script>
-<script src="src/admin.js?v=20260602c"></script>
-<script src="src/app.js?v=20260602c"></script>
+<script src="src/engine.js?v=20260602d"></script>
+<script src="src/auth.js?v=20260602d"></script>
+<script src="src/pdf.js?v=20260602d"></script>
+<script src="src/handoff.js?v=20260602d"></script>
+<script src="src/ops.js?v=20260602d"></script>
+<script src="src/admin.js?v=20260602d"></script>
+<script src="src/app.js?v=20260602d"></script>
 </body>
 </html>

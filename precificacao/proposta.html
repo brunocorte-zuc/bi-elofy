@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Sua proposta · Elofy</title>
 <!-- Marca oficial Elofy: paleta + fontes (Gotham Cond / Gellix) -->
-<link rel="stylesheet" href="brand/elofy.css?v=20260602c">
+<link rel="stylesheet" href="brand/elofy.css?v=20260602d">
 <!-- Alternativas gratuitas do manual (fallback): League Gothic + Poppins -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=League+Gothic&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -103,6 +103,28 @@
   .thanks h2{font-family:var(--font-titulo);text-transform:uppercase;color:var(--elofy-blue);
     margin:12px 0 8px;font-size:26px}
   .foot{text-align:center;font-size:11px;color:var(--ink3);margin-top:6px}
+  /* ===== Mobile: topo empilhado, tabelas e botões adaptados ===== */
+  @media(max-width:600px){
+    body{padding:12px 8px}
+    .card{padding:18px 14px;border-radius:14px}
+    .top{flex-direction:column;align-items:flex-start;gap:10px}
+    .brand img{height:24px}
+    .brand .tag{font-size:10px;margin-top:5px}
+    .doc{text-align:left}
+    .doc .big{font-size:14px}
+    .hero h1{font-size:23px}
+    h2.sec{font-size:13px}
+    .meta{gap:12px;padding:13px 15px}
+    table.items{font-size:12px}
+    table.items th,table.items td{padding:7px 6px}
+    .invest .c{min-width:100%}
+    .invest .c .v{font-size:18px}
+    .sent{flex-direction:column}
+    .sent button{min-width:100%}
+    .fb h2{font-size:20px}
+    .chips{gap:6px}
+    .chip{padding:7px 12px;font-size:12px}
+  }
 </style>
 </head>
 <body>
@@ -112,7 +134,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="data/supabase.js"></script>
-<script src="src/pdf.js?v=20260602c"></script>
-<script src="src/publica.js?v=20260602c"></script>
+<script src="src/pdf.js?v=20260602d"></script>
+<script src="src/publica.js?v=20260602d"></script>
 </body>
 </html>
