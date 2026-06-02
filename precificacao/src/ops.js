@@ -134,7 +134,8 @@
             <span class="ops-etapa">${esc(etapaNome)}</span>
             <span class="pp-status ${s.cls}">${s.txt}</span>
             ${i.problemas_abertos > 0 ? `<span class="pp-status bad">⚠ ${i.problemas_abertos} problema(s) aberto(s)</span>` : ""}
-            ${i.escalonado_em ? `<span class="pp-status bad">🆘 Escalonado pelo cliente</span>` : ""}
+            ${escalonamentoAtivo(i) ? `<span class="pp-status bad">🆘 Escalonado pelo cliente</span>` : ""}
+            ${escalonamentoResolvido(i) ? `<span class="pp-status warn" title="Este projeto já foi escalonado pelo cliente, mas foi resolvido">🏳️ Já escalonado · resolvido</span>` : ""}
             ${i.handoff_status === "pendente" ? `<span class="pp-status warn">🤝 Aguardando aceite</span>` : ""}
             ${(i.red_flags || []).length >= 2 ? `<span class="pp-status bad">🚩 RED ACCOUNT</span>`
               : (i.red_flags || []).length === 1 ? `<span class="pp-status warn">🚩 1 sinal</span>` : ""}
@@ -147,6 +148,9 @@
           <span>📅 início ${dataBR(i.inicio)} · ${i.dias_corridos}d corridos</span>
           <span>🎯 go-live previsto ${dataBR(i.previsao_golive)}</span>
           ${i.golive_em ? `<span>🚀 go-live em ${dataBR(i.golive_em)}</span>` : ""}
+          <span>⏱ <b>${fmtHoras(i.horas_realizadas)}</b> realizadas / ${fmtHoras(i.horas_previstas)} agendadas</span>
+          ${i.csat_media != null ? `<span>${csatEmoji(i.csat_media)} CSAT ${Number(i.csat_media).toFixed(1)}</span>` : ""}
+          ${i.nps_medio != null ? `<span>⭐ NPS ${Number(i.nps_medio).toFixed(1)}</span>` : ""}
         </div>
         ${i.ultimo_update ? `<div class="ops-ultimo">“${esc(i.ultimo_update)}” <small>· ${dataBR(i.ultimo_update_em)}</small></div>` : ""}
       </div>`;
@@ -331,15 +335,28 @@
       </details>`;
   }
 
+  // Escalonamento ativo? (pedido pelo cliente e ainda não resolvido)
+  const escalonamentoAtivo = impl => impl.escalonado_em && !impl.escalonado_resolvido_em;
+  // Já foi escalonado em algum momento, mas foi resolvido (fica a marca no projeto).
+  const escalonamentoResolvido = impl => impl.escalonado_em && impl.escalonado_resolvido_em;
+
   // Alerta de escalonamento: o cliente acionou a liderança pela página pública.
   function escalonamentoAlerta(impl) {
-    if (!impl.escalonado_em) return "";
+    if (escalonamentoResolvido(impl)) {
+      return `<div class="ops-escalado-ok">
+        🏳️ <b>Este projeto já foi escalonado pelo cliente</b> em ${new Date(impl.escalonado_em).toLocaleDateString("pt-BR")}
+        — <b>resolvido</b> em ${new Date(impl.escalonado_resolvido_em).toLocaleDateString("pt-BR")}.
+        Os detalhes estão na linha do tempo.
+      </div>`;
+    }
+    if (!escalonamentoAtivo(impl)) return "";
     return `<div class="ops-escalado">
       <b>🆘 O CLIENTE PEDIU ESCALONAMENTO</b>
       <span class="ops-escalado-quando">em ${new Date(impl.escalonado_em).toLocaleString("pt-BR")}</span>
       ${impl.escalonado_motivo ? `<div class="ops-escalado-motivo">“${esc(impl.escalonado_motivo)}”</div>` : ""}
       <div class="ops-escalado-dica">Entre em contato com o cliente o quanto antes e registre a tratativa
-      na linha do tempo. Quando o problema for resolvido, dê baixa nele para encerrar o escalonamento.</div>
+      na linha do tempo. Quando o problema for resolvido, dê baixa nele para encerrar o escalonamento —
+      a marca de que o projeto já foi escalonado fica registrada no histórico.</div>
     </div>`;
   }
 
@@ -392,6 +409,142 @@
     </div>`;
   }
 
+  /* ---------- Agendas & Horas (apontamento dos implantadores) ---------- */
+  const fmtHoras = h => { const n = Number(h) || 0; return n % 1 === 0 ? n + "h" : n.toFixed(1) + "h"; };
+  const csatEmoji = m => m >= 4.5 ? "🤩" : m >= 3.5 ? "😊" : m >= 2.5 ? "😐" : "😟";
+  const STATUS_AGENDA = {
+    pendente:  { txt: "⏳ Aguardando aceite do IS", cls: "warn" },
+    aceita:    { txt: "✅ Aceita pelo IS",          cls: "info" },
+    recusada:  { txt: "⛔ Recusada",                cls: "bad" },
+    realizada: { txt: "📋 Realizada · aguardando OK do cliente", cls: "warn" },
+    avaliada:  { txt: "⭐ Avaliada pelo cliente",   cls: "ok" },
+  };
+
+  // Convite de calendário: link do Outlook (web) + arquivo .ics para anexar/enviar.
+  function linksConvite(a, cliente) {
+    const ini = new Date(`${a.data}T${a.hora_inicio || "09:00"}`);
+    const fim = new Date(ini.getTime() + (Number(a.horas) || 1) * 3600000);
+    const fmtICS = d => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+    const titulo = `Implantação Elofy — ${cliente}`;
+    const corpo = `Escopo: ${a.escopo}\\nContato no cliente: ${a.contato_cliente || "—"}\\nFormato: ${a.formato}\\nAgenda criada pela Jornada Elofy.`;
+    const local = a.formato === "presencial" ? "No cliente (presencial)" : "Remoto (Teams)";
+    // Outlook web deep link (abre o compose de evento já preenchido)
+    const outlook = "https://outlook.office.com/calendar/0/deeplink/compose?" + new URLSearchParams({
+      subject: titulo, body: corpo.replace(/\\n/g, "\n"), location: local,
+      startdt: ini.toISOString(), enddt: fim.toISOString(), path: "/calendar/action/compose",
+    }).toString();
+    // arquivo .ics (padrão iCalendar — funciona em Outlook, Teams e Google)
+    const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Elofy//Jornada//PT-BR", "BEGIN:VEVENT",
+      "UID:" + a.id + "@jornada.elofy", "DTSTAMP:" + fmtICS(new Date()),
+      "DTSTART:" + fmtICS(ini), "DTEND:" + fmtICS(fim),
+      "SUMMARY:" + titulo, "DESCRIPTION:" + corpo, "LOCATION:" + local,
+      "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+    const icsUrl = "data:text/calendar;charset=utf-8," + encodeURIComponent(ics);
+    return { outlook, icsUrl };
+  }
+
+  // Card de uma agenda (no detalhe da implantação).
+  function agendaCard(a, cliente) {
+    const st = STATUS_AGENDA[a.status] || STATUS_AGENDA.pendente;
+    const conv = linksConvite(a, cliente);
+    return `<div class="ag-card ${a.status}">
+      <div class="ag-head">
+        <span class="ag-quando">📅 ${dataBR(a.data)}${a.hora_inicio ? " às " + String(a.hora_inicio).slice(0, 5) : ""}
+          · <b>${fmtHoras(a.horas_realizadas != null ? a.horas_realizadas : a.horas)}</b>
+          · ${a.formato === "presencial" ? "🏢 presencial" : "💻 remoto"}</span>
+        <span class="pp-status ${st.cls}">${st.txt}</span>
+      </div>
+      <div class="ag-is">👤 IS: <b>${esc(a.is_nome || a.is_email.split("@")[0])}</b>
+        ${a.contato_cliente ? ` · recebe: ${esc(a.contato_cliente)}` : ""}</div>
+      <div class="ag-escopo">${esc(a.escopo)}</div>
+      ${a.motivo_recusa ? `<div class="ag-recusa">⛔ Motivo da recusa: ${esc(a.motivo_recusa)}</div>` : ""}
+      ${a.ficha && a.ficha.executado ? `<div class="ag-ficha">📋 <b>Executado:</b> ${esc(a.ficha.executado)}
+        ${a.ficha.pendencias ? `<br>⏭ <b>Pendências:</b> ${esc(a.ficha.pendencias)}` : ""}</div>` : ""}
+      ${a.nps != null ? `<div class="ag-nps ${a.nps >= 9 ? "otimo" : a.nps >= 7 ? "bom" : "ruim"}">
+        ${a.cliente_ok === false ? "🚫 Escopo reprovado pelo cliente · " : "✓ Escopo aprovado · "}
+        NPS <b>${a.nps}/10</b>${a.nps_comentario ? ` — “${esc(a.nps_comentario)}”` : ""}</div>` : ""}
+      <div class="ag-acoes">
+        ${["pendente", "aceita"].includes(a.status) ? `
+          <a class="tl-link" href="${conv.outlook}" target="_blank" rel="noopener">📆 Outlook</a>
+          <a class="tl-link" href="${conv.icsUrl}" download="agenda-elofy.ics">⬇ Convite .ics</a>` : ""}
+        ${a.status === "realizada" ? `<button class="tl-link" data-copiar-aval="${a.public_token}" type="button">🔗 Link de avaliação do cliente</button>` : ""}
+      </div>
+    </div>`;
+  }
+
+  // Seção de agendas + consumo de horas no detalhe da implantação.
+  function agendasSection(impl, agendas) {
+    const realizadas = agendas.filter(a => ["realizada", "avaliada"].includes(a.status));
+    const horasReal = realizadas.reduce((s, a) => s + Number(a.horas_realizadas != null ? a.horas_realizadas : a.horas), 0);
+    const horasPrev = agendas.filter(a => ["aceita", "realizada", "avaliada"].includes(a.status))
+      .reduce((s, a) => s + Number(a.horas), 0);
+    const badge = agendas.length
+      ? `<span class="pp-status info">⏱ ${fmtHoras(horasReal)} de ${fmtHoras(horasPrev)} realizadas</span>` : "";
+    return `
+      <details class="pb-sec" open>
+        <summary>⏱ Agendas & horas dos implantadores ${badge}</summary>
+        <div class="pb-body">
+          ${agendas.length ? `
+          <div class="ag-resumo">
+            <span><b>${agendas.filter(a => a.status === "pendente").length}</b> aguardando aceite</span>
+            <span><b>${agendas.filter(a => a.status === "aceita").length}</b> agendadas</span>
+            <span><b>${fmtHoras(horasReal)}</b> realizadas</span>
+            <span><b>${agendas.filter(a => a.status === "avaliada").length}</b> avaliadas pelo cliente</span>
+          </div>` : `<p style="font-size:12px;color:var(--txt-3)">Nenhuma agenda criada ainda.
+            É aqui que medimos o consumo de horas dos implantadores neste projeto.</p>`}
+          <div id="agLista">${agendas.map(a => agendaCard(a, impl.cliente)).join("")}</div>
+          ${podeEditar ? `
+          <div class="ag-novo" id="agNovoForm">
+            <div class="pb-grupo-titulo" style="margin-top:14px">+ Nova agenda para um IS</div>
+            <div class="ho-grid">
+              <label class="ho-f">Implantador (IS)${selectPessoa("agIs", null)}</label>
+              <label class="ho-f">Dia<input type="date" id="agData"></label>
+              <label class="ho-f">Hora de início<input type="time" id="agHora" value="09:00"></label>
+              <label class="ho-f">Horas da agenda<input type="number" id="agHoras" min="0.5" max="24" step="0.5" value="4"></label>
+              <label class="ho-f">Formato
+                <select id="agFormato"><option value="remoto">💻 Remoto (Teams)</option>
+                <option value="presencial">🏢 Presencial (no cliente)</option></select></label>
+              <label class="ho-f">Quem recebe o IS no cliente<input type="text" id="agContato" placeholder="ex.: Maria (RH) — (11) 99999-0000"></label>
+            </div>
+            <label class="ho-f">Escopo macro da agenda
+              <textarea id="agEscopo" placeholder="ex.: Configurar o ciclo de avaliação e treinar os admins do RH"></textarea></label>
+            <button class="btn" id="agCriar" type="button" style="padding:8px 16px">📅 Criar agenda e gerar convite</button>
+            <p style="font-size:11px;color:var(--txt-3);margin-top:8px">
+              O IS recebe uma notificação no sistema e o botão de convite Outlook/.ics para colocar na agenda dele.
+              Ele precisa <b>aceitar</b> a agenda pelo sistema (em "📅 Minhas agendas").</p>
+          </div>` : ""}
+        </div>
+      </details>`;
+  }
+
+  // CSAT por fase: como o cliente está avaliando a jornada.
+  function csatSection(impl) {
+    const csat = impl.csat || {};
+    const notas = Object.entries(csat);
+    if (!notas.length) return `
+      <details class="pb-sec"><summary>💜 CSAT do cliente por fase <span class="pp-status wait">sem respostas ainda</span></summary>
+        <div class="pb-body"><p style="font-size:12px;color:var(--txt-3)">
+          O cliente avalia cada fase concluída diretamente na página de acompanhamento dele.
+          As respostas aparecem aqui — cliente no centro, sempre. 💜</p></div>
+      </details>`;
+    const media = notas.reduce((s, [, n]) => s + n, 0) / notas.length;
+    return `
+      <details class="pb-sec" open>
+        <summary>💜 CSAT do cliente por fase
+          <span class="pp-status ${media >= 4 ? "ok" : media >= 3 ? "warn" : "bad"}">${csatEmoji(media)} média ${media.toFixed(1)}/5</span></summary>
+        <div class="pb-body">
+          <div class="csat-grid">
+            ${ETAPAS.map(e => {
+              const nota = csat[e.id];
+              if (nota == null) return `<div class="csat-item vazio"><span>${e.nome}</span><b>—</b></div>`;
+              return `<div class="csat-item ${nota >= 4 ? "ok" : nota >= 3 ? "warn" : "bad"}">
+                <span>${e.nome}</span><b>${csatEmoji(nota)} ${nota}/5</b></div>`;
+            }).join("")}
+          </div>
+        </div>
+      </details>`;
+  }
+
   // Linha compacta do time da implantação (board e detalhe).
   function timeLinha(i) {
     const p = (rotulo, v) => v ? `<span><b>${rotulo}</b> ${esc(String(v).split("@")[0])}</span>` : "";
@@ -411,8 +564,9 @@
     ov.classList.remove("hide");
     const body = $("#opsBody");
     body.innerHTML = `<div class="ho-head"><h2>${esc(impl.cliente)}</h2></div><p style="color:var(--txt-3)">Carregando…</p>`;
-    let updates = [];
+    let updates = [], agendas = [];
     try { updates = await store().opsUpdates(id); } catch (e) { /* segue com timeline vazia */ }
+    try { agendas = await store().agendaListar(id); } catch (e) { /* sem agendas não é erro fatal */ }
 
     const s = SAUDE[impl.saude] || SAUDE.ok;
     const linkCliente = location.href.replace(/[^/]*(\?.*)?(#.*)?$/, "") + "acompanhamento.html?t=" + impl.public_token;
@@ -431,6 +585,8 @@
 
       ${playbookViewer(impl)}
       ${discoverySection(impl)}
+      ${agendasSection(impl, agendas)}
+      ${csatSection(impl)}
       ${customsSection(impl)}
       ${redFlagsSection(impl)}
 
@@ -620,6 +776,44 @@
         }
       });
     }
+
+    // ----- Agendas: criar nova + copiar link de avaliação do cliente -----
+    const btnAgCriar = $("#agCriar");
+    if (btnAgCriar) {
+      btnAgCriar.addEventListener("click", async () => {
+        const msg = $("#opsMsg");
+        const payload = {
+          is_email: $("#agIs").value || null,
+          data: $("#agData").value || null,
+          hora_inicio: $("#agHora").value || null,
+          horas: Number($("#agHoras").value) || 0,
+          formato: $("#agFormato").value,
+          contato_cliente: $("#agContato").value.trim() || null,
+          escopo: $("#agEscopo").value.trim(),
+        };
+        if (!payload.is_email || !payload.data || !payload.horas || !payload.escopo) {
+          if (msg) { msg.textContent = "Preencha IS, dia, horas e escopo da agenda."; msg.className = "ho-msg bad"; }
+          return;
+        }
+        try {
+          if (msg) { msg.textContent = "Criando agenda…"; msg.className = "ho-msg"; }
+          await store().agendaCriar(id, payload);
+          cache = await store().opsListar();
+          renderKpis(); renderLista();
+          abrirDetalhe(id);
+        } catch (e) {
+          if (msg) { msg.textContent = "Erro: " + (e.message || e); msg.className = "ho-msg bad"; }
+        }
+      });
+    }
+    document.querySelectorAll("[data-copiar-aval]").forEach(btn =>
+      btn.addEventListener("click", () => {
+        const url = location.href.replace(/[^/]*(\?.*)?(#.*)?$/, "") +
+          "acompanhamento.html?t=" + impl.public_token + "#avaliar";
+        navigator.clipboard.writeText(url).then(
+          () => { btn.textContent = "✓ Copiado!"; setTimeout(() => btn.textContent = "🔗 Link de avaliação do cliente", 1500); },
+          () => window.prompt("Copie:", url));
+      }));
   }
 
   function renderTimeline(updates) {
@@ -699,12 +893,168 @@
     }
   }
 
+  /* ---------- Minhas agendas (visão do implantador / IS) ---------- */
+  async function minhasAgendas() {
+    const ov = $("#agendasOverlay");
+    ov.classList.remove("hide");
+    const body = $("#agendasBody");
+    body.innerHTML = `<p style="color:var(--txt-3)">Carregando…</p>`;
+    let agendas = [];
+    try { agendas = await store().agendaMinhas(); }
+    catch (e) { body.innerHTML = `<p class="ho-msg bad">Erro: ${esc(e.message || e)}</p>`; return; }
+
+    if (!agendas.length) {
+      body.innerHTML = `<p style="color:var(--txt-3);font-size:13px">Você não tem agendas no momento.
+        Quando o responsável por um projeto criar uma agenda para você, ela aparece aqui
+        para você <b>aceitar, ajustar ou recusar</b>.</p>`;
+      return;
+    }
+    body.innerHTML = `
+      <p style="font-size:12px;color:var(--txt-3);margin-bottom:14px">
+        Aceite a agenda para confirmar o atendimento. Você pode <b>ajustar</b> (se o cliente pediu
+        mudança direto pra você) ou <b>recusar</b>. Depois do atendimento, preencha a
+        <b>ficha do trabalho executado</b> — o cliente dá o OK e avalia com NPS.</p>
+      ${agendas.map(a => minhaAgendaCard(a)).join("")}`;
+    ligarMinhasAgendas(agendas);
+  }
+
+  function minhaAgendaCard(a) {
+    const st = STATUS_AGENDA[a.status] || STATUS_AGENDA.pendente;
+    const conv = linksConvite(a, a.cliente);
+    const podeAgir = ["pendente", "aceita"].includes(a.status);
+    return `<div class="ag-card minha ${a.status}" data-ag="${a.id}">
+      <div class="ag-head">
+        <span class="ag-cliente">🚀 ${esc(a.cliente)}</span>
+        <span class="pp-status ${st.cls}">${st.txt}</span>
+      </div>
+      <div class="ag-quando">📅 <b>${dataBR(a.data)}</b>${a.hora_inicio ? " às " + String(a.hora_inicio).slice(0, 5) : ""}
+        · ${fmtHoras(a.horas)} · ${a.formato === "presencial" ? "🏢 presencial" : "💻 remoto"}
+        ${a.contato_cliente ? ` · recebe: ${esc(a.contato_cliente)}` : ""}</div>
+      <div class="ag-escopo">${esc(a.escopo)}</div>
+      ${a.motivo_recusa ? `<div class="ag-recusa">⛔ Você recusou: ${esc(a.motivo_recusa)}</div>` : ""}
+      ${a.ficha && a.ficha.executado ? `<div class="ag-ficha">📋 <b>Sua ficha:</b> ${esc(a.ficha.executado)}</div>` : ""}
+      ${a.nps != null ? `<div class="ag-nps ${a.nps >= 9 ? "otimo" : a.nps >= 7 ? "bom" : "ruim"}">
+        Cliente avaliou: <b>NPS ${a.nps}/10</b>${a.nps_comentario ? ` — “${esc(a.nps_comentario)}”` : ""}</div>` : ""}
+
+      <div class="ag-acoes">
+        ${a.status === "pendente" ? `
+          <button class="btn ag-aceitar" type="button" style="padding:7px 14px">✅ Aceitar agenda</button>
+          <button class="btn ghost ag-recusar" type="button" style="padding:7px 14px">⛔ Recusar</button>` : ""}
+        ${a.status === "aceita" ? `
+          <button class="btn ag-ficha-btn" type="button" style="padding:7px 14px">📋 Preencher ficha do atendimento</button>` : ""}
+        ${podeAgir ? `
+          <button class="tl-link ag-editar" type="button">✏️ Ajustar agenda</button>
+          <a class="tl-link" href="${conv.outlook}" target="_blank" rel="noopener">📆 Outlook</a>
+          <a class="tl-link" href="${conv.icsUrl}" download="agenda-elofy.ics">⬇ .ics</a>` : ""}
+      </div>
+
+      ${podeAgir ? `
+      <div class="ag-form hide ag-form-editar">
+        <div class="ho-grid">
+          <label class="ho-f">Dia<input type="date" class="agE-data" value="${esc(a.data)}"></label>
+          <label class="ho-f">Hora<input type="time" class="agE-hora" value="${esc(String(a.hora_inicio || "09:00").slice(0, 5))}"></label>
+          <label class="ho-f">Horas<input type="number" class="agE-horas" min="0.5" max="24" step="0.5" value="${esc(a.horas)}"></label>
+          <label class="ho-f">Formato<select class="agE-formato">
+            <option value="remoto" ${a.formato !== "presencial" ? "selected" : ""}>💻 Remoto</option>
+            <option value="presencial" ${a.formato === "presencial" ? "selected" : ""}>🏢 Presencial</option></select></label>
+        </div>
+        <label class="ho-f">Escopo<textarea class="agE-escopo">${esc(a.escopo)}</textarea></label>
+        <button class="btn ghost ag-salvar-edicao" type="button" style="padding:7px 14px">Salvar ajustes</button>
+      </div>
+      <div class="ag-form hide ag-form-ficha">
+        <label class="ho-f">O que foi executado no atendimento? *
+          <textarea class="agF-executado" placeholder="Descreva o trabalho realizado, decisões tomadas, o que foi configurado/treinado…"></textarea></label>
+        <label class="ho-f">Pendências / próximos passos
+          <textarea class="agF-pendencias" placeholder="O que ficou pendente, com quem e para quando"></textarea></label>
+        <label class="ho-f">Horas efetivamente trabalhadas
+          <input type="number" class="agF-horas" min="0.5" max="24" step="0.5" value="${esc(a.horas)}"></label>
+        <button class="btn ag-salvar-ficha" type="button" style="padding:8px 16px">📋 Registrar atendimento realizado</button>
+        <p style="font-size:11px;color:var(--txt-3);margin-top:6px">Depois disso o cliente recebe o resumo para dar OK no escopo e avaliar com NPS.</p>
+      </div>` : ""}
+      <p class="ho-msg ag-msg"></p>
+    </div>`;
+  }
+
+  function ligarMinhasAgendas(agendas) {
+    document.querySelectorAll(".ag-card.minha").forEach(card => {
+      const id = card.dataset.ag;
+      const msg = card.querySelector(".ag-msg");
+      const erro = e => { msg.textContent = "Erro: " + (e.message || e); msg.className = "ho-msg bad ag-msg"; };
+      const recarrega = async () => { await atualizarBadgeAgendas(); minhasAgendas(); };
+
+      const aceitar = card.querySelector(".ag-aceitar");
+      if (aceitar) aceitar.addEventListener("click", async () => {
+        try { msg.textContent = "Aceitando…"; await store().agendaAceitar(id); recarrega(); } catch (e) { erro(e); }
+      });
+      const recusar = card.querySelector(".ag-recusar");
+      if (recusar) recusar.addEventListener("click", async () => {
+        const motivo = window.prompt("Qual o motivo da recusa? (o responsável pelo projeto será avisado)");
+        if (!motivo) return;
+        try { msg.textContent = "Recusando…"; await store().agendaRecusar(id, motivo); recarrega(); } catch (e) { erro(e); }
+      });
+      const editar = card.querySelector(".ag-editar");
+      if (editar) editar.addEventListener("click", () => {
+        card.querySelector(".ag-form-editar").classList.toggle("hide");
+        card.querySelector(".ag-form-ficha").classList.add("hide");
+      });
+      const fichaBtn = card.querySelector(".ag-ficha-btn");
+      if (fichaBtn) fichaBtn.addEventListener("click", () => {
+        card.querySelector(".ag-form-ficha").classList.toggle("hide");
+        const fe = card.querySelector(".ag-form-editar"); if (fe) fe.classList.add("hide");
+      });
+      const salvarEd = card.querySelector(".ag-salvar-edicao");
+      if (salvarEd) salvarEd.addEventListener("click", async () => {
+        try {
+          msg.textContent = "Salvando…";
+          await store().agendaEditar(id, {
+            data: card.querySelector(".agE-data").value || null,
+            hora_inicio: card.querySelector(".agE-hora").value || null,
+            horas: card.querySelector(".agE-horas").value || null,
+            formato: card.querySelector(".agE-formato").value,
+            escopo: card.querySelector(".agE-escopo").value.trim() || null,
+          });
+          recarrega();
+        } catch (e) { erro(e); }
+      });
+      const salvarFicha = card.querySelector(".ag-salvar-ficha");
+      if (salvarFicha) salvarFicha.addEventListener("click", async () => {
+        const executado = card.querySelector(".agF-executado").value.trim();
+        if (!executado) { erro(new Error("Descreva o que foi executado.")); return; }
+        try {
+          msg.textContent = "Registrando…";
+          await store().agendaRegistrarExecucao(id, {
+            executado, pendencias: card.querySelector(".agF-pendencias").value.trim() || null,
+          }, Number(card.querySelector(".agF-horas").value) || null);
+          recarrega();
+        } catch (e) { erro(e); }
+      });
+    });
+  }
+
+  // Badge do botão "📅 Minhas agendas" no header (quantas aguardam aceite).
+  async function atualizarBadgeAgendas() {
+    try {
+      const agendas = await store().agendaMinhas();
+      const pendentes = agendas.filter(a => a.status === "pendente").length;
+      const badge = $("#agendasBadge");
+      if (badge) {
+        badge.textContent = String(pendentes);
+        badge.classList.toggle("hide", pendentes === 0);
+      }
+    } catch (_) { /* sem agendas não é erro */ }
+  }
+
   // fechar overlay
   document.addEventListener("DOMContentLoaded", () => {
     const x = $("#opsFechar"); if (x) x.addEventListener("click", () => $("#opsOverlay").classList.add("hide"));
     const ov = $("#opsOverlay");
     if (ov) ov.addEventListener("click", e => { if (e.target === ov) ov.classList.add("hide"); });
+    // minhas agendas (visão do IS)
+    const ax = $("#agendasFechar"); if (ax) ax.addEventListener("click", () => $("#agendasOverlay").classList.add("hide"));
+    const aov = $("#agendasOverlay");
+    if (aov) aov.addEventListener("click", e => { if (e.target === aov) aov.classList.add("hide"); });
+    const btnAg = $("#btnAgendas"); if (btnAg) btnAg.addEventListener("click", minhasAgendas);
   });
 
-  global.JornadaOps = { montar, abrirDetalhe };
+  global.JornadaOps = { montar, abrirDetalhe, minhasAgendas, atualizarBadgeAgendas };
 })(window);

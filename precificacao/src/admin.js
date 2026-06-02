@@ -72,11 +72,123 @@
           <input type="text" id="admCargo${i}" class="ops-sel" value="${esc(u.cargo || "")}" placeholder="ex.: Customer Success"></label>
         <label class="ho-f">Telefone (WhatsApp, com DDI)
           <input type="text" id="admTel${i}" class="ops-sel" value="${esc(u.telefone || "")}" placeholder="ex.: 5511999998888"></label>
-        <label class="ho-f">Foto (jpg/png)
+        <label class="ho-f">Foto (jpg/png) — você poderá enquadrar e dar zoom
           <input type="file" id="admFoto${i}" class="ops-sel" accept="image/*"></label>
+      </div>
+      <div class="adm-foto-preview hide" id="admFotoPreview${i}">
+        <img alt="prévia"><span>✓ Foto enquadrada — será enviada ao salvar o perfil</span>
       </div>
       <button class="btn ghost" data-salvarperfil="${i}" type="button" style="padding:7px 14px;margin-top:10px">Salvar perfil</button>
     </div>`;
+  }
+
+  /* ---------- Enquadramento da foto (arrastar para posicionar + zoom) ---------- */
+  // Fotos enquadradas e prontas para upload, por índice do usuário.
+  const fotosCortadas = {};
+  const CROP_VIEW = 320;   // tamanho do canvas de edição na tela
+  const CROP_OUT = 400;    // resolução final da foto enviada
+
+  function abrirCropper(file, indice) {
+    // monta o modal do cropper uma única vez
+    let ov = $("#cropOverlay");
+    if (!ov) {
+      ov = document.createElement("div");
+      ov.id = "cropOverlay";
+      ov.className = "ho-overlay crop-overlay";
+      ov.innerHTML = `
+        <div class="ho-modal crop-modal">
+          <div class="ho-head"><h2>🖼 Enquadrar foto</h2></div>
+          <p style="font-size:12px;color:var(--txt-3);margin-bottom:10px">
+            Arraste a imagem para posicionar e use o controle para dar mais ou menos zoom.
+            O círculo é como a foto vai aparecer para o cliente.</p>
+          <div class="crop-area"><canvas id="cropCanvas" width="${CROP_VIEW}" height="${CROP_VIEW}"></canvas></div>
+          <label class="crop-zoom">🔍− <input type="range" id="cropZoom" min="100" max="300" value="100"> 🔍+</label>
+          <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
+            <button class="btn ghost" id="cropCancelar" type="button">Cancelar</button>
+            <button class="btn" id="cropAplicar" type="button">✓ Usar este enquadramento</button>
+          </div>
+        </div>`;
+      document.body.appendChild(ov);
+    }
+    ov.classList.remove("hide");
+
+    const canvas = $("#cropCanvas");
+    const ctx = canvas.getContext("2d");
+    const zoomCtl = $("#cropZoom");
+    zoomCtl.value = "100";
+    const img = new Image();
+    // estado do enquadramento: deslocamento (pan) e zoom
+    const st = { x: 0, y: 0, zoom: 1, base: 1, arrastando: false, px: 0, py: 0 };
+
+    function desenhar() {
+      ctx.clearRect(0, 0, CROP_VIEW, CROP_VIEW);
+      ctx.fillStyle = "#222";
+      ctx.fillRect(0, 0, CROP_VIEW, CROP_VIEW);
+      const escala = st.base * st.zoom;
+      const w = img.width * escala, h = img.height * escala;
+      ctx.drawImage(img, CROP_VIEW / 2 - w / 2 + st.x, CROP_VIEW / 2 - h / 2 + st.y, w, h);
+      // máscara: escurece o que fica fora do círculo
+      ctx.save();
+      ctx.fillStyle = "rgba(0,0,0,.55)";
+      ctx.beginPath();
+      ctx.rect(0, 0, CROP_VIEW, CROP_VIEW);
+      ctx.arc(CROP_VIEW / 2, CROP_VIEW / 2, CROP_VIEW / 2 - 6, 0, Math.PI * 2, true);
+      ctx.fill();
+      ctx.restore();
+      ctx.strokeStyle = "#FFF98B";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(CROP_VIEW / 2, CROP_VIEW / 2, CROP_VIEW / 2 - 6, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    img.onload = () => {
+      // zoom base: a imagem cobre todo o círculo
+      st.base = Math.max(CROP_VIEW / img.width, CROP_VIEW / img.height);
+      st.x = 0; st.y = 0; st.zoom = 1;
+      desenhar();
+    };
+    img.src = URL.createObjectURL(file);
+
+    // pan: mouse e toque
+    const inicio = (cx, cy) => { st.arrastando = true; st.px = cx; st.py = cy; };
+    const move = (cx, cy) => {
+      if (!st.arrastando) return;
+      st.x += cx - st.px; st.y += cy - st.py;
+      st.px = cx; st.py = cy;
+      desenhar();
+    };
+    canvas.onmousedown = e => inicio(e.clientX, e.clientY);
+    canvas.onmousemove = e => move(e.clientX, e.clientY);
+    canvas.onmouseup = canvas.onmouseleave = () => { st.arrastando = false; };
+    canvas.ontouchstart = e => { e.preventDefault(); inicio(e.touches[0].clientX, e.touches[0].clientY); };
+    canvas.ontouchmove = e => { e.preventDefault(); move(e.touches[0].clientX, e.touches[0].clientY); };
+    canvas.ontouchend = () => { st.arrastando = false; };
+    zoomCtl.oninput = () => { st.zoom = Number(zoomCtl.value) / 100; desenhar(); };
+
+    $("#cropCancelar").onclick = () => { ov.classList.add("hide"); };
+    $("#cropAplicar").onclick = () => {
+      // renderiza a área do círculo em alta resolução e guarda o blob para o upload
+      const out = document.createElement("canvas");
+      out.width = CROP_OUT; out.height = CROP_OUT;
+      const octx = out.getContext("2d");
+      const fator = CROP_OUT / CROP_VIEW;
+      const escala = st.base * st.zoom * fator;
+      const w = img.width * escala, h = img.height * escala;
+      octx.fillStyle = "#fff";
+      octx.fillRect(0, 0, CROP_OUT, CROP_OUT);
+      octx.drawImage(img, CROP_OUT / 2 - w / 2 + st.x * fator, CROP_OUT / 2 - h / 2 + st.y * fator, w, h);
+      out.toBlob(blob => {
+        fotosCortadas[indice] = new File([blob], "foto.jpg", { type: "image/jpeg" });
+        // mostra a prévia redonda no formulário
+        const prev = $("#admFotoPreview" + indice);
+        if (prev) {
+          prev.querySelector("img").src = URL.createObjectURL(blob);
+          prev.classList.remove("hide");
+        }
+        ov.classList.add("hide");
+      }, "image/jpeg", 0.92);
+    };
   }
 
   function render() {
@@ -136,12 +248,20 @@
     body.querySelectorAll("[data-perfil]").forEach(btn =>
       btn.addEventListener("click", () =>
         $("#admPerfil" + btn.dataset.perfil).classList.toggle("hide")));
+    // foto escolhida → abre o enquadramento (arrastar + zoom)
+    usuarios.forEach((u, i) => {
+      const input = $("#admFoto" + i);
+      if (input) input.addEventListener("change", () => {
+        if (input.files && input.files[0]) abrirCropper(input.files[0], i);
+      });
+    });
     // salvar perfil (nome, cargo, telefone e foto — visíveis para o cliente)
     body.querySelectorAll("[data-salvarperfil]").forEach(btn =>
       btn.addEventListener("click", async () => {
         const i = Number(btn.dataset.salvarperfil);
         const u = usuarios[i];
-        const arquivo = $("#admFoto" + i).files[0];
+        // prioridade: foto enquadrada no cropper; senão, o arquivo cru do input
+        const arquivo = fotosCortadas[i] || $("#admFoto" + i).files[0];
         await acao(async () => {
           let fotoUrl = null; // null = mantém a foto atual (o banco preserva com coalesce)
           if (arquivo) fotoUrl = await store().uploadFoto(u.email, arquivo);
@@ -151,6 +271,7 @@
             telefone: $("#admTel" + i).value.trim() || null,
             foto_url: fotoUrl,
           });
+          delete fotosCortadas[i];
         }, `Perfil de ${u.nome || u.email} atualizado.`);
       }));
     // senha temporária

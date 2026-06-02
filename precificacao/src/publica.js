@@ -73,13 +73,13 @@
     $("#root").innerHTML = `
       <div class="card">
         <div class="top">
-          <div class="brand">${logo}<div class="tag">Butique de RH</div></div>
+          <div class="brand">${logo}<div class="tag">HR Tech</div></div>
           <div class="doc"><div class="big">Proposta Comercial</div><div>${esc(dataFmt)}</div>
             ${s.versao ? `<div class="v">Versão ${esc(s.versao)}</div>` : ""}</div>
         </div>
         <div class="hero">
           <h1>Uma solução de <span>gestão de pessoas</span> sob medida para a ${esc(s.cliente || "sua empresa")}.</h1>
-          <p>Tecnologia de RH com o cuidado de uma butique: cada módulo, cada hora de implantação e cada
+          <p>Tecnologia de RH do grupo Zucchetti: cada módulo, cada hora de implantação e cada
           customização pensados para o seu contexto.</p>
         </div>
         <div class="meta">
@@ -123,7 +123,7 @@
         <button class="send" id="enviar" disabled>Enviar meu retorno</button>
         <div class="msg" id="fbMsg"></div>
       </div>
-      <p class="foot">elofy · Butique de RH · proposta gerada em ${esc(dataFmt)}</p>`;
+      <p class="foot">elofy · Zucchetti · HR Tech · proposta gerada em ${esc(dataFmt)}</p>`;
 
     ligarFeedback(d.ja_respondeu);
   }

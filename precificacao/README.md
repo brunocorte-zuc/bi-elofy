@@ -92,8 +92,52 @@ Sino no topo com contador de não lidas. Notificações com **escala de priorida
 Tabelas `pricing.notificacoes` / `notificacoes_lidas`; RPCs `notif_listar`,
 `notif_marcar_lida`. Helper interno `pricing.notificar()`.
 
+**Alerta crítico**: notificações de prioridade `critica` não lidas abrem um modal
+vermelho pulsante (impossível de ignorar) ao entrar no sistema. Eventos críticos
+(escalonamento do cliente, NPS ≤ 6, CSAT ≤ 2, escopo reprovado) também geram
+notificações **dirigidas individualmente a toda a liderança** (admin, supervisor,
+gestor, diretor) via `pricing.notificar_lideranca()`.
+
 - Tabelas: `pricing.implantacoes`, `pricing.implantacao_updates`. RPCs: `ops_listar_implantacoes`,
   `ops_updates`, `ops_registrar_update`, `ops_editar_implantacao`.
+
+## Escalonamento do cliente (🆘)
+
+- O cliente pede escalonamento pela página pública quando algo não está sendo resolvido
+  (`implantacao_escalar`): a saúde vira 🔴, entra problema na timeline e a liderança é
+  acionada individualmente com prioridade crítica.
+- Quando o time dá baixa no problema do escalonamento (`ops_resolver_problema`), a
+  implantação ganha a **marca permanente** `escalonado_resolvido_em`: o board e o
+  detalhe mostram "🏳️ Já escalonado · resolvido" e a resolução fica na linha do tempo,
+  visível também para o cliente.
+
+## Agendas & Apontamento de Horas (⏱)
+
+Resolve a dor: *"ninguém sabe quantas horas estão indo em cada projeto"*.
+
+- **Criar agenda** (responsável pelo projeto / OPS / liderança, no detalhe da implantação):
+  dia, hora, horas previstas, escopo macro, quem recebe o IS, presencial/remoto.
+  Gera botão de **convite Outlook** (deep link) e arquivo **.ics** (Outlook/Teams/Google).
+- **O IS recebe notificação dirigida** e vê tudo em "📅 Minhas agendas" (header):
+  - ✅ **Aceitar** → confirma o atendimento;
+  - ✏️ **Ajustar** (o cliente pode ter pedido mudança direto pra ele);
+  - ⛔ **Recusar** com motivo (criador é avisado com prioridade alta);
+  - 📋 Após realizar: **preencher a ficha** do trabalho executado + horas reais.
+- **O cliente dá o OK no escopo e avalia com NPS (0–10)** pela página pública.
+  NPS ≤ 6 ou escopo reprovado → alerta crítico + liderança acionada.
+- **Consumo de horas por projeto** no board e no detalhe: horas previstas × realizadas,
+  além do NPS médio dos atendimentos.
+- Tabela `pricing.agendas`; RPCs `agenda_criar`, `agenda_listar`, `agenda_minhas`,
+  `agenda_aceitar`, `agenda_recusar`, `agenda_editar`, `agenda_registrar_execucao`
+  (login) e `agenda_avaliar` (pública, por token).
+
+## CSAT por fase (💜 cliente no centro)
+
+- A cada fase concluída da implantação, a página pública pergunta ao cliente
+  **"Como foi a fase de X?"** (1–5, com emojis + comentário).
+- As respostas aparecem no detalhe da implantação (visão interna) com média geral.
+- CSAT ≤ 2 → alerta crítico + liderança acionada individualmente.
+- Tabela `pricing.csat_respostas`; RPC pública `implantacao_csat(token, etapa, nota, comentário)`.
 
 ---
 
@@ -271,7 +315,7 @@ RPCs: `pricing_pode_dar_ganho`, `pricing_registrar_handoff`,
 ### Proposta em PDF
 
 Botão **Gerar PDF** abre uma proposta comercial caprichada (marca elofy +
-"Butique de RH", dados do cliente, escopo, resumo de investimento, pitch e
+"HR Tech", dados do cliente, escopo, resumo de investimento, pitch e
 condições) e usa a **impressão nativa** do navegador → *Salvar como PDF*.
 Vetorial, sem bibliotecas, offline (`src/pdf.js`).
 

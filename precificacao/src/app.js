@@ -752,6 +752,8 @@ Valor global: ${brl(r.global.comImposto)}`;
       $("#jornadaNav").classList.remove("hide");
       // central de notificações (sino com contador)
       carregarNotificacoes();
+      // badge das minhas agendas (visão do implantador)
+      if (window.JornadaOps) window.JornadaOps.atualizarBadgeAgendas();
     } catch (_) { /* silencioso: o painel é extra */ }
   }
 
@@ -772,7 +774,27 @@ Valor global: ${brl(r.global.comImposto)}`;
       const badge = $("#notifBadge");
       badge.textContent = naoLidas > 99 ? "99+" : String(naoLidas);
       badge.classList.toggle("hide", naoLidas === 0);
+      // alertas CRÍTICOS não lidos → modal impossível de ignorar
+      mostrarAlertaCritico(notifCache.filter(n => !n.lida && n.prioridade === "critica"));
     } catch (_) { /* sem notificações não é erro fatal */ }
+  }
+
+  /* ---- Alerta crítico: modal vermelho pulsante que exige atenção ---- */
+  // Escalonamentos de cliente, NPS/CSAT baixos e Red Accounts chegam por aqui.
+  let criticosNaTela = [];
+  function mostrarAlertaCritico(criticas) {
+    const ov = $("#criticoOverlay");
+    if (!ov) return;
+    if (!criticas.length) { ov.classList.add("hide"); return; }
+    criticosNaTela = criticas;
+    $("#criticoBody").innerHTML = criticas.slice(0, 5).map(n => `
+      <div class="critico-item">
+        <div class="critico-item-titulo">${escapeHtml(n.titulo)}</div>
+        ${n.mensagem ? `<div class="critico-item-msg">${escapeHtml(n.mensagem)}</div>` : ""}
+        <div class="critico-item-quando">${new Date(n.criado_em).toLocaleString("pt-BR")}</div>
+      </div>`).join("") +
+      (criticas.length > 5 ? `<p class="critico-mais">+ ${criticas.length - 5} outros alertas críticos na central de notificações</p>` : "");
+    ov.classList.remove("hide");
   }
 
   function abrirNotificacoes() {
@@ -1080,6 +1102,18 @@ Valor global: ${brl(r.global.comImposto)}`;
       try { await window.PricingStore.notifMarcarLida(null); } catch (_) {}
       await carregarNotificacoes();
       abrirNotificacoes();
+    });
+    // alerta crítico: ver notificações ou dar ciência (marca as críticas como lidas)
+    $("#criticoVer").addEventListener("click", () => {
+      $("#criticoOverlay").classList.add("hide");
+      abrirNotificacoes();
+    });
+    $("#criticoCiente").addEventListener("click", async () => {
+      for (const n of criticosNaTela) {
+        try { await window.PricingStore.notifMarcarLida(n.id); } catch (_) {}
+      }
+      $("#criticoOverlay").classList.add("hide");
+      carregarNotificacoes();
     });
     // administração de usuários (só admin)
     $("#btnAdmin").addEventListener("click", () => window.JornadaAdmin && window.JornadaAdmin.abrir());

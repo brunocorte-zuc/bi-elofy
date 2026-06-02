@@ -254,6 +254,54 @@
     return data.publicUrl;
   }
 
+  /* ---- Agendas dos implantadores (apontamento de horas) ---- */
+  async function agendaCriar(implantacaoId, payload) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("agenda_criar", {
+      p_implantacao_id: implantacaoId, p_payload: payload,
+    });
+    if (error) throw error;
+    return data;
+  }
+  async function agendaListar(implantacaoId) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("agenda_listar", { p_implantacao_id: implantacaoId });
+    if (error) throw error;
+    return data || [];
+  }
+  async function agendaMinhas() {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("agenda_minhas");
+    if (error) throw error;
+    return data || [];
+  }
+  async function agendaAceitar(agendaId) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("agenda_aceitar", { p_agenda_id: agendaId });
+    if (error) throw error;
+    return data;
+  }
+  async function agendaRecusar(agendaId, motivo) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("agenda_recusar", { p_agenda_id: agendaId, p_motivo: motivo });
+    if (error) throw error;
+    return data;
+  }
+  async function agendaEditar(agendaId, payload) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("agenda_editar", { p_agenda_id: agendaId, p_payload: payload });
+    if (error) throw error;
+    return data;
+  }
+  async function agendaRegistrarExecucao(agendaId, ficha, horasRealizadas) {
+    if (!sb) throw new Error("Sessão não iniciada.");
+    const { data, error } = await sb.rpc("agenda_registrar_execucao", {
+      p_agenda_id: agendaId, p_ficha: ficha, p_horas_realizadas: horasRealizadas || null,
+    });
+    if (error) throw error;
+    return data;
+  }
+
   /* ---- Administração de usuários (somente admin) ---- */
   async function adminListarUsuarios() {
     if (!sb) throw new Error("Sessão não iniciada.");
@@ -380,6 +428,8 @@
     painelPropostas,
     opsListar, opsUpdates, opsRegistrarUpdate, opsEditar, opsResolverProblema,
     opsAceitarHandoff, opsSalvarDiscovery, opsRedFlag, opsAtualizarCustoms, uploadFoto,
+    agendaCriar, agendaListar, agendaMinhas, agendaAceitar, agendaRecusar,
+    agendaEditar, agendaRegistrarExecucao,
     equipe, notifListar, notifMarcarLida,
     adminListarUsuarios, adminSalvarUsuario, adminRemoverUsuario, adminDefinirSenha,
   };

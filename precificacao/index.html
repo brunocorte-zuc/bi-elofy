@@ -7,14 +7,14 @@
 <link rel="icon" type="image/svg+xml" href="brand/icone.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=League+Gothic&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="brand/elofy.css?v=20260602b">
-<link rel="stylesheet" href="app.css?v=20260602b">
+<link rel="stylesheet" href="brand/elofy.css?v=20260602c">
+<link rel="stylesheet" href="app.css?v=20260602c">
 </head>
 <body>
 
 <header class="hdr">
   <div class="hdr-brand">
-    <img src="brand/logo-blue.png" alt="elofy" class="hdr-logo">
+    <img src="brand/logo-blue.png" alt="elofy | Zucchetti" class="hdr-logo">
     <div>
       <h1>Jornada</h1>
       <p>A jornada do cliente, do comercial ao sucesso</p>
@@ -29,6 +29,8 @@
       <span id="userEmail" class="mono"></span>
       <button class="btn ghost notif-sino" id="btnNotif" type="button" title="Notificações">
         🔔<span class="notif-badge hide" id="notifBadge">0</span></button>
+      <button class="btn ghost notif-sino" id="btnAgendas" type="button" title="Minhas agendas" style="margin-left:8px">
+        📅<span class="notif-badge hide" id="agendasBadge">0</span></button>
       <button class="btn ghost" id="btnPropostas" style="padding:5px 10px;margin-left:8px">📋 Propostas</button>
       <button class="btn ghost hide" id="btnHandoffs" style="padding:5px 10px;margin-left:8px">🏆 Handoffs</button>
       <button class="btn ghost hide" id="btnAdmin" style="padding:5px 10px;margin-left:8px">⚙️ Admin</button>
@@ -242,6 +244,27 @@
   </div>
 </div>
 
+<!-- ====== PAINEL: MINHAS AGENDAS (visão do implantador/IS) ====== -->
+<div id="agendasOverlay" class="ho-overlay hide">
+  <div class="ho-modal wide">
+    <button class="ho-x" id="agendasFechar" type="button">✕</button>
+    <div class="ho-head"><h2>📅 Minhas agendas</h2></div>
+    <div id="agendasBody"><p style="color:var(--txt-3)">Carregando…</p></div>
+  </div>
+</div>
+
+<!-- ====== ALERTA CRÍTICO (notificações de prioridade máxima) ====== -->
+<div id="criticoOverlay" class="critico-overlay hide">
+  <div class="critico-modal">
+    <div class="critico-titulo">🚨 ALERTA CRÍTICO</div>
+    <div id="criticoBody"></div>
+    <div class="critico-acoes">
+      <button class="critico-btn ver" id="criticoVer" type="button">Ver notificações</button>
+      <button class="critico-btn ciente" id="criticoCiente" type="button">Estou ciente — marcar como lidas</button>
+    </div>
+  </div>
+</div>
+
 <p class="foot">Jornada Elofy · HR Tech · uso interno</p>
 
 <!-- ====== MODAL: DAR GANHO & HANDOFF ====== -->
@@ -277,12 +300,12 @@
 <script src="data/supabase.js"></script>
 <!-- Motor + auth + PDF + UI. O ?v= força o navegador a baixar a versão nova
      após cada deploy (evita HTML novo rodando com JS antigo em cache). -->
-<script src="src/engine.js?v=20260602b"></script>
-<script src="src/auth.js?v=20260602b"></script>
-<script src="src/pdf.js?v=20260602b"></script>
-<script src="src/handoff.js?v=20260602b"></script>
-<script src="src/ops.js?v=20260602b"></script>
-<script src="src/admin.js?v=20260602b"></script>
-<script src="src/app.js?v=20260602b"></script>
+<script src="src/engine.js?v=20260602c"></script>
+<script src="src/auth.js?v=20260602c"></script>
+<script src="src/pdf.js?v=20260602c"></script>
+<script src="src/handoff.js?v=20260602c"></script>
+<script src="src/ops.js?v=20260602c"></script>
+<script src="src/admin.js?v=20260602c"></script>
+<script src="src/app.js?v=20260602c"></script>
 </body>
 </html>
